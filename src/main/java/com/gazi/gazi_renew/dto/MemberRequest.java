@@ -31,7 +31,6 @@ public class MemberRequest {
                     .isAgree(true)
                     .build();
         }
-
     }
 
     @Getter

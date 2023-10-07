@@ -7,6 +7,9 @@ import org.springframework.http.ResponseEntity;
 
 
 public interface MemberService {
+    // 회원가입
+    ResponseEntity<Body> signUp(MemberRequest.SignUp signUpDto);
+
     // 로그인
     ResponseEntity<Body> login(MemberRequest.Login loginDto);
 
