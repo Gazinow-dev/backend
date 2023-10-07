@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.service;
 import com.gazi.gazi_renew.config.JwtTokenProvider;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.dto.MemberRequest;
+import com.gazi.gazi_renew.dto.MemberResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.ResponseToken;
 import com.gazi.gazi_renew.repository.MemberRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -36,6 +38,35 @@ public class MemberServiceImpl implements MemberService {
 
     private final AuthenticationManagerBuilder managerBuilder;
     private final RedisTemplate redisTemplate;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public ResponseEntity<Response.Body> signUp(MemberRequest.SignUp signUpDto) {
+        Member member = signUpDto.toMember(passwordEncoder);
+        try{
+            validateEmail(member.getEmail());
+            validateNickName(member.getNickName());
+            memberRepository.save(member);
+            MemberResponse.SignUp requestDto = new MemberResponse.SignUp(member);
+            return response.success(requestDto,"회원가입이 완료되었습니다.",HttpStatus.CREATED);
+        }catch (Exception e){
+            return response.fail(null,e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    public void validateEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new IllegalStateException("이미 가입된 이메일입니다.");
+        }
+    }
+
+    public void validateNickName(String nickName) {
+        if (memberRepository.existsByNickName(nickName)) {
+            throw new IllegalStateException("중복된 닉네임입니다.");
+        }
+    }
+
     @Override
     public ResponseEntity<Response.Body> login(MemberRequest.Login loginDto) {
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(
