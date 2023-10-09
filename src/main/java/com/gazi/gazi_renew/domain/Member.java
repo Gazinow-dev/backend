@@ -7,6 +7,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 
 
 @Getter
@@ -38,6 +40,16 @@ public class Member extends AuditingFields {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일시
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RecentSearch> recentSearches = new LinkedList<>();
+
+    // 생성자, getter, setter 메서드
+
+    public void addRecentSearch(RecentSearch recentSearch) {
+        recentSearch.setMember(this);
+        recentSearches.add(recentSearch);
+    }
 
     public Member update(String nickName, String email, String provider) {
         this.nickName = nickName;
