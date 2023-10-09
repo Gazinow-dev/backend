@@ -66,6 +66,9 @@ public class Response {
     public ResponseEntity<Body> success(String msg) {
         return success(Collections.emptyList(), msg, HttpStatus.OK);
     }
+    public ResponseEntity<Body> createSuccess(String msg) {
+        return success(Collections.emptyList(), msg, HttpStatus.CREATED);
+    }
 
     /**
      * <p> 데이터만 가진 성공 응답을 반환한다.</p>

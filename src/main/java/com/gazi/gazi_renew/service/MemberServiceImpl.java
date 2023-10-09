@@ -43,14 +43,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public ResponseEntity<Response.Body> signUp(MemberRequest.SignUp signUpDto) {
         Member member = signUpDto.toMember(passwordEncoder);
-        try{
+        try {
             validateEmail(member.getEmail());
             validateNickName(member.getNickName());
             memberRepository.save(member);
             MemberResponse.SignUp requestDto = new MemberResponse.SignUp(member);
-            return response.success(requestDto,"회원가입이 완료되었습니다.",HttpStatus.CREATED);
-        }catch (Exception e){
-            return response.fail(null,e.getMessage(),HttpStatus.BAD_REQUEST);
+            return response.success(requestDto, "회원가입이 완료되었습니다.", HttpStatus.CREATED);
+        } catch (Exception e) {
+            return response.fail(null, e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -75,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
         // loginDto email, password 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = loginDto.usernamePasswordAuthenticationToken();
 
-        try{
+        try {
             // 실제 검증 (사용자 비밀번호 체크)
             // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
             Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken); // 인증 정보를 기반으로 JWT 토큰 생성
@@ -90,7 +90,7 @@ public class MemberServiceImpl implements MemberService {
                             TimeUnit.MILLISECONDS
                     );
             return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
-        } catch (BadCredentialsException e){
+        } catch (BadCredentialsException e) {
             return response.fail("비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
 
