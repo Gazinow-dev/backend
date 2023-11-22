@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.controller;
 
-import com.gazi.gazi_renew.dto.MemberRequest;
 import com.gazi.gazi_renew.dto.RecentSearchRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.RecentSearchService;
@@ -16,6 +15,11 @@ public class RecentSearchController {
 
     private final RecentSearchService recentSearchService;
 
+    // 최근검색조회
+    @GetMapping
+    public ResponseEntity<Response.Body> getRecentSearchList(){
+        return recentSearchService.recentGet();
+    }
 
     @PostMapping("/add")
     public ResponseEntity<Response.Body> signup(@RequestBody RecentSearchRequest dto) {

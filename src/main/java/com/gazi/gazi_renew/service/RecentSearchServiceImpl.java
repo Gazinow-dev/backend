@@ -4,6 +4,7 @@ import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.RecentSearch;
 import com.gazi.gazi_renew.dto.RecentSearchRequest;
+import com.gazi.gazi_renew.dto.RecentSearchResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import com.gazi.gazi_renew.repository.RecentSearchRepository;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,6 +33,22 @@ public class RecentSearchServiceImpl implements RecentSearchService {
                 () -> new EntityNotFoundException("해당 회원이 존재하지 않습니다.")
         );
         return member;
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> recentGet() {
+        try {
+            Member member = isUser();
+            List<RecentSearch> recentSearchList = recentSearchRepository.findAllByMember(member);
+            List<RecentSearchResponse> recentSearchResponseList = recentSearchList.stream().map(recentSearch -> {
+                RecentSearchResponse dto = RecentSearchResponse.getDto(recentSearch);
+                return dto;
+            }).collect(Collectors.toList());
+            return response.success(recentSearchResponseList);
+        } catch (Exception e) {
+            return response.fail("조회 실패", HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @Override

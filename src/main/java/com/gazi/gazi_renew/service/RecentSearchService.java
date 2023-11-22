@@ -6,6 +6,8 @@ import com.gazi.gazi_renew.dto.Response;
 import org.springframework.http.ResponseEntity;
 
 public interface RecentSearchService {
+    // 최근 검색 조회
+    ResponseEntity<Response.Body> recentGet();
     // 최근 검색 추가
     ResponseEntity<Response.Body> recentAdd(RecentSearchRequest dto);
 

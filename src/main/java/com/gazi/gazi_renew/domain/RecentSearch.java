@@ -18,14 +18,15 @@ public class RecentSearch {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     // 역이름
     @Column(name = "StationName", length = 255)
     private String stationName;
-
     // 호선
     @Column(name = "Line", length = 50)
     private String stationLine;
+    // 역코드
+    @Column(name ="stationCode", length = 10)
+    private int stationCode;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @Column(updatable = false)
