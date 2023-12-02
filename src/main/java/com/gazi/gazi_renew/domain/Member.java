@@ -44,7 +44,8 @@ public class Member extends AuditingFields {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RecentSearch> recentSearches = new LinkedList<>();
 
-    // 생성자, getter, setter 메서드
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MyFindLoad> myFindLoads = new LinkedList<>();
 
     public void addRecentSearch(RecentSearch recentSearch) {
         recentSearch.setMember(this);
