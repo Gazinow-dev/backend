@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.controller;
 
+import com.gazi.gazi_renew.dto.FindRoadRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.FindRoadService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,11 @@ public class FindRoadController {
     @GetMapping("/subway")
     public ResponseEntity<Response.Body> subwayRouteSearch(@RequestParam Long  CID,@RequestParam Long SID, @RequestParam Long EID,@RequestParam int sopt) throws IOException{
         return findRoadService.subwayRouteSearch(CID, SID, EID, sopt);
+    }
+
+    @GetMapping
+    public ResponseEntity<Response.Body> findSubwayList(@RequestBody FindRoadRequest request) throws IOException {
+        return findRoadService.findRoad(request);
     }
 
 }
