@@ -17,12 +17,24 @@ public class FindRoadController {
     private final FindRoadService findRoadService;
 
     @GetMapping("/subway")
-    public ResponseEntity<Response.Body> subwayRouteSearch(@RequestParam Long  CID,@RequestParam Long SID, @RequestParam Long EID,@RequestParam int sopt) throws IOException{
+    public ResponseEntity<Response.Body> subwayRouteSearch(@RequestParam Long CID, @RequestParam Long SID, @RequestParam Long EID, @RequestParam int sopt) throws IOException {
         return findRoadService.subwayRouteSearch(CID, SID, EID, sopt);
     }
 
     @GetMapping
-    public ResponseEntity<Response.Body> findSubwayList(@RequestBody FindRoadRequest request) throws IOException {
+    public ResponseEntity<Response.Body> findSubwayList(
+            @RequestParam String strSubwayName,
+            @RequestParam String strSubwayLine,
+            @RequestParam String endSubwayName,
+            @RequestParam String endSubwayLine
+    ) throws IOException {
+
+        FindRoadRequest request = FindRoadRequest.builder()
+                .strSubwayName(strSubwayName)
+                .strSubwayLine(strSubwayLine)
+                .endSubwayName(endSubwayName)
+                .endSubwayLine(endSubwayLine).build();
+
         return findRoadService.findRoad(request);
     }
 
