@@ -1,12 +1,23 @@
 package com.gazi.gazi_renew.controller;
 
 import com.gazi.gazi_renew.dto.Response;
+import com.gazi.gazi_renew.dto.SubwayDataResponse;
 import com.gazi.gazi_renew.service.SubwayDataService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
+@SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
 @CrossOrigin
 @RequestMapping("/api/v1/search")
@@ -14,8 +25,13 @@ import org.springframework.web.bind.annotation.*;
 public class SearchController {
     private final SubwayDataService subwayDataService;
 
+    @Operation(summary = "지하철 검색")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "지하철 검색 성공",
+            headers = @Header(name = AUTHORIZATION, description = "Access Token"),
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = SubwayDataResponse.SubwayInfo.class)))})
     @GetMapping("/subway")
-    public ResponseEntity<Response.Body> SubwayInfos(@RequestParam String subwayName){
+    public ResponseEntity<Response.Body> SubwayInfos(@Parameter(description = "지하철 이름") @RequestParam String subwayName) {
         return subwayDataService.getSubwayInfo(subwayName);
     }
 }

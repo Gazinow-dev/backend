@@ -6,6 +6,7 @@ import com.gazi.gazi_renew.dto.MemberRequest.Reissue;
 import com.gazi.gazi_renew.dto.MemberRequest.SignUp;
 import com.gazi.gazi_renew.dto.Response.Body;
 import com.gazi.gazi_renew.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class MemberController {
     private final MemberService memberService;
 
     // 회원가입
+    @Operation(summary = "회원가입", description = "회원가입")
     @PostMapping("signup")
     public ResponseEntity<Body> signup(@RequestBody SignUp signUpDto, Errors errors) {
         return memberService.signUp(signUpDto);
