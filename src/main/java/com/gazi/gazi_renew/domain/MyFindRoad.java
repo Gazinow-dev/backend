@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "MY_FIND_LOAD")
 @Entity
-public class MyFindLoad extends AuditingFields{
+public class MyFindRoad extends AuditingFields{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
