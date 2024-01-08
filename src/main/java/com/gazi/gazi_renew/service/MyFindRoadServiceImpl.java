@@ -83,13 +83,24 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             }
         }
 
-
-
         return response.success(request.getName(),"데이터 저장완료", HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<Response.Body> deleteRoute() {
-        return null;
+    public ResponseEntity<Response.Body> deleteRoute(Long id)
+    {
+        try{
+            Member member =  memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
+                    -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        }catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(),HttpStatus.UNAUTHORIZED);
+        }
+
+        if(myFindRoadRepository.existsById(id)){
+            myFindRoadRepository.deleteById(id);
+            return response.success("삭제 완료");
+        }else{
+            return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.",HttpStatus.BAD_REQUEST);
+        }
     }
 }

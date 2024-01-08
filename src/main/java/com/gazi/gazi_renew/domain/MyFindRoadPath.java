@@ -3,6 +3,9 @@ package com.gazi.gazi_renew.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -20,4 +23,6 @@ public class MyFindRoadPath {
     @ManyToOne
     @JoinColumn(name = "my_find_road_id", nullable = false)
     private MyFindRoad myFindRoad;
+    @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MyFindRoadSubPath> subPaths = new ArrayList<>();
 }

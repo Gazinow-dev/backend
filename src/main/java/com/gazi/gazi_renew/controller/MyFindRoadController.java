@@ -40,4 +40,23 @@ public class MyFindRoadController {
     public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadRequest request){
         return myFindRoadService.addRoute(request);
     }
+
+    @Operation(summary = "내 경로 삭제")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "내 경로 삭제 성공",
+                    headers = @Header(name = AUTHORIZATION, description = "Access Token"
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401", description = "회원이 존재하지 않습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "해당 id로 존재하는 MyFindRoad가 없습니다."
+            )
+    })
+    @DeleteMapping("/delete_route")
+    public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id){
+        return myFindRoadService.deleteRoute(id);
+    }
 }
