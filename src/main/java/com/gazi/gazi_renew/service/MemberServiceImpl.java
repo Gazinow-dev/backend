@@ -74,7 +74,6 @@ public class MemberServiceImpl implements MemberService {
         );
         // loginDto email, password 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = loginDto.usernamePasswordAuthenticationToken();
-
         try {
             // 실제 검증 (사용자 비밀번호 체크)
             // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행

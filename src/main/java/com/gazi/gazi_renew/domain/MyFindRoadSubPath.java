@@ -3,13 +3,16 @@ package com.gazi.gazi_renew.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_load_sub_path")
 @Entity
-public class MyFindLoadSubPath {
+public class MyFindRoadSubPath {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,6 +21,10 @@ public class MyFindLoadSubPath {
     private int sectionTime; //이동 소요 시간
     private int stationCount; // 정차하는 역 개수
     @ManyToOne
-    @JoinColumn(name = "my_find_load_path_id", nullable = false)
-    private MyFindLoadPath myFindLoadPath;
+    @JoinColumn(name = "my_find_road_path_id", nullable = false)
+    private MyFindRoadPath myFindRoadPath;
+    @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MyFindRoadLane> lanes = new ArrayList<>();
+    @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MyFindRoadSubway> subways = new ArrayList<>();
 }

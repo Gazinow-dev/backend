@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_load_lane")
 @Entity
-public class MyFindLoadLane {
+public class MyFindRoadLane {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,6 +18,6 @@ public class MyFindLoadLane {
     private String startName; //승차 정류장
     private String endName; // 하차 정류장
     @ManyToOne
-    @JoinColumn(name = "my_find_load_sub_path_id", nullable = false)
-    private MyFindLoadSubPath myFindLoadSubPath;
+    @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
+    private MyFindRoadSubPath myFindRoadSubPath;
 }

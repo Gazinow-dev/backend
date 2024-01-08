@@ -3,6 +3,9 @@ package com.gazi.gazi_renew.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -10,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "MY_FIND_LOAD")
 @Entity
-public class MyFindLoad extends AuditingFields{
+public class MyFindRoad extends AuditingFields{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -18,5 +21,7 @@ public class MyFindLoad extends AuditingFields{
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
     private String name;
+    @OneToMany(mappedBy = "myFindRoad", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MyFindRoadPath> paths = new ArrayList<>();
 
 }

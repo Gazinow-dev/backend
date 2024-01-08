@@ -19,5 +19,5 @@ public class MyTransfer {
     private String transferLine;
     @ManyToOne
     @JoinColumn(name = "my_find_load_id", nullable = false)
-    private MyFindLoad myFindLoad;
+    private MyFindRoad myFindLoad;
 }
