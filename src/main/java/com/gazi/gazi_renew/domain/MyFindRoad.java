@@ -21,7 +21,6 @@ public class MyFindRoad extends AuditingFields{
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
     private String name;
-    @OneToMany(mappedBy = "myFindRoad", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<MyFindRoadPath> paths = new ArrayList<>();
+
 
 }
