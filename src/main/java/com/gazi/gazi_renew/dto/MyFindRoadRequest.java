@@ -12,20 +12,12 @@ import java.util.ArrayList;
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class MyFindRoadRequest {
-    ArrayList<Path> paths;
-    int subwayCount; //지하철 경로 개수
-    String name;
-
-    @Getter
-    @Setter
-    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-    static public class Path {
-        int totalTime; // 총소요시간
-        int subwayTransitCount;
-        String firstStartStation;
-        String lastEndStation;
-        ArrayList<SubPath> subPaths;
-    }
+    String roadName;
+    int totalTime; // 총소요시간
+    int subwayTransitCount;
+    String firstStartStation;
+    String lastEndStation;
+    ArrayList<SubPath> subPaths;
 
     @Getter
     @Setter
@@ -36,7 +28,6 @@ public class MyFindRoadRequest {
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
         ArrayList<Lane> lanes; //
-
         ArrayList<Subway> subways;
     }
 

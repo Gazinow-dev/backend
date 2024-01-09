@@ -20,9 +20,10 @@ public class MyFindRoadPath {
     private int subwayTransitCount;
     private String firstStartStation;
     private String lastEndStation;
-    @ManyToOne
-    @JoinColumn(name = "my_find_road_id", nullable = false)
-    private MyFindRoad myFindRoad;
     @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<MyFindRoadSubPath> subPaths = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+    private String name;
 }

@@ -1,13 +1,10 @@
 package com.gazi.gazi_renew.controller;
 
 import com.gazi.gazi_renew.dto.MyFindRoadRequest;
-import com.gazi.gazi_renew.dto.RecentSearchResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.MyFindRoadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,6 +22,11 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class MyFindRoadController {
     private final MyFindRoadService myFindRoadService;
 
+    @GetMapping("/get_roads")
+    public ResponseEntity<Response.Body> getRoutes() {
+        return myFindRoadService.getRoutes();
+    }
+
     @Operation(summary = "내 경로 저장")
     @ApiResponses(value = {
             @ApiResponse(
@@ -37,7 +39,7 @@ public class MyFindRoadController {
             )
     })
     @PostMapping("/add_route")
-    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadRequest request){
+    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadRequest request) {
         return myFindRoadService.addRoute(request);
     }
 
@@ -56,7 +58,7 @@ public class MyFindRoadController {
             )
     })
     @DeleteMapping("/delete_route")
-    public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id){
+    public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id) {
         return myFindRoadService.deleteRoute(id);
     }
 }
