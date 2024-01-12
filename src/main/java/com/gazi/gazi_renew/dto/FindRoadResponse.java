@@ -31,8 +31,8 @@ public class FindRoadResponse {
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
         ArrayList<Lane> lanes; //
-
         ArrayList<Subway> subways;
+        ArrayList<MyFindRoadResponse.subway> transitStations;
     }
 
     @Setter

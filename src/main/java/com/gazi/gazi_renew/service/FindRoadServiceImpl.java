@@ -63,6 +63,8 @@ public class FindRoadServiceImpl implements FindRoadService {
         urlInfo.append("&SY=" + URLEncoder.encode(String.valueOf(sy), "UTF-8"));
         urlInfo.append("&EX=" + URLEncoder.encode(String.valueOf(ex), "UTF-8"));
         urlInfo.append("&EY=" + URLEncoder.encode(String.valueOf(ey), "UTF-8"));
+        urlInfo.append("&OPT=" + URLEncoder.encode("0", "UTF-8"));
+        urlInfo.append("&SearchPathType=" + URLEncoder.encode("1", "UTF-8"));
         urlInfo.append("&apiKey=" + URLEncoder.encode("mdn3gFOpu1TYxWEF80iAU4Fmlo2/OSQruUG1Vqw18Xw", "UTF-8"));
 
         return getJsonArray(urlInfo.toString());
