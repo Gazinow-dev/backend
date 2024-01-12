@@ -87,6 +87,11 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .lastEndStation(request.getLastEndStation())
                     .subwayTransitCount(request.getSubwayTransitCount())
                     .build();
+
+            if(myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(),member)){
+                return response.fail("이미 존재하는 이름입니다.", HttpStatus.CONFLICT);
+            }
+
             myFindRoadPathRepository.save(myFindRoadPath);
             log.info("myFindRoadPath 저장");
             for (MyFindRoadRequest.SubPath subPath : request.getSubPaths()) {
@@ -124,6 +129,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             return response.success(myFindRoadPath.getName(), "데이터 저장완료", HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (Exception e){
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

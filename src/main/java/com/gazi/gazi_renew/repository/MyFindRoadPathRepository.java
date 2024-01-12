@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface MyFindRoadPathRepository extends JpaRepository<MyFindRoadPath,Long> {
     List<MyFindRoadPath> findAllByMember(Member member);
+    boolean existsByNameAndMember(String roadName, Member member);
 }
