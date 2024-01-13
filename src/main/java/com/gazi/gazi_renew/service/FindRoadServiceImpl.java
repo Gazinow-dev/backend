@@ -120,47 +120,50 @@ public class FindRoadServiceImpl implements FindRoadService {
                 ArrayList<FindRoadResponse.SubPath> subPaths = new ArrayList<>();
                 JsonNode subPathArray = pathNode.path("subPath");
                 for (JsonNode subPathNode : subPathArray) {
-                    FindRoadResponse.SubPath subPath = new FindRoadResponse.SubPath();
-                    subPath.setTrafficType(subPathNode.path("trafficType").asInt());
-                    subPath.setDistance(subPathNode.path("distance").asDouble());
-                    subPath.setSectionTime(subPathNode.path("sectionTime").asInt());
-                    subPath.setStationCount(subPathNode.path("stationCount").asInt());
+                    if (subPathNode.path("trafficType").asInt() == 1) {
+                        FindRoadResponse.SubPath subPath = new FindRoadResponse.SubPath();
+                        subPath.setTrafficType(subPathNode.path("trafficType").asInt());
+                        subPath.setDistance(subPathNode.path("distance").asDouble());
+                        subPath.setSectionTime(subPathNode.path("sectionTime").asInt());
+                        subPath.setStationCount(subPathNode.path("stationCount").asInt());
 
-                    // lanes 배열 처리
-                    ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();
-                    JsonNode laneArray = subPathNode.path("lane");
-                    for (JsonNode laneNode : laneArray) {
-                        FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
-                        lane.setName(laneNode.path("name").asText());
-                        lane.setSubwayCode(laneNode.path("subwayCode").asInt());
-                        lane.setStartName(laneNode.path("startName").asText());
-                        lane.setEndName(laneNode.path("endName").asText());
+                        // lanes 배열 처리
+                        ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();
+                        JsonNode laneArray = subPathNode.path("lane");
+                        for (JsonNode laneNode : laneArray) {
+                            FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
+                            lane.setName(laneNode.path("name").asText());
+                            lane.setSubwayCode(laneNode.path("subwayCode").asInt());
+                            lane.setStartName(laneNode.path("startName").asText());
+                            lane.setEndName(laneNode.path("endName").asText());
 
-                        lanes.add(lane);
+                            lanes.add(lane);
+                        }
+                        subPath.setLanes(lanes);
+
+                        // passStopList 처리
+                        JsonNode passStopListNode = subPathNode.path("passStopList");
+                        ArrayList<FindRoadResponse.Subway> subways = new ArrayList<>();
+                        JsonNode stationArray = passStopListNode.path("stations");
+                        for (JsonNode stationNode : stationArray) {
+                            FindRoadResponse.Subway station = new FindRoadResponse.Subway();
+                            station.setIndex(stationNode.path("index").asInt());
+                            station.setStationName(stationNode.path("stationName").asText());
+                            subways.add(station);
+                        }
+                        subPath.setSubways(subways);
+                        subPaths.add(subPath);
                     }
-                    subPath.setLanes(lanes);
 
-                    // passStopList 처리
-                    JsonNode passStopListNode = subPathNode.path("passStopList");
-                    ArrayList<FindRoadResponse.Subway> subways = new ArrayList<>();
-                    JsonNode stationArray = passStopListNode.path("stations");
-                    for (JsonNode stationNode : stationArray) {
-                        FindRoadResponse.Subway station = new FindRoadResponse.Subway();
-                        station.setIndex(stationNode.path("index").asInt());
-                        station.setStationName(stationNode.path("stationName").asText());
-                        subways.add(station);
-                    }
-                    subPath.setSubways(subways);
-                    subPaths.add(subPath);
                 }
-                path.setSubPaths(subPaths);
+                if (subPaths.size() != 0) {
+                    path.setSubPaths(subPaths);
+                    path.setTransitStations(getTransitStation(path));
+                }
+
                 paths.add(path);
             }
             findRoadResponse.setPaths(paths);
-
-            // 추출된 값 출력 또는 활용
-            System.out.println(findRoadResponse);
-            System.out.println(findRoadResponse.getPaths().size());
 
             return response.success(findRoadResponse, "길 찾기 데이터 전송 완료", HttpStatus.OK);
         } catch (Exception e) {
@@ -168,6 +171,35 @@ public class FindRoadServiceImpl implements FindRoadService {
             return response.fail("실패", HttpStatus.BAD_REQUEST);
         }
 
+    }
 
+
+    public ArrayList<FindRoadResponse.TransitStation> getTransitStation(FindRoadResponse.Path path) {
+
+        ArrayList<FindRoadResponse.TransitStation> transitStations = new ArrayList<>();
+        String lastLine = "";
+
+        FindRoadResponse.TransitStation transitStation;
+        if (path.getSubPaths().size() != 0) {
+            for (int i = 0; i < path.getSubPaths().size(); i++) {
+                FindRoadResponse.SubPath subPath = path.getSubPaths().get(i);
+                if (subPath.getSubways().size() != 0) {
+                    transitStation = FindRoadResponse.TransitStation.builder()
+                            .subwayName(subPath.getSubways().get(0).getStationName()) // 지하철 역이름
+                            .line(subPath.getLanes().get(0).getName()) // 호선 이름
+                            .build();
+                    transitStations.add(transitStation);
+                    lastLine = subPath.getLanes().get(0).getName();
+                }
+            }
+        }
+        if (path.getLastEndStation() != "") {
+            transitStation = FindRoadResponse.TransitStation.builder()
+                    .subwayName(path.getLastEndStation())
+                    .line(lastLine)
+                    .build();
+            transitStations.add(transitStation);
+        }
+        return transitStations;
     }
 }

@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ public class FindRoadResponse {
     int subwayCount; //지하철 경로 개수
 
     @Setter
+    @Getter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class Path {
         int totalTime; // 총소요시간
@@ -21,8 +23,10 @@ public class FindRoadResponse {
         String firstStartStation;
         String lastEndStation;
         ArrayList<SubPath> subPaths;
+        ArrayList<TransitStation> transitStations;
     }
 
+    @Getter
     @Setter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class SubPath {
@@ -32,9 +36,9 @@ public class FindRoadResponse {
         int stationCount; // 정차하는 역 개수
         ArrayList<Lane> lanes; //
         ArrayList<Subway> subways;
-        ArrayList<MyFindRoadResponse.subway> transitStations;
     }
 
+    @Getter
     @Setter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class Lane {
@@ -44,7 +48,17 @@ public class FindRoadResponse {
         String endName; // 하차 정류장
 
     }
+    @Getter
+    @Setter
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+    @Builder
+    static public class TransitStation {
+        String subwayName;
+        String line;
 
+    }
+
+    @Getter
     @Setter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class Subway {
