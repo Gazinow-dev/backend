@@ -70,18 +70,15 @@ public class SubwayDataService {
         if (path.getSubPaths().size() != 0) {
             for (int i = 0; i < path.getSubPaths().size(); i++) {
                 MyFindRoadSubPath subPath = path.getSubPaths().get(i);
-                if (i != path.getSubPaths().size() - 1) {
-                    // 지하철에서 인덱스가 0번인것만 추출하기
-                    if (subPath.getSubways().size() != 0) {
-                        subway = MyFindRoadResponse.subway.builder()
-                                .subwayName(subPath.getSubways().get(0).getStationName()) // 지하철 역이름
-                                .line(subPath.getLanes().get(0).getName()) // 호선 이름
-                                .build();
-                        subways.add(subway);
-                        lastLine = subPath.getLanes().get(0).getName();
-                    }
+                // 지하철에서 인덱스가 0번인것만 추출하기
+                if (subPath.getSubways().size() != 0) {
+                    subway = MyFindRoadResponse.subway.builder()
+                            .subwayName(subPath.getSubways().get(0).getStationName()) // 지하철 역이름
+                            .line(subPath.getLanes().get(0).getName()) // 호선 이름
+                            .build();
+                    subways.add(subway);
+                    lastLine = subPath.getLanes().get(0).getName();
                 }
-
             }
         }
         if (path.getLastEndStation() != "") {
