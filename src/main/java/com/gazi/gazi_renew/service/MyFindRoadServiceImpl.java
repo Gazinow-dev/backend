@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +23,6 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
     private final Response response;
     private final MemberRepository memberRepository;
-    private final MyFindRoadRepository myFindRoadRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
@@ -38,8 +36,9 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMember(member);
             List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
-            for(MyFindRoadPath myFindRoadPath : myFindRoadPaths){
+            for (MyFindRoadPath myFindRoadPath : myFindRoadPaths) {
                 MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
+                        .id(myFindRoadPath.getId())
                         .roadName(myFindRoadPath.getName())
                         .subways(subwayDataService.getTransitStation(myFindRoadPath))
                         //todo: issue는 추후에
@@ -47,7 +46,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 myFindRoadResponses.add(myFindRoadResponse);
             }
             return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
 
@@ -64,7 +63,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .roadName(myFindRoadPath.getName())
                     .subways(subwayDataService.getTransitStation(myFindRoadPath))
                     //todo: issue는 추후에
-            .build();
+                    .build();
 
             return response.success("개별조회");
         } catch (EntityNotFoundException e) {
@@ -88,7 +87,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .subwayTransitCount(request.getSubwayTransitCount())
                     .build();
 
-            if(myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(),member)){
+            if (myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(), member)) {
                 return response.fail("이미 존재하는 이름입니다.", HttpStatus.CONFLICT);
             }
 
@@ -129,7 +128,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             return response.success(myFindRoadPath.getName(), "데이터 저장완료", HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        } catch (Exception e){
+        } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -139,8 +138,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         try {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
                     -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            if (myFindRoadRepository.existsById(id)) {
-                myFindRoadRepository.deleteById(id);
+            if (myFindRoadPathRepository.existsById(id)) {
+                myFindRoadPathRepository.deleteById(id);
                 return response.success("삭제 완료");
             } else {
                 return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.", HttpStatus.BAD_REQUEST);
