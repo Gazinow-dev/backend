@@ -45,7 +45,7 @@ public class Member extends AuditingFields {
     private List<RecentSearch> recentSearches = new LinkedList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<MyFindRoad> myFindRoads = new LinkedList<>();
+    private List<MyFindRoadPath> myFindRoadPaths = new LinkedList<>();
 
     public void addRecentSearch(RecentSearch recentSearch) {
         recentSearch.setMember(this);
