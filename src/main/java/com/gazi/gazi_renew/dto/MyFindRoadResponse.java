@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class MyFindRoadResponse {
+    private Long id;
     private String roadName;
     private List<subway> subways;
     private List<MyFindRoadResponse.issue> issues;
