@@ -120,7 +120,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                 ArrayList<FindRoadResponse.SubPath> subPaths = new ArrayList<>();
                 JsonNode subPathArray = pathNode.path("subPath");
                 for (JsonNode subPathNode : subPathArray) {
-                    if (subPathNode.path("trafficType").asInt() == 1) {
+                    if (subPathNode.path("trafficType").asInt() == 1 || subPathNode.path("trafficType").asInt() == 3) {
                         FindRoadResponse.SubPath subPath = new FindRoadResponse.SubPath();
                         subPath.setTrafficType(subPathNode.path("trafficType").asInt());
                         subPath.setDistance(subPathNode.path("distance").asDouble());
