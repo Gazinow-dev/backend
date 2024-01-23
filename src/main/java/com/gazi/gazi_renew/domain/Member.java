@@ -41,10 +41,10 @@ public class Member extends AuditingFields {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일시
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<RecentSearch> recentSearches = new LinkedList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<MyFindRoadPath> myFindRoadPaths = new LinkedList<>();
 
     public void addRecentSearch(RecentSearch recentSearch) {

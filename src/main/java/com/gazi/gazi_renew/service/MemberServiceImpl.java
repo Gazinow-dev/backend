@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.config.JwtTokenProvider;
+import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.dto.MemberRequest;
 import com.gazi.gazi_renew.dto.MemberResponse;
@@ -8,6 +9,7 @@ import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.ResponseToken;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,9 +23,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -41,9 +47,12 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public ResponseEntity<Response.Body> signUp(MemberRequest.SignUp signUpDto) {
+    public ResponseEntity<Response.Body> signUp(@Valid MemberRequest.SignUp signUpDto, Errors errors) {
         Member member = signUpDto.toMember(passwordEncoder);
         try {
+            if (errors.hasErrors()) {
+                return validateHandling(errors);
+            }
             validateEmail(member.getEmail());
             validateNickName(member.getNickName());
             memberRepository.save(member);
@@ -68,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> login(MemberRequest.Login loginDto) {
+    public ResponseEntity<Response.Body> login(@Valid MemberRequest.Login loginDto) {
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 회원의 아이디입니다.")
         );
@@ -94,6 +103,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
+
 
     @Transactional
     @Override
@@ -185,5 +195,89 @@ public class MemberServiceImpl implements MemberService {
                 .set("RT:" + authentication.getName(), tokenInfo.getRefreshToken(), tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
 
         return response.success(tokenInfo, "Token 정보가 갱신되었습니다.", HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> changeNickName(@Valid MemberRequest.NickName nickNameDto, Errors errors) {
+        try {
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            if (memberRepository.existsByNickName(nickNameDto.getNickName())) {
+                throw new IllegalStateException("중복된 닉네임입니다.");
+            } else {
+                member.setNickName(nickNameDto.getNickName());
+                memberRepository.save(member);
+                return response.success("닉네임이 " + member.getNickName() + "(으)로 변경되었습니다.");
+            }
+
+        } catch (EntityNotFoundException e) {
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return response.fail(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> checkPassword(MemberRequest.CheckPassword checkPassword) {
+        try {
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            if (passwordEncoder.matches(checkPassword.getCheckPassword(), member.getPassword())) {
+                return response.success("비밀번호가 일치합니다.");
+            } else {
+                return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors) {
+        try {
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            MemberRequest.CheckPassword checkPassword = new MemberRequest.CheckPassword();
+            checkPassword.setCheckPassword(passwordDto.getCurPassword());
+
+            if (checkPassword(checkPassword).getStatusCode().equals(HttpStatus.OK)) {
+                if (passwordDto.getChangePassword().equals(passwordDto.getConfirmPassword())) {
+                    member.setPassword(passwordEncoder.encode(passwordDto.getChangePassword()));
+                    return response.success("비밀번호 변경을 완료했습니다.");
+                } else {
+                    return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                return response.fail("현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> deleteMember(boolean isTrue) {
+        try{
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            if(isTrue){
+                memberRepository.delete(member);
+                return response.success("회원 탈퇴 완료.");
+            }
+        }catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
+    /* 회원가입 시, 유효성 체크 */
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseEntity<Response.Body> validateHandling(Errors errors) {
+        Map<String, String> validatorResult = new HashMap<>();
+
+        // 유효성 검사에 실패한 필드 목록을 받음
+        for (FieldError error : errors.getFieldErrors()) {
+            String validKeyName = String.format("valid_%s", error.getField());
+            validatorResult.put(validKeyName, error.getDefaultMessage());
+        }
+        return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
     }
 }

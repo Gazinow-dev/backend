@@ -1,5 +1,7 @@
 package com.gazi.gazi_renew.controller;
 
+import com.gazi.gazi_renew.dto.FindRoadResponse;
+import com.gazi.gazi_renew.dto.MemberRequest;
 import com.gazi.gazi_renew.dto.MemberRequest.Login;
 import com.gazi.gazi_renew.dto.MemberRequest.Logout;
 import com.gazi.gazi_renew.dto.MemberRequest.Reissue;
@@ -7,11 +9,19 @@ import com.gazi.gazi_renew.dto.MemberRequest.SignUp;
 import com.gazi.gazi_renew.dto.Response.Body;
 import com.gazi.gazi_renew.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RequiredArgsConstructor
 @CrossOrigin
@@ -23,8 +33,11 @@ public class MemberController {
     // 회원가입
     @Operation(summary = "회원가입", description = "회원가입")
     @PostMapping("signup")
-    public ResponseEntity<Body> signup(@RequestBody SignUp signUpDto, Errors errors) {
-        return memberService.signUp(signUpDto);
+    public ResponseEntity<Body> signup(@RequestBody @Valid SignUp signUpDto, Errors errors) {
+        if (errors.hasErrors()) {
+            return memberService.validateHandling(errors);
+        }
+        return memberService.signUp(signUpDto, errors);
     }
 
     // 로그인
@@ -40,8 +53,61 @@ public class MemberController {
     }
 
     // 자동 로그인
+    @Operation(summary = "토큰 재발급(자동 로그인)")
     @PostMapping("/reissue")
     public ResponseEntity<Body> reissue(@RequestBody Reissue reissueDto) {
         return memberService.reissue(reissueDto);
     }
+
+    // 닉네임 수정
+    @PostMapping("/change_nickname")
+    @Operation(summary = "닉네임 수정")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "닉네임이 가지(으)로 변경되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. "),
+            @ApiResponse(responseCode = "409", description = "종복된 닉네임입니다. ")
+    })
+    public ResponseEntity<Body> changeNickName(@RequestBody @Valid MemberRequest.NickName nickNameDto, Errors errors) {
+        if (errors.hasErrors()) {
+            return memberService.validateHandling(errors);
+        }
+        return memberService.changeNickName(nickNameDto, errors);
+    }
+    // 비밀번호 변경
+    @PostMapping("/change_password")
+    @Operation(summary = "비밀번호 변경")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경을 완료했습니다."),
+            @ApiResponse(responseCode = "404", description = "현재 비밀번호가 일치하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "비밀번호가 일치하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> changePassword(@RequestBody @Valid MemberRequest.Password passwordDto, Errors errors){
+        if (errors.hasErrors()) {
+            return memberService.validateHandling(errors);
+        }
+        return memberService.changePassword(passwordDto, errors);
+    }
+    // 비밀번호 확인
+    @PostMapping("/check_password")
+    @Operation(summary = "비밀번호 확인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호가 일치합니다."),
+            @ApiResponse(responseCode = "404", description = "비밀번호가 일치하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> checkPassword(@RequestBody MemberRequest.CheckPassword password){
+        return memberService.checkPassword(password);
+    }
+    // 회원 탈퇴
+    @DeleteMapping("/delete_member")
+    @Operation(summary = "회원 탈퇴")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 탈퇴 완료."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> deleteMember(@RequestBody boolean isTrue){
+        return memberService.deleteMember(isTrue);
+    }
+
 }

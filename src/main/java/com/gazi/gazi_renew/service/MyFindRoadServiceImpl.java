@@ -6,6 +6,7 @@ import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.*;
+import io.lettuce.core.output.ScanOutput;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public ResponseEntity<Response.Body> getRoutes() {
         try {
+            System.out.println(SecurityUtil.getCurrentUserEmail());
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMember(member);
             List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
