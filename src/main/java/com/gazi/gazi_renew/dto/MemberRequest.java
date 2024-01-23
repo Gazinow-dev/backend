@@ -14,10 +14,23 @@ public class MemberRequest {
 
     @Getter
     @Setter
+    public static class Password{
+        @NotBlank
+        private String curPassword;
+        @NotBlank
+        private String changePassword;
+        @NotBlank
+        private String confirmPassword;
+    }
+    @Getter
+    @Setter
     public static class SignUp {
         @NotBlank
+        @Pattern(regexp = "/^([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})$/" , message = "이메일 형식이 맞지 않습니다.")
         private String email;
         @NotBlank
+        // 최소 8자리 이상 숫자, 특수문자가 1개 이상 포함
+        @Pattern(regexp = "/^(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/", message = "최소 8자리 이상 숫자, 특수문자가 1개 이상 포함되어야 합니다.")
         private String password;
         @NotBlank
         private String nickName;
@@ -45,6 +58,12 @@ public class MemberRequest {
         public UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken() {
             return new UsernamePasswordAuthenticationToken(email, password);
         }
+    }
+
+    @Getter
+    @Setter
+    public static class CheckPassword {
+        private String checkPassword;
     }
 
     @Getter
@@ -81,9 +100,9 @@ public class MemberRequest {
 
     @Getter
     public static class Email {
+
         @NotBlank(message = "아이디는 필수 입력 값입니다.")
-        @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$", message = "올바른 이메일 형식이 아닙니다.")
+        @Pattern(regexp = "/^([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})$/", message = "올바른 이메일 형식이 아닙니다.")
         private String email;
     }
-
 }
