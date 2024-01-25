@@ -117,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
         Authentication authentication = jwtTokenProvider.getAuthentication(logoutDto.getAccessToken());
 
 
-        // Redis 에서 해당 Member email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+        // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
         if (redisTemplate.opsForValue().get("AT:" + authentication.getName()) != null) {
             // Refresh Token 삭제
             redisTemplate.delete("AT:" + authentication.getName());
@@ -254,17 +254,27 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> deleteMember(boolean isTrue) {
+    public ResponseEntity<Response.Body> deleteMember(MemberRequest.DeleteMember deleteMemberDto) {
         try{
-            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            if(isTrue){
-                memberRepository.delete(member);
-                return response.success("회원 탈퇴 완료.");
+            String email = SecurityUtil.getCurrentUserEmail();
+            Member member = memberRepository.getReferenceByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            memberRepository.delete(member);
+
+            // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+            if (redisTemplate.opsForValue().get("AT:" + email) != null) {
+                // Refresh Token 삭제
+                redisTemplate.delete("AT:" + email);
             }
+            // Redis 에서 해당 Member email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+            if (redisTemplate.opsForValue().get("RT:" + email) != null) {
+                // Refresh Token 삭제
+                redisTemplate.delete("RT:" + email);
+            }
+            return response.success("회원 탈퇴 완료.");
+
         }catch (Exception e){
             return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
-        return null;
     }
 
     /* 회원가입 시, 유효성 체크 */

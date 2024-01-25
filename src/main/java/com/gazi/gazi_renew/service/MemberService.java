@@ -31,7 +31,7 @@ public interface MemberService {
     // 비밀번호 변경
     ResponseEntity<Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors);
     // 회원 탈퇴
-    ResponseEntity<Body> deleteMember(boolean isTrue);
+    ResponseEntity<Body> deleteMember(MemberRequest.DeleteMember deleteMemberDto);
 
     /* 회원가입 시, 유효성 체크 */
     @Transactional(readOnly = true)
