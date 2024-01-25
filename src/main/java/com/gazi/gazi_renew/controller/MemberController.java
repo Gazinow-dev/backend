@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
 @CrossOrigin
 @RequestMapping("/api/v1/member")
@@ -106,8 +107,8 @@ public class MemberController {
             @ApiResponse(responseCode = "200", description = "회원 탈퇴 완료."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
-    public ResponseEntity<Body> deleteMember(@RequestBody boolean isTrue){
-        return memberService.deleteMember(isTrue);
+    public ResponseEntity<Body> deleteMember(@RequestBody MemberRequest.DeleteMember deleteMemberDto){
+        return memberService.deleteMember(deleteMemberDto);
     }
 
 }
