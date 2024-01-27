@@ -34,6 +34,9 @@ public class FindRoadResponse {
         double distance; //이동거리
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
+
+        String way; //  방면
+        String door; //
         ArrayList<Lane> lanes; //
         ArrayList<Station> stations;
     }
@@ -65,5 +68,6 @@ public class FindRoadResponse {
         int index; // 정류장 순번
         String stationName;
     }
+
 
 }

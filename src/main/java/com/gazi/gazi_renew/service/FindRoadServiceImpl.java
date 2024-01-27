@@ -126,6 +126,8 @@ public class FindRoadServiceImpl implements FindRoadService {
                         subPath.setDistance(subPathNode.path("distance").asDouble());
                         subPath.setSectionTime(subPathNode.path("sectionTime").asInt());
                         subPath.setStationCount(subPathNode.path("stationCount").asInt());
+                        subPath.setDoor(subPathNode.path("door").asText());
+                        subPath.setWay(subPathNode.path("way").asText());
 
                         // lanes 배열 처리
                         ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();

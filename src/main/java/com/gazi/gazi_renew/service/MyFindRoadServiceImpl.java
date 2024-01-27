@@ -125,6 +125,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     myFindRoadSubwayRepository.save(myFindRoadStation);
                     log.info("MyFindRoadSubway 저장 완료");
                 }
+
+
             }
             return response.success(myFindRoadPath.getName(), "데이터 저장완료", HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
