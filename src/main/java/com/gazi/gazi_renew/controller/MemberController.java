@@ -111,4 +111,25 @@ public class MemberController {
         return memberService.deleteMember(deleteMemberDto);
     }
 
+    @Operation(summary = "이메일 인증")
+    @PostMapping("/email-confirm")
+    public ResponseEntity<Body> emailConfirm(@RequestBody @Valid MemberRequest.Email email, Errors errors) throws Exception {
+
+        if (errors.hasErrors()) {
+            return memberService.validateHandling(errors);
+        }
+        return memberService.sendSimpleMessage(email.getEmail());
+    }
+
+
+    @Operation(summary = "닉네임 중복검사")
+    @PostMapping("/check-nickname")
+    public ResponseEntity<Body> checkNickName(@RequestBody @Valid MemberRequest.NickName nickName, Errors errors) throws Exception {
+        if (errors.hasErrors()) {
+            return memberService.validateHandling(errors);
+        }
+        return memberService.checkNickName(nickName.getNickName());
+    }
+
+
 }

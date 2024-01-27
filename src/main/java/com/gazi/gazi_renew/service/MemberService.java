@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.service;
 
 
 import com.gazi.gazi_renew.dto.MemberRequest;
+import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.Response.Body;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,13 @@ public interface MemberService {
     ResponseEntity<Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors);
     // 회원 탈퇴
     ResponseEntity<Body> deleteMember(MemberRequest.DeleteMember deleteMemberDto);
-
     /* 회원가입 시, 유효성 체크 */
     @Transactional(readOnly = true)
     ResponseEntity<Body> validateHandling(Errors errors);
+
+    ResponseEntity<Body> sendSimpleMessage(String email) throws Exception;
+
+    ResponseEntity<Body> checkEmail(String email);
+
+    ResponseEntity<Body> checkNickName(String nickName);
 }
