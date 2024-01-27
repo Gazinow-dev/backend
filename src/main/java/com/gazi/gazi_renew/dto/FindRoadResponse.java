@@ -12,14 +12,14 @@ import java.util.ArrayList;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class FindRoadResponse {
     ArrayList<Path> paths;
-    int subwayCount; //지하철 경로 개수
+    int stationCount; //지하철 경로 개수
 
     @Setter
     @Getter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class Path {
         int totalTime; // 총소요시간
-        int subwayTransitCount;
+        int stationTransitCount;
         String firstStartStation;
         String lastEndStation;
         ArrayList<SubPath> subPaths;
@@ -35,7 +35,7 @@ public class FindRoadResponse {
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
         ArrayList<Lane> lanes; //
-        ArrayList<Subway> subways;
+        ArrayList<Station> stations;
     }
 
     @Getter
@@ -43,7 +43,7 @@ public class FindRoadResponse {
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     static public class Lane {
         String name; // 노선명
-        int subwayCode; //노선코드 ex:) 2
+        int stationCode; //노선코드 ex:) 2
         String startName; //승차 정류장
         String endName; // 하차 정류장
 
@@ -53,7 +53,7 @@ public class FindRoadResponse {
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     @Builder
     static public class TransitStation {
-        String subwayName;
+        String stationsName;
         String line;
 
     }
@@ -61,7 +61,7 @@ public class FindRoadResponse {
     @Getter
     @Setter
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-    static public class Subway {
+    static public class Station {
         int index; // 정류장 순번
         String stationName;
     }
