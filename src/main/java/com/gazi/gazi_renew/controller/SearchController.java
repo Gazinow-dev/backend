@@ -30,8 +30,8 @@ public class SearchController {
             headers = @Header(name = AUTHORIZATION, description = "Access Token"),
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = SubwayDataResponse.SubwayInfo.class)))})
-    @GetMapping("/subway")
-    public ResponseEntity<Response.Body> SubwayInfos(@Parameter(description = "지하철 이름") @RequestParam String subwayName) {
-        return subwayDataService.getSubwayInfo(subwayName);
+    @GetMapping("/station")
+    public ResponseEntity<Response.Body> SubwayInfos(@Parameter(description = "지하철 이름") @RequestParam String stationName) {
+        return subwayDataService.getSubwayInfo(stationName);
     }
 }
