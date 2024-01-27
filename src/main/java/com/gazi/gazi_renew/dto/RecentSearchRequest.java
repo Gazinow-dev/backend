@@ -8,13 +8,11 @@ import lombok.Getter;
 public class RecentSearchRequest {
     String stationName;
     String stationLine;
-    int stationCode;
 
     public RecentSearch toRecentSearch(Member member){
         return RecentSearch.builder()
                 .stationName(stationName)
                 .stationLine(stationLine)
-                .stationCode(stationCode)
                 .member(member)
                 .build();
     }

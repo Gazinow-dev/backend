@@ -45,7 +45,11 @@ public class RecentSearchServiceImpl implements RecentSearchService {
                 return dto;
             }).collect(Collectors.toList());
             return response.success(recentSearchResponseList);
-        } catch (Exception e) {
+        }
+        catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+        catch (Exception e) {
             return response.fail("조회 실패", HttpStatus.BAD_REQUEST);
         }
 
@@ -61,7 +65,11 @@ public class RecentSearchServiceImpl implements RecentSearchService {
             RecentSearch recentSearch = dto.toRecentSearch(member);
             recentSearchRepository.save(recentSearch);
             return response.createSuccess("최근검색 추가 성공");
-        } catch (Exception e) {
+        }
+        catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+        catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
