@@ -16,4 +16,6 @@ public interface SubwayRepository extends JpaRepository<Station, Long> {
 
     @Query("select new com.gazi.gazi_renew.dto.SubwayDataResponse(s.lat, s.lng) from Station s where s.name = :name and s.line = :line")
     SubwayDataResponse findCoordinateByNameAndLine(@Param("name")String name, @Param("line")String line);
+
+    boolean existsByCode(int code);
 }
