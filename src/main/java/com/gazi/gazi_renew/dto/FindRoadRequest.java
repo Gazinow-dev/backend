@@ -8,11 +8,11 @@ import lombok.Getter;
 public class FindRoadRequest {
 
     // 출발역이름
-    String strSubwayName;
+    String strStationName;
     // 출발역호선
-    String strSubwayLine;
+    String strStationLine;
     // 도착역이름
-    String endSubwayName;
+    String endStationName;
     // 도착역호선
-    String endSubwayLine;
+    String endStationLine;
 }

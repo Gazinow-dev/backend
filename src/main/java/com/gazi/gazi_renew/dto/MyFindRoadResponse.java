@@ -3,10 +3,8 @@ package com.gazi.gazi_renew.dto;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -16,14 +14,14 @@ import java.util.List;
 public class MyFindRoadResponse {
     private Long id;
     private String roadName;
-    private List<subway> subways;
+    private List<Station> Stations;
     private List<MyFindRoadResponse.issue> issues;
 
     @Getter
     @Setter
     @Builder
-    public static class subway {
-        private String subwayName;
+    public static class Station {
+        private String stationName;
         private String line;
     }
 

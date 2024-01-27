@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "my_find_load_sub_path")
+@Table(name = "my_find_road_sub_path")
 @Entity
 public class MyFindRoadSubPath {
     @Id
@@ -26,5 +26,5 @@ public class MyFindRoadSubPath {
     @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<MyFindRoadLane> lanes = new ArrayList<>();
     @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<MyFindRoadSubway> subways = new ArrayList<>();
+    private List<MyFindRoadStation> stations = new ArrayList<>();
 }

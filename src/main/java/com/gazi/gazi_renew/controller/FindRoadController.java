@@ -43,15 +43,15 @@ public class FindRoadController {
     public ResponseEntity<Response.Body> findSubwayList(
             @RequestParam String strSubwayName,
             @RequestParam String strSubwayLine,
-            @RequestParam String endSubwayName,
-            @RequestParam String endSubwayLine
+            @RequestParam String endStationName,
+            @RequestParam String endStationLine
     ) throws IOException {
 
         FindRoadRequest request = FindRoadRequest.builder()
-                .strSubwayName(strSubwayName)
-                .strSubwayLine(strSubwayLine)
-                .endSubwayName(endSubwayName)
-                .endSubwayLine(endSubwayLine).build();
+                .strStationName(strSubwayName)
+                .strStationLine(strSubwayLine)
+                .endStationName(endStationName)
+                .endStationLine(endStationLine).build();
 
         return findRoadService.findRoad(request);
     }

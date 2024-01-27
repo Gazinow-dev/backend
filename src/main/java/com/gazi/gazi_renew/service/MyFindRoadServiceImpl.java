@@ -6,7 +6,6 @@ import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.*;
-import io.lettuce.core.output.ScanOutput;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                         .id(myFindRoadPath.getId())
                         .roadName(myFindRoadPath.getName())
-                        .subways(subwayDataService.getTransitStation(myFindRoadPath))
+                        .Stations(subwayDataService.getTransitStation(myFindRoadPath))
                         //todo: issue는 추후에
                         .build();
                 myFindRoadResponses.add(myFindRoadResponse);
@@ -63,7 +62,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
             MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                     .roadName(myFindRoadPath.getName())
-                    .subways(subwayDataService.getTransitStation(myFindRoadPath))
+                    .Stations(subwayDataService.getTransitStation(myFindRoadPath))
                     //todo: issue는 추후에
                     .build();
 
@@ -86,7 +85,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .totalTime(request.getTotalTime())
                     .firstStartStation(request.getFirstStartStation())
                     .lastEndStation(request.getLastEndStation())
-                    .subwayTransitCount(request.getSubwayTransitCount())
+                    .stationTransitCount(request.getStationTransitCount())
                     .build();
 
             if (myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(), member)) {
@@ -109,7 +108,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     MyFindRoadLane myFindRoadLane = MyFindRoadLane.builder()
                             .myFindRoadSubPath(myFindRoadSubPath)
                             .name(lain.getName())
-                            .subwayCode(lain.getSubwayCode())
+                            .stationCode(lain.getStationCode())
                             .startName(lain.getStartName())
                             .endName(lain.getEndName())
                             .build();
@@ -117,13 +116,13 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     log.info("MyFindRoadLane 저장 완료");
                 }
 
-                for (MyFindRoadRequest.Subway subway : subPath.getSubways()) {
-                    MyFindRoadSubway myFindRoadSubway = MyFindRoadSubway.builder()
+                for (MyFindRoadRequest.Station station : subPath.getStations()) {
+                    MyFindRoadStation myFindRoadStation = MyFindRoadStation.builder()
                             .myFindRoadSubPath(myFindRoadSubPath)
-                            .index(subway.getIndex())
-                            .stationName(subway.getStationName())
+                            .index(station.getIndex())
+                            .stationName(station.getStationName())
                             .build();
-                    myFindRoadSubwayRepository.save(myFindRoadSubway);
+                    myFindRoadSubwayRepository.save(myFindRoadStation);
                     log.info("MyFindRoadSubway 저장 완료");
                 }
             }

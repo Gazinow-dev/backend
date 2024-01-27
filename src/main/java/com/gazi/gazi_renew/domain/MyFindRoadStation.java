@@ -7,9 +7,9 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "my_find_load_subway")
+@Table(name = "my_find_road_station")
 @Entity
-public class MyFindRoadSubway {
+public class MyFindRoadStation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

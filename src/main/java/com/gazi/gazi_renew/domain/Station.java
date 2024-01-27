@@ -13,7 +13,7 @@ import lombok.*;
         @Index(name = "name", columnList = "name")
 })
 @Entity
-public class Subway {
+public class Station {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

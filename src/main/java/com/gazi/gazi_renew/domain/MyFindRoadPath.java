@@ -17,7 +17,7 @@ public class MyFindRoadPath {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private int totalTime; // 총소요시간
-    private int subwayTransitCount;
+    private int stationTransitCount;
     private String firstStartStation;
     private String lastEndStation;
     @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
