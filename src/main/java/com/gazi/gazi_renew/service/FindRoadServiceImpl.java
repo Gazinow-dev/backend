@@ -87,9 +87,9 @@ public class FindRoadServiceImpl implements FindRoadService {
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
 
         // 출발역 이름과 호선으로 데이터 찾기
-        SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrSubwayName(), request.getStrSubwayLine());
+        SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
         // 종착역 이름과 호선으로 데이터 찾기
-        SubwayDataResponse endSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getEndSubwayName(), request.getEndSubwayLine());
+        SubwayDataResponse endSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getEndStationName(), request.getEndStationLine());
 
         JSONObject json = getJsonArray(strSubwayInfo.getLng(), strSubwayInfo.getLat(), endSubwayInfo.getLng(), endSubwayInfo.getLat());
 
@@ -104,7 +104,7 @@ public class FindRoadServiceImpl implements FindRoadService {
 
             // FindRoadResponse 객체로 변환
             FindRoadResponse findRoadResponse = new FindRoadResponse();
-            findRoadResponse.setSubwayCount(jsonNode.path("result").path("subwayCount").asInt());
+            findRoadResponse.setStationCount(jsonNode.path("result").path("subwayCount").asInt());
 
             // paths 배열 처리
             ArrayList<FindRoadResponse.Path> paths = new ArrayList<>();
@@ -112,7 +112,7 @@ public class FindRoadServiceImpl implements FindRoadService {
             for (JsonNode pathNode : pathArray) {
                 FindRoadResponse.Path path = new FindRoadResponse.Path();
                 path.setTotalTime(pathNode.path("info").path("totalTime").asInt());
-                path.setSubwayTransitCount(pathNode.path("info").path("subwayTransitCount").asInt());
+                path.setStationTransitCount(pathNode.path("info").path("stationTransitCount").asInt());
                 path.setFirstStartStation(pathNode.path("info").path("firstStartStation").asText());
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
@@ -133,7 +133,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                         for (JsonNode laneNode : laneArray) {
                             FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
                             lane.setName(laneNode.path("name").asText());
-                            lane.setSubwayCode(laneNode.path("subwayCode").asInt());
+                            lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
 
@@ -143,15 +143,15 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                         // passStopList 처리
                         JsonNode passStopListNode = subPathNode.path("passStopList");
-                        ArrayList<FindRoadResponse.Subway> subways = new ArrayList<>();
+                        ArrayList<FindRoadResponse.Station> stations = new ArrayList<>();
                         JsonNode stationArray = passStopListNode.path("stations");
                         for (JsonNode stationNode : stationArray) {
-                            FindRoadResponse.Subway station = new FindRoadResponse.Subway();
+                            FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
                             station.setStationName(stationNode.path("stationName").asText());
-                            subways.add(station);
+                            stations.add(station);
                         }
-                        subPath.setSubways(subways);
+                        subPath.setStations(stations);
                         subPaths.add(subPath);
                     }
 
@@ -183,9 +183,9 @@ public class FindRoadServiceImpl implements FindRoadService {
         if (path.getSubPaths().size() != 0) {
             for (int i = 0; i < path.getSubPaths().size(); i++) {
                 FindRoadResponse.SubPath subPath = path.getSubPaths().get(i);
-                if (subPath.getSubways().size() != 0) {
+                if (subPath.getStations().size() != 0) {
                     transitStation = FindRoadResponse.TransitStation.builder()
-                            .subwayName(subPath.getSubways().get(0).getStationName()) // 지하철 역이름
+                            .stationsName(subPath.getStations().get(0).getStationName()) // 지하철 역이름
                             .line(subPath.getLanes().get(0).getName()) // 호선 이름
                             .build();
                     transitStations.add(transitStation);
@@ -195,7 +195,7 @@ public class FindRoadServiceImpl implements FindRoadService {
         }
         if (path.getLastEndStation() != "") {
             transitStation = FindRoadResponse.TransitStation.builder()
-                    .subwayName(path.getLastEndStation())
+                    .stationsName(path.getLastEndStation())
                     .line(lastLine)
                     .build();
             transitStations.add(transitStation);

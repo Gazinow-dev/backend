@@ -3,7 +3,7 @@ package com.gazi.gazi_renew.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.domain.MyFindRoadPath;
 import com.gazi.gazi_renew.domain.MyFindRoadSubPath;
-import com.gazi.gazi_renew.domain.Subway;
+import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.SubwayDataResponse;
@@ -31,10 +31,10 @@ public class SubwayDataService {
     public void saveStationsFromJsonFile() throws IOException {
         ClassPathResource resource = new ClassPathResource("station_coordinate.json");
         ObjectMapper objectMapper = new ObjectMapper();
-        Subway[] subways = objectMapper.readValue(resource.getFile(), Subway[].class);
+        Station[] stations = objectMapper.readValue(resource.getFile(), Station[].class);
 
-        for (Subway subway : subways) {
-            subwayRepository.save(subway);
+        for (Station station : stations) {
+            subwayRepository.save(station);
         }
         log.info("지하철 정보 업로드 완료");
     }
@@ -45,13 +45,13 @@ public class SubwayDataService {
     }
 
     public ResponseEntity<Response.Body> getSubwayInfo(String subwayName) {
-        List<Subway> subways = subwayRepository.findByNameStartingWith(subwayName);
-        List<SubwayDataResponse.SubwayInfo> subwayInfos = subways.stream()
+        List<Station> stations = subwayRepository.findByNameStartingWith(subwayName);
+        List<SubwayDataResponse.SubwayInfo> subwayInfos = stations.stream()
                 .map(
-                        subway -> {
+                        station -> {
                             SubwayDataResponse.SubwayInfo subwayInfo = SubwayDataResponse.SubwayInfo.builder()
-                                    .name(subway.getName())
-                                    .line(subway.getLine())
+                                    .name(station.getName())
+                                    .line(station.getLine())
                                     .build();
                             return subwayInfo;
                         }
@@ -61,33 +61,33 @@ public class SubwayDataService {
     }
 
     //환승역 추출 서비스
-    public List<MyFindRoadResponse.subway> getTransitStation(MyFindRoadPath path) {
+    public List<MyFindRoadResponse.Station> getTransitStation(MyFindRoadPath path) {
 
-        List<MyFindRoadResponse.subway> subways = new ArrayList<>();
+        List<MyFindRoadResponse.Station> Stations = new ArrayList<>();
         String lastLine = "";
 
-        MyFindRoadResponse.subway subway;
+        MyFindRoadResponse.Station Station;
         if (path.getSubPaths().size() != 0) {
             for (int i = 0; i < path.getSubPaths().size(); i++) {
                 MyFindRoadSubPath subPath = path.getSubPaths().get(i);
                 // 지하철에서 인덱스가 0번인것만 추출하기
-                if (subPath.getSubways().size() != 0) {
-                    subway = MyFindRoadResponse.subway.builder()
-                            .subwayName(subPath.getSubways().get(0).getStationName()) // 지하철 역이름
+                if (subPath.getStations().size() != 0) {
+                    Station = MyFindRoadResponse.Station.builder()
+                            .stationName(subPath.getStations().get(0).getStationName()) // 지하철 역이름
                             .line(subPath.getLanes().get(0).getName()) // 호선 이름
                             .build();
-                    subways.add(subway);
+                    Stations.add(Station);
                     lastLine = subPath.getLanes().get(0).getName();
                 }
             }
         }
         if (path.getLastEndStation() != "") {
-            subway = MyFindRoadResponse.subway.builder()
-                    .subwayName(path.getLastEndStation())
+            Station = MyFindRoadResponse.Station.builder()
+                    .stationName(path.getLastEndStation())
                     .line(lastLine)
                     .build();
-            subways.add(subway);
+            Stations.add(Station);
         }
-        return subways;
+        return Stations;
     }
 }
