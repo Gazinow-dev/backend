@@ -64,7 +64,8 @@ public class RecentSearchServiceImpl implements RecentSearchService {
 
             RecentSearch recentSearch = dto.toRecentSearch(member);
             recentSearchRepository.save(recentSearch);
-            return response.createSuccess("최근검색 추가 성공");
+            RecentSearchResponse recentSearchResponse = RecentSearchResponse.getDto(recentSearch);
+            return response.success(recentSearchResponse,"최근검색 추가 성공",HttpStatus.CREATED);
         }
         catch (EntityNotFoundException e){
             return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
