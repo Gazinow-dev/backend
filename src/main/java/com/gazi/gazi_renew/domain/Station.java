@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "SUBWAY",  indexes = {
+@Table(name = "station",  indexes = {
         @Index(name = "line", columnList = "line"),
         @Index(name = "name", columnList = "name")
 })

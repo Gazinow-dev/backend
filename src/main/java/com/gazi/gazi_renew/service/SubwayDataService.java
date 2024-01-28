@@ -28,16 +28,19 @@ public class SubwayDataService {
     private final Response response;
     private final SubwayRepository subwayRepository;
 
-    public void saveStationsFromJsonFile() throws IOException {
+    public void saveStationsFromJsonFile() throws IOException, InterruptedException {
         ClassPathResource resource = new ClassPathResource("station_coordinate.json");
         ObjectMapper objectMapper = new ObjectMapper();
         Station[] stations = objectMapper.readValue(resource.getFile(), Station[].class);
-
+        int i = 0;
         for (Station station : stations) {
-            if(subwayRepository.existsByCode(station.getCode())){
+            if(!subwayRepository.existsByCode(station.getCode())){
                 subwayRepository.save(station);
             }
-
+            i ++;
+            if( i%200 == 0){
+                Thread.sleep(3000);
+            }
         }
         log.info("지하철 정보 업로드 완료");
     }
