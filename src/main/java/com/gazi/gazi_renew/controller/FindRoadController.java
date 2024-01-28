@@ -41,15 +41,15 @@ public class FindRoadController {
                     schema = @Schema(implementation = FindRoadResponse.class)))})
     @GetMapping
     public ResponseEntity<Response.Body> findSubwayList(
-            @RequestParam String strSubwayName,
-            @RequestParam String strSubwayLine,
+            @RequestParam String strStationName,
+            @RequestParam String strStationLine,
             @RequestParam String endStationName,
             @RequestParam String endStationLine
     ) throws IOException {
 
         FindRoadRequest request = FindRoadRequest.builder()
-                .strStationName(strSubwayName)
-                .strStationLine(strSubwayLine)
+                .strStationName(strStationName)
+                .strStationLine(strStationLine)
                 .endStationName(endStationName)
                 .endStationLine(endStationLine).build();
 
