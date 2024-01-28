@@ -1,11 +1,13 @@
 package com.gazi.gazi_renew.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.gazi.gazi_renew.domain.MyFindRoadPath;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,6 +26,8 @@ public class FindRoadResponse {
         String lastEndStation;
         ArrayList<SubPath> subPaths;
         ArrayList<TransitStation> transitStations;
+        boolean myPath;
+        List<Long> myPathId;
     }
 
     @Getter
