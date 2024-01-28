@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "my_find_load_path")
+@Table(name = "my_find_road_path")
 @Entity
 public class MyFindRoadPath {
     @Id
