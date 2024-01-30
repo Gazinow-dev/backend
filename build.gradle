@@ -49,6 +49,9 @@ dependencies {
 
     //mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //jsoup
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
 }
 
 tasks.named('test') {
