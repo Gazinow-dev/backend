@@ -1,5 +1,7 @@
 package com.gazi.gazi_renew.service;
 
+import com.gazi.gazi_renew.repository.IssueRepository;
+import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,7 +13,11 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 
 @Service
+@RequiredArgsConstructor
 public class JsoupService {
+
+    private final IssueRepository issueRepository;
+
     public static Connection getJsoupConnection(String url) throws Exception {
         return Jsoup.connect(url);
     }
@@ -22,27 +28,49 @@ public class JsoupService {
         result = conn.get().select(query);
         return result;
     }
-    public static void main(String[] args) throws IOException {
+
+    public static void getData() throws Exception {
         String url = "http://www.seoulmetro.co.kr/kr/board.do?menuIdx=546";
+        Document doc = getJsoupConnection(url).get();
 
-        Document doc = Jsoup.connect("http://www.seoulmetro.co.kr/kr/board.do?menuIdx=546").get();
+        Element table = doc.select("table tbody ").first();
+        Elements rows = table.select("tr");
 
-        Elements datas = doc.select("table tbody ");
+        for(Element row : rows){
+//            no = data.select("tr td.bd1").;
+//            title = data.select("tr td.bd2");
+//            date = data.select("tr td.bd5");
+//            String detailUrl = data.getElementsByAttribute("href").attr("href");
 
-        int cnt = 0;
-        Elements no = new Elements();
-        Elements title = new Elements();
-        Elements date = new Elements();
+//            getJsoupConnection(data.select("tr td a.href").text());
+//            if(!no.text().equals("NOTICE")){
+//                // 해당번호가 없다면
+//                if(!issueRepository.existsById(Long.valueOf(no.text()))){
+//                    // 상세정보 크롤링
+//                    getJsoupConnection(data.select("tr td a.href").text());
+//
+//                    // 관리자 계정 이메일로 텍스트를 보낸다.
+//                }
+//            }
 
-        for(Element data : datas){
-            no = data.select("tr td.bd1");
-            title = doc.select("tr td.bd2");
-            date = doc.select("tr td.bd5");
+//            System.out.println(getJsoupConnection(data.select("tr td.bd2 a").text()));
+    }
 
-            System.out.println(no);
-            System.out.println(title);
-            System.out.println(date);
-        }
+
+
+
+    }
+    public static void main(String[] args) throws Exception {
+
+        getData();
+
+//        만약 번호가 내 저장소에있는 가장높은번호와 같지않다면? 새로운 데이터각 있는것으로 간주
+
+//        안에 내용 크롤링 시작
+//        데이터를 가공
+//        이메일 보내기
+//        이슈 심기 or 이슈 무시하기
+//        호선 설정 및 라인 설정
 
 
     }
