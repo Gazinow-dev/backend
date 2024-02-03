@@ -214,7 +214,9 @@ public class MemberServiceImpl implements MemberService {
             } else {
                 member.setNickName(nickNameDto.getNickName());
                 memberRepository.save(member);
-                return response.success("닉네임이 " + member.getNickName() + "(으)로 변경되었습니다.");
+                MemberResponse.NickName nickName = new MemberResponse.NickName();
+                nickName.setNickName(member.getNickName());
+                return response.success(nickName, "닉네임 변경 완료",HttpStatus.OK);
             }
 
         } catch (EntityNotFoundException e) {

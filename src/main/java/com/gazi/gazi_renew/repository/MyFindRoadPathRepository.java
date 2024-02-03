@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MyFindRoadPathRepository extends JpaRepository<MyFindRoadPath,Long> {
-    List<MyFindRoadPath> findAllByMember(Member member);
+    List<MyFindRoadPath> findAllByMemberOrderByIdDesc(Member member);
     boolean existsByNameAndMember(String roadName, Member member);
     Optional<List<MyFindRoadPath>> findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(String startStation, String lastStation, Member member, int totalTime);
 }

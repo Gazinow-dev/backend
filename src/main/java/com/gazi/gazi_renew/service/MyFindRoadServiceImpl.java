@@ -35,7 +35,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         try {
             System.out.println(SecurityUtil.getCurrentUserEmail());
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMember(member);
+            List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
             for (MyFindRoadPath myFindRoadPath : myFindRoadPaths) {
                 MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
