@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">페이지 제목</title>
+    <style>
+        /* 스타일 부분은 여기에 추가 */
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <p th:text="'제목: ' + ${title}"> 제목</p>
+    <p th:text="'내용: ' + ${content}">내용이 들어갈 부분입니다.</p>
+    <p th:text="'날짜: ' + ${date}">날짜: 2024-02-04</p>
+
+</div>
+
+<!--    <a th:href="@{http://localhost:8080/api/v1/issue(title=${title}, content=${content}, date=${date})}">등록하기</a>-->
+<a th:href="@{http://13.125.6.104:8080//api/v1/issue(title=${title}, content=${content}, date=${date})}">등록하기</a>
+</body>
+</html>
