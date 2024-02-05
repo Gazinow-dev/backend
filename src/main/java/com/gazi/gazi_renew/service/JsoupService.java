@@ -1,22 +1,37 @@
 package com.gazi.gazi_renew.service;
 
+import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.repository.IssueRepository;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.Date;
 
 @Service
 @RequiredArgsConstructor
 public class JsoupService {
 
     private final IssueRepository issueRepository;
+    private final JavaMailSender emailSender;
+    private final SpringTemplateEngine templateEngine;
+
+
 
     public static Connection getJsoupConnection(String url) throws Exception {
         return Jsoup.connect(url);
@@ -29,49 +44,80 @@ public class JsoupService {
         return result;
     }
 
-    public static void getData() throws Exception {
+    public void getData() throws Exception {
         String url = "http://www.seoulmetro.co.kr/kr/board.do?menuIdx=546";
         Document doc = getJsoupConnection(url).get();
 
         Element table = doc.select("table tbody ").first();
         Elements rows = table.select("tr");
 
+
+        int i = 0;
         for(Element row : rows){
-//            no = data.select("tr td.bd1").;
-//            title = data.select("tr td.bd2");
-//            date = data.select("tr td.bd5");
-//            String detailUrl = data.getElementsByAttribute("href").attr("href");
+            if(i == 1) break;
+            IssueRequest dto = new IssueRequest();
 
-//            getJsoupConnection(data.select("tr td a.href").text());
-//            if(!no.text().equals("NOTICE")){
-//                // 해당번호가 없다면
-//                if(!issueRepository.existsById(Long.valueOf(no.text()))){
-//                    // 상세정보 크롤링
-//                    getJsoupConnection(data.select("tr td a.href").text());
-//
-//                    // 관리자 계정 이메일로 텍스트를 보낸다.
-//                }
-//            }
+            String no = row.select("td.bd1").first().text();
+            String title = row.select("td.bd2").first().text();
+            String detailUrl = "http://www.seoulmetro.co.kr/kr/"+row.select("td.bd2 a").first().getElementsByAttribute("href").attr("href");
+            String date = row.select("tr td.bd5").first().text();
 
-//            System.out.println(getJsoupConnection(data.select("tr td.bd2 a").text()));
+            System.out.println(no);
+            System.out.println(title);
+            System.out.println(detailUrl);
+            System.out.println(date);
+            dto.setTitle(title);
+            dto.setDate(date);
+            // 가장 최근에 조회했을때
+            // 금일에 올라온 데이터가 있다면?
+
+            if(!no.equals("NOTICE")){
+                // 상세정보 크롤링
+                Document detailDoc = getJsoupConnection(detailUrl).get();
+                Elements textBoxElements = detailDoc.select(".txc-textbox p");
+                StringBuffer content  = new StringBuffer();
+                for(Element textBoxElement :textBoxElements){
+                    content.append(textBoxElement.select("span").text());
+                }
+                dto.setContent(content.toString());
+
+                // 관리자 계정 이메일로 텍스트를 보낸다.
+                sendEmail(dto);
+                i++;
+            }
+        }
     }
 
 
+    private MimeMessage createMessage(IssueRequest dto) throws MessagingException, UnsupportedEncodingException {
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+        helper.setTo("gazinowcs@gmail.com");
+        helper.setSubject("서울 교통공사 공지사항 업데이트");
 
+//        String htmlContent = generateHtmlContent(dto);
+        helper.setText(setContext(dto), true);
+
+        helper.setFrom("gazinowcs@gmail.com", "gazi");
+
+        return message;
     }
-    public static void main(String[] args) throws Exception {
 
-        getData();
-
-//        만약 번호가 내 저장소에있는 가장높은번호와 같지않다면? 새로운 데이터각 있는것으로 간주
-
-//        안에 내용 크롤링 시작
-//        데이터를 가공
-//        이메일 보내기
-//        이슈 심기 or 이슈 무시하기
-//        호선 설정 및 라인 설정
-
-
+    private String setContext(IssueRequest dto) { // 타임리프 설정하는 코드
+        Context context = new Context();
+        context.setVariable("dto", dto);
+        context.setVariable("title", dto.getTitle());
+        context.setVariable("content", dto.getContent());
+        context.setVariable("date", dto.getDate());
+        return templateEngine.process("emailTemplate", context); // mail.html
     }
+
+    public void sendEmail(IssueRequest dto) throws Exception {
+        MimeMessage message = createMessage(dto);
+
+        // 이메일 전송
+        emailSender.send(message);
+    }
+
 }
