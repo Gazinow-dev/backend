@@ -49,6 +49,13 @@ dependencies {
 
     //mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //jsoup
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
+
+    //thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
 }
 
 tasks.named('test') {

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">페이지 제목</title>
+    <style>
+        /* 스타일 부분은 여기에 추가 */
+    </style>
+</head>
+<body>
+<form action="/api/v1/issue/add" th:object="${dto}" method="post">
+    <!-- 입력 필드 -->
+    <div>
+    <label th:for="title">제목 : </label>
+    <input type="text" id="title" th:field="*{title}" th:value="${title}">
+    </div>
+    <div>
+    <label th:for="content">내용 : </label>
+    <input type="text" id="content" th:field="*{content}" th:value="${content}" >
+    </div>
+    <div>
+    <label th:for="date">날짜 : </label>
+    <input type="text" id="date" th:field="*{date}" th:value="${date}"required>
+    </div>
+    <div>
+    <label th:for="line">호선 : </label>
+        <select name="selectedOption" th:field="*{line}">
+            <option value="1호선">1호선</option>
+            <option value="2호선">2호선</option>
+            <option value="3호선">3호선</option>
+            <option value="4호선">4호선</option>
+            <option value="5호선">5호선</option>
+            <option value="6호선">6호선</option>
+            <option value="7호선">7호선</option>
+            <option value="8호선">8호선</option>
+        </select>
+    </div>
+        <!-- 제출 버튼 -->
+    <button type="submit">제출</button>
+</form>
+</body>
+</html>
