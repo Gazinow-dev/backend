@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.controller;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.IssueService;
 import com.gazi.gazi_renew.service.JsoupService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,14 +30,13 @@ public class IssueRestController {
     }
 
     @GetMapping("/get_all")
-    public ResponseEntity<Response.Body> getIssues(@PageableDefault(page = 0, size = 15) Pageable pageable){
+    public ResponseEntity<Response.Body> getIssues(@Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
         return issueService.getIssues(pageable);
     }
 
     @GetMapping("/get_line")
     public ResponseEntity<Response.Body> getLineByIssues(@RequestParam(name="line") String line,
-                                                         //todo : 정렬관련 수정 필요
-                                                         @PageableDefault(page = 0, size = 15) Pageable pageable){
+                                                         @Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
         return issueService.getLineByIssues(line,pageable);
     }
 }
