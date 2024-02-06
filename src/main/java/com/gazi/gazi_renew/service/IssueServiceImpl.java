@@ -62,7 +62,7 @@ public class IssueServiceImpl implements IssueService{
 
     @Override
     public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
-        Page<Issue> issuePage = issueRepository.findALlByLine(line);
+        Page<Issue> issuePage = issueRepository.findALlByLine(line,pageable);
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
 
         return response.success(issueResponsePage,"line"+"이슈 조회 성공", HttpStatus.OK);

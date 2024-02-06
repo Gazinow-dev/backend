@@ -23,19 +23,20 @@ public class IssueRestController {
         jsoupService.getData();
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public ResponseEntity<Response.Body> getIssue(@RequestParam(name="id") Long id){
         return issueService.getIssue(id);
     }
 
-    @GetMapping
-    public ResponseEntity<Response.Body> getIssues(@PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+    @GetMapping("/get_all")
+    public ResponseEntity<Response.Body> getIssues(@PageableDefault(page = 0, size = 15) Pageable pageable){
         return issueService.getIssues(pageable);
     }
 
-    @GetMapping
+    @GetMapping("/get_line")
     public ResponseEntity<Response.Body> getLineByIssues(@RequestParam(name="line") String line,
-                                                         @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+                                                         //todo : 정렬관련 수정 필요
+                                                         @PageableDefault(page = 0, size = 15) Pageable pageable){
         return issueService.getLineByIssues(line,pageable);
     }
 }
