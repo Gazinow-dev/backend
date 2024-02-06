@@ -36,6 +36,14 @@
             <option value="8호선">8호선</option>
         </select>
     </div>
+    <div>
+        <label th:for="expireDate"> 시작일자 : </label>
+        <input type="datetime-local"  id="startDate" th:field="*{startDate}" >
+    </div>
+    <div>
+        <label th:for="expireDate"> 종료예정일자 : </label>
+        <input type="datetime-local"  id="expireDate" th:field="*{expireDate}" >
+    </div>
         <!-- 제출 버튼 -->
     <button type="submit">제출</button>
 </form>

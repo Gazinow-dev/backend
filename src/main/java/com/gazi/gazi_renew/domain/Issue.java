@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Builder
@@ -23,4 +22,6 @@ public class Issue {
     private String content;
     private String line;
     private LocalDate date;
+    private LocalDateTime startDate;
+    private LocalDateTime expireDate;
 }

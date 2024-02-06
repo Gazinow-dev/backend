@@ -14,4 +14,6 @@ public class IssueRequest {
     private String content;
     private String date;
     private String line;
+    private LocalDateTime startDate;
+    private LocalDateTime expireDate;
 }

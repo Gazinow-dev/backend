@@ -30,6 +30,8 @@ public class IssueServiceImpl implements IssueService{
 
         Issue issue = Issue.builder()
                 .date(date)
+                .startDate(dto.getStartDate().withSecond(0).withNano(0))
+                .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .line(dto.getLine())
@@ -48,6 +50,8 @@ public class IssueServiceImpl implements IssueService{
                 .content(issue.getContent())
                 .date(issue.getDate().toString())
                 .line(issue.getLine())
+                .startDate(issue.getStartDate())
+                .expireDate(issue.getExpireDate())
                 .build();
         return response.success(issueResponse,"이슈 조회 성공", HttpStatus.OK);
     }
@@ -76,6 +80,8 @@ public class IssueServiceImpl implements IssueService{
                         .content(m.getContent())
                         .date(m.getDate().toString())
                         .line(m.getLine())
+                        .startDate(m.getStartDate())
+                        .expireDate(m.getExpireDate())
                         .build());
 
         return issueResponsePage;
