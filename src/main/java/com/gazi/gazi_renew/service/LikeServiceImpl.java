@@ -27,16 +27,26 @@ public class LikeServiceImpl implements LikeService{
     private final Response response;
     @Override
     public ResponseEntity<Response.Body> likeIssue(LikeRequest dto) {
-        Issue issue = issueRepository.findById(dto.getIssueId()).orElseThrow( () -> new EntityNotFoundException("선택한 id가 없습니다."));
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        try{
+            Issue issue = issueRepository.findById(dto.getIssueId()).orElseThrow( () -> new EntityNotFoundException("선택한 id가 없습니다."));
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
-        Like like = Like.builder()
-                .issue(issue)
-                .member(member)
-                .build();
-        likeRepository.save(like);
+            if(!likeRepository.existsByIssueAndMember(issue,member)){
+                Like like = Like.builder()
+                        .issue(issue)
+                        .member(member)
+                        .build();
+                likeRepository.save(like);
 
-        return response.success(issue.getId() +"번의 좋아요를 눌렀습니다.");
+                return response.success(issue.getId() +"번의 좋아요를 눌렀습니다.");
+            }else{
+                return response.fail("이미 좋아요를 누른 이슈 입니다.", HttpStatus.CONFLICT);
+            }
+        }catch(EntityNotFoundException e){
+            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.BAD_GATEWAY);
+        }
     }
 
     @Override

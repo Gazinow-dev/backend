@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.controller;
 import com.gazi.gazi_renew.dto.LikeRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.LikeService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin
+@SecurityRequirement(name = "Bearer Authentication")
 @RequestMapping("/api/v1/like")
 public class LikeController {
 
