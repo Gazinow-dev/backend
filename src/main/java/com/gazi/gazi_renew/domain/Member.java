@@ -7,8 +7,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -47,6 +49,9 @@ public class Member extends AuditingFields {
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<MyFindRoadPath> myFindRoadPaths = new LinkedList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Like> likes = new HashSet<>();
+
     public void addRecentSearch(RecentSearch recentSearch) {
         recentSearch.setMember(this);
         recentSearches.add(recentSearch);
@@ -58,5 +63,6 @@ public class Member extends AuditingFields {
         this.provider = provider;
         return this;
     }
+
 
 }
