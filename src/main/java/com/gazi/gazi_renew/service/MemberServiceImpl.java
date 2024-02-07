@@ -249,6 +249,7 @@ public class MemberServiceImpl implements MemberService {
             if (checkPassword(checkPassword).getStatusCode().equals(HttpStatus.OK)) {
                 if (passwordDto.getChangePassword().equals(passwordDto.getConfirmPassword())) {
                     member.setPassword(passwordEncoder.encode(passwordDto.getChangePassword()));
+                    memberRepository.save(member);
                     return response.success("비밀번호 변경을 완료했습니다.");
                 } else {
                     return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);

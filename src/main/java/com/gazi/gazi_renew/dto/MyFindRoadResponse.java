@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -14,13 +15,24 @@ import java.util.List;
 public class MyFindRoadResponse {
     private Long id;
     private String roadName;
-    private List<Station> Stations;
+    private String lastEndStation;
+    private List<transitStation> transitStations;
     private List<MyFindRoadResponse.issue> issues;
+    private ArrayList<MyFindRoadResponse.SubPath> subPaths;
 
     @Getter
     @Setter
     @Builder
-    public static class Station {
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+    static public class SubPath {
+        ArrayList<MyFindRoadResponse.Lane> lanes; //
+        ArrayList<MyFindRoadResponse.Station> stations;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class transitStation {
         private String stationName;
         private String line;
     }
@@ -32,4 +44,24 @@ public class MyFindRoadResponse {
         private String point;
     }
 
+    @Getter
+    @Setter
+    @Builder
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+    static public class Lane {
+        String name; // 노선명
+        int stationCode; //노선코드 ex:) 2
+        String startName; //승차 정류장
+        String endName; // 하차 정류장
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+    static public class Station {
+        int index; // 정류장 순번
+        String stationName;
+    }
 }
