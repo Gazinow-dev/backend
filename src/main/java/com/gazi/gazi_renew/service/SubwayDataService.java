@@ -67,33 +67,33 @@ public class SubwayDataService {
     }
 
     //환승역 추출 서비스
-    public List<MyFindRoadResponse.Station> getTransitStation(MyFindRoadPath path) {
+    public List<MyFindRoadResponse.transitStation> getTransitStation(MyFindRoadPath path) {
 
-        List<MyFindRoadResponse.Station> Stations = new ArrayList<>();
+        List<MyFindRoadResponse.transitStation> transitStations = new ArrayList<>();
         String lastLine = "";
 
-        MyFindRoadResponse.Station Station;
+        MyFindRoadResponse.transitStation transitStation;
         if (path.getSubPaths().size() != 0) {
             for (int i = 0; i < path.getSubPaths().size(); i++) {
                 MyFindRoadSubPath subPath = path.getSubPaths().get(i);
                 // 지하철에서 인덱스가 0번인것만 추출하기
                 if (subPath.getStations().size() != 0) {
-                    Station = MyFindRoadResponse.Station.builder()
+                    transitStation = MyFindRoadResponse.transitStation.builder()
                             .stationName(subPath.getStations().get(0).getStationName()) // 지하철 역이름
                             .line(subPath.getLanes().get(0).getName()) // 호선 이름
                             .build();
-                    Stations.add(Station);
+                    transitStations.add(transitStation);
                     lastLine = subPath.getLanes().get(0).getName();
                 }
             }
         }
         if (path.getLastEndStation() != "") {
-            Station = MyFindRoadResponse.Station.builder()
+            transitStation = MyFindRoadResponse.transitStation.builder()
                     .stationName(path.getLastEndStation())
                     .line(lastLine)
                     .build();
-            Stations.add(Station);
+            transitStations.add(transitStation);
         }
-        return Stations;
+        return transitStations;
     }
 }

@@ -38,10 +38,52 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
             for (MyFindRoadPath myFindRoadPath : myFindRoadPaths) {
+
+                //서브패스를 찾는다.
+                List<MyFindRoadSubPath> myFindRoadSubPaths = myFindRoadSubPathRepository.findAllByMyFindRoadPath(myFindRoadPath);
+                ArrayList<MyFindRoadResponse.SubPath> subPaths = new ArrayList<>();
+                // subpathID로 lane과 station을 찾는다.
+                for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
+                    System.out.println(subPath.getId());
+                    if(subPath.getTrafficType() == 1) {
+                        MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+                        List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
+
+                        // response로 가공
+                        ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
+                        MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
+                                .name(myFindRoadLane.getName())
+                                .startName(myFindRoadLane.getStartName())
+                                .endName(myFindRoadLane.getEndName())
+                                .stationCode(myFindRoadLane.getStationCode())
+                                .build();
+                        lanes.add(lane);
+
+                        ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
+
+                        for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
+                            MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
+                                    .stationName(myFindRoadStation.getStationName())
+                                    .index(myFindRoadStation.getIndex())
+                                    .build();
+
+                            stations.add(station);
+                        }
+
+                        MyFindRoadResponse.SubPath subPathResponse = MyFindRoadResponse.SubPath.builder()
+                                .lanes(lanes)
+                                .stations(stations).build();
+
+                        subPaths.add(subPathResponse);
+                    }
+                }
+
                 MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                         .id(myFindRoadPath.getId())
                         .roadName(myFindRoadPath.getName())
-                        .Stations(subwayDataService.getTransitStation(myFindRoadPath))
+                        .lastEndStation(myFindRoadPath.getLastEndStation())
+                        .subPaths(subPaths)
+//                        .transitStations(subwayDataService.getTransitStation(myFindRoadPath))
                         //todo: issue는 추후에
                         .build();
                 myFindRoadResponses.add(myFindRoadResponse);
@@ -62,7 +104,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
             MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                     .roadName(myFindRoadPath.getName())
-                    .Stations(subwayDataService.getTransitStation(myFindRoadPath))
+                    .transitStations(subwayDataService.getTransitStation(myFindRoadPath))
                     //todo: issue는 추후에
                     .build();
 
