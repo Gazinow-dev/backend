@@ -7,6 +7,7 @@ import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.IssueRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,8 +24,15 @@ public class IssueServiceImpl implements IssueService{
     private final IssueRepository issueRepository;
     private final Response response;
 
+    @Value("${issue.code}")
+    private String secretCode;
+
     @Override
     public ResponseEntity<Response.Body> addIssue(IssueRequest dto) {
+
+        if(!dto.getSecretCode().equals(secretCode) ){
+            return response.fail("인증코드가 일치하지 않습니다.",HttpStatus.UNAUTHORIZED);
+        }
         // 포맷터
         LocalDate date = LocalDate.parse(dto.getDate(), DateTimeFormatter.ISO_DATE);
 
@@ -38,7 +46,7 @@ public class IssueServiceImpl implements IssueService{
                 .build();
 
         issueRepository.save(issue);
-        return null;
+        return response.success();
     }
 
     @Override

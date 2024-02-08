@@ -16,4 +16,5 @@ public class IssueRequest {
     private String line;
     private LocalDateTime startDate;
     private LocalDateTime expireDate;
+    private String secretCode;
 }
