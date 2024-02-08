@@ -27,6 +27,8 @@ public class MyFindRoadRequest {
         double distance; //이동거리
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
+        private String way; //  방면
+        private String door; // 문
         ArrayList<Lane> lanes; //
         ArrayList<Station> stations;
     }

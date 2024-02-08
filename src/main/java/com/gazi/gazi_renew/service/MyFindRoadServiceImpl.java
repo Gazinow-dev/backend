@@ -4,6 +4,7 @@ import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.*;
 import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse;
+import com.gazi.gazi_renew.dto.MyFindRoadResponse.SubPath;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -41,10 +42,20 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
                 //서브패스를 찾는다.
                 List<MyFindRoadSubPath> myFindRoadSubPaths = myFindRoadSubPathRepository.findAllByMyFindRoadPath(myFindRoadPath);
-                ArrayList<MyFindRoadResponse.SubPath> subPaths = new ArrayList<>();
+                ArrayList<SubPath> subPaths = new ArrayList<>();
                 // subpathID로 lane과 station을 찾는다.
                 for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
                     System.out.println(subPath.getId());
+
+                    SubPath subPathResponse = SubPath.builder()
+                            .way(subPath.getWay())
+                            .door(subPath.getDoor())
+                            .trafficType(subPath.getTrafficType())
+                            .stationCount(subPath.getStationCount())
+                            .sectionTime(subPath.getSectionTime())
+                            .distance(subPath.getDistance())
+                            .build();
+
                     if(subPath.getTrafficType() == 1) {
                         MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
                         List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
@@ -69,19 +80,17 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
                             stations.add(station);
                         }
-
-                        MyFindRoadResponse.SubPath subPathResponse = MyFindRoadResponse.SubPath.builder()
-                                .lanes(lanes)
-                                .stations(stations).build();
-
-                        subPaths.add(subPathResponse);
+                        subPathResponse.setLanes(lanes);
+                        subPathResponse.setStations(stations);
                     }
+                    subPaths.add(subPathResponse);
                 }
 
                 MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                         .id(myFindRoadPath.getId())
                         .roadName(myFindRoadPath.getName())
                         .lastEndStation(myFindRoadPath.getLastEndStation())
+                        .totalTime(myFindRoadPath.getTotalTime())
                         .subPaths(subPaths)
 //                        .transitStations(subwayDataService.getTransitStation(myFindRoadPath))
                         //todo: issue는 추후에
@@ -143,6 +152,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         .sectionTime(subPath.getSectionTime())
                         .stationCount(subPath.getStationCount())
                         .trafficType(subPath.getTrafficType())
+                        .door(subPath.getDoor())
+                        .way(subPath.getWay())
                         .build();
                 myFindRoadSubPathRepository.save(myFindRoadSubPath);
                 log.info("myFindRoadSubPath 저장");

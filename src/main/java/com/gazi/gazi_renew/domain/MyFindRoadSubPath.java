@@ -20,6 +20,8 @@ public class MyFindRoadSubPath {
     private double distance; //이동거리
     private int sectionTime; //이동 소요 시간
     private int stationCount; // 정차하는 역 개수
+    private String door;
+    private String way;
     @ManyToOne
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
     private MyFindRoadPath myFindRoadPath;
