@@ -21,7 +21,8 @@ public class IssueRestController {
 
     @PostMapping
     public void sendEmail() throws Exception {
-        jsoupService.getData();
+//        jsoupService.getData();
+        jsoupService.noticeCrawler();
     }
 
     @GetMapping("/get")

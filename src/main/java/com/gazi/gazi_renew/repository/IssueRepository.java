@@ -12,4 +12,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     @Transactional(readOnly=true)
     Page<Issue> findALlByLine(String line, Pageable pageable);
+
+    boolean existsByCrawlingNo(String crawlingNo);
 }

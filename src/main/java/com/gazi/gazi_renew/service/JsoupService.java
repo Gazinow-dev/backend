@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.repository.IssueRepository;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -13,6 +14,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -22,6 +30,8 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Date;
+import java.time.Duration;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +77,6 @@ public class JsoupService {
             System.out.println(detailUrl);
             System.out.println(date);
             dto.setTitle(title);
-            dto.setDate(date);
             // 가장 최근에 조회했을때
             // 금일에 올라온 데이터가 있다면?
 
@@ -88,13 +97,90 @@ public class JsoupService {
         }
     }
 
+    public void noticeCrawler() throws Exception {
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+
+        options.addArguments("--disable-popup-blocking");   // 팝업 안띄움
+        options.addArguments("headless");   // 브라우저 안띄움
+        options.addArguments("--disable-gpu");  // gpu 비활성화
+        options.addArguments("--blink-settings=imagesEnabled=false");   // 이미지 다운 안받음
+        WebDriver driver = new ChromeDriver(options);
+
+        // WebDriver 가 로드될때까지 10초 기다림
+        WebDriverWait webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        driver.get("https://topis.seoul.go.kr/notice/openNoticeList.do");
+
+        // noticeTbl 테이블의 tbody 내의 tr 요소들을 찾아 리스트로 받아옴
+        // notiList 안의 모든 tr 요소들을 리스트로 받아옴
+        // 가져올 데이터가 로딩될 때까지 기다림
+        webDriverWait.until(
+                ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='notiList']//tr"))
+        );
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id='notiList']//tr"));
+
+        loopOut:
+        // 각 tr 요소 출력
+        for (int i = 0; i < rows.size(); i++) {
+            if(i == 1){
+                System.out.println("요기까지");
+                break loopOut;
+            }
+            String title = "";
+            String no = "topis-";
+            String content = "";
+            WebElement row = rows.get(i);
+            // 현재 행에서 모든 td 요소 가져오기
+            List<WebElement> columns = row.findElements(By.tagName("td"));
+
+            // 1, 2, 4번째 td 출력
+            if (columns.size() >= 4) {
+
+                webDriverWait.until(
+                        ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"notiList\"]/tr[1]/td[4]"))
+                );
+
+                WebElement firstTd = columns.get(0);
+                WebElement secondTd = columns.get(1);
+                no += firstTd.getText();
+                // 번호를 통한 검증로직
+                if(issueRepository.existsByCrawlingNo(no)){
+
+                    break loopOut;
+                }
+                title = secondTd.getText();
+
+                WebElement aTag = secondTd.findElement(By.tagName("a"));
+
+                if (!aTag.equals("")) {
+                    aTag.click();
+
+                    WebElement contentElement = driver.findElement(By.xpath("//*[@id=\"brdContents\"]"));
+                    content = contentElement.getText();
+                }
+            }
+            driver.navigate().back();
+
+            System.out.println();
+            IssueRequest dto = new IssueRequest();
+            dto.setTitle(title);
+            dto.setContent(content);
+            dto.setCrawlingNo(no);
+            sendEmail(dto);
+        }
+
+        // WebDriver 종료
+        driver.quit();
+
+    }
 
     private MimeMessage createMessage(IssueRequest dto) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo("gazinowcs@gmail.com");
-        helper.setSubject("서울 교통공사 공지사항 업데이트");
+        helper.setSubject("topis 공지사항 업데이트");
 
 //        String htmlContent = generateHtmlContent(dto);
         helper.setText(setContext(dto), true);
@@ -109,7 +195,7 @@ public class JsoupService {
         context.setVariable("dto", dto);
         context.setVariable("title", dto.getTitle());
         context.setVariable("content", dto.getContent());
-        context.setVariable("date", dto.getDate());
+        context.setVariable("crawlingNo", dto.getCrawlingNo());
         return templateEngine.process("emailTemplate", context); // mail.html
     }
 

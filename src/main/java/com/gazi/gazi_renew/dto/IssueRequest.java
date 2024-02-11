@@ -12,9 +12,9 @@ public class IssueRequest {
 
     private String title;
     private String content;
-    private String date;
     private String line;
     private LocalDateTime startDate;
     private LocalDateTime expireDate;
     private String secretCode;
+    private String crawlingNo;
 }

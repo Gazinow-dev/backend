@@ -31,11 +31,11 @@ public class IssueController {
     public String writeIssue(Model model,IssueRequest dto,
                              @RequestParam(name = "title")String title,
                              @RequestParam(name = "content")String content,
-                             @RequestParam(name = "date")String date)
+                             @RequestParam(name = "crawlingNo")String crawlingNo)
     {
         model.addAttribute("title", title);
         model.addAttribute("content", content);
-        model.addAttribute("date", date);
+        model.addAttribute("crawlingNo", crawlingNo);
         model.addAttribute("dto", dto);
         return "writeIssue";
     }

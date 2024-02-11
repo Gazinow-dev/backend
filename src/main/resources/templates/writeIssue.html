@@ -19,6 +19,7 @@
 <body>
 <form action="/api/v1/issue/add" th:object="${dto}" method="post">
     <!-- 입력 필드 -->
+    <input type="hidden" id="crawlingNo" th:field="*{crawlingNo}" th:value="${crawlingNo}">
     <div>
     <label th:for="title">제목 : </label>
     <input type="text" id="title" th:field="*{title}" th:value="${title}">
@@ -28,10 +29,10 @@
     <textarea name="content" cols="40" rows="8" th:field="*{content}" th:value="${content}">
     내용이 들어갈껍니다.
     </textarea>
-    <div>
+    <!--<div>
     <label th:for="date">날짜 : </label>
     <input type="text" id="date" th:field="*{date}" th:value="${date}"required>
-    </div>
+    </div>-->
     <div>
     <label th:for="line">호선 : </label>
         <select name="selectedOption" th:field="*{line}">

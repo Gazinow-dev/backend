@@ -3,6 +3,8 @@ package com.gazi.gazi_renew.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,7 +25,11 @@ public class Issue {
     @Lob
     private String content;
     private String line;
-    private LocalDate date;
+    private String crawlingNo;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(updatable = false)
+    @CreatedDate
+    private LocalDate createdDate;
     private LocalDateTime startDate;
     private LocalDateTime expireDate;
 

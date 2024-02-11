@@ -34,10 +34,10 @@ public class IssueServiceImpl implements IssueService{
             return response.fail("인증코드가 일치하지 않습니다.",HttpStatus.UNAUTHORIZED);
         }
         // 포맷터
-        LocalDate date = LocalDate.parse(dto.getDate(), DateTimeFormatter.ISO_DATE);
+//        LocalDate date = LocalDate.parse(dto.getDate(), DateTimeFormatter.ISO_DATE);
 
         Issue issue = Issue.builder()
-                .date(date)
+                .crawlingNo(dto.getCrawlingNo())
                 .startDate(dto.getStartDate().withSecond(0).withNano(0))
                 .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
                 .title(dto.getTitle())
@@ -56,7 +56,7 @@ public class IssueServiceImpl implements IssueService{
                 .id(issue.getId())
                 .title(issue.getTitle())
                 .content(issue.getContent())
-                .date(issue.getDate().toString())
+//                .date(issue.getDate().toString())
                 .line(issue.getLine())
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
@@ -86,7 +86,7 @@ public class IssueServiceImpl implements IssueService{
                         .id(m.getId())
                         .title(m.getTitle())
                         .content(m.getContent())
-                        .date(m.getDate().toString())
+//                        .date(m.getDate().toString())
                         .line(m.getLine())
                         .startDate(m.getStartDate())
                         .expireDate(m.getExpireDate())
