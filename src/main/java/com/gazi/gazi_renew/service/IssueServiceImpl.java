@@ -1,10 +1,12 @@
 package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.domain.Issue;
+import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.IssueRepository;
+import com.gazi.gazi_renew.repository.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,15 +16,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService{
 
     private final IssueRepository issueRepository;
+    private final SubwayRepository subwayRepository;
     private final Response response;
+
 
     @Value("${issue.code}")
     private String secretCode;
@@ -33,8 +40,6 @@ public class IssueServiceImpl implements IssueService{
         if(!dto.getSecretCode().equals(secretCode) ){
             return response.fail("인증코드가 일치하지 않습니다.",HttpStatus.UNAUTHORIZED);
         }
-        // 포맷터
-//        LocalDate date = LocalDate.parse(dto.getDate(), DateTimeFormatter.ISO_DATE);
 
         Issue issue = Issue.builder()
                 .crawlingNo(dto.getCrawlingNo())
@@ -42,7 +47,7 @@ public class IssueServiceImpl implements IssueService{
                 .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .line(dto.getLine())
+                .stations(getStationList(dto.getStations()))
                 .build();
 
         issueRepository.save(issue);
@@ -58,6 +63,7 @@ public class IssueServiceImpl implements IssueService{
                 .content(issue.getContent())
 //                .date(issue.getDate().toString())
                 .line(issue.getLine())
+                .stationDtos(IssueResponse.getStations(issue.getStations()))
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
                 .build();
@@ -81,20 +87,60 @@ public class IssueServiceImpl implements IssueService{
     }
     public Page<IssueResponse> getPostDtoPage( Page<Issue> issuePage) {
 
-        Page<IssueResponse> issueResponsePage = issuePage.map(m ->
-                IssueResponse.builder()
-                        .id(m.getId())
-                        .title(m.getTitle())
-                        .content(m.getContent())
-//                        .date(m.getDate().toString())
-                        .line(m.getLine())
-                        .startDate(m.getStartDate())
-                        .expireDate(m.getExpireDate())
-                        .build());
+        Page<IssueResponse> issueResponsePage = issuePage.map(m -> {
+            IssueResponse.IssueResponseBuilder builder = IssueResponse.builder()
+                    .id(m.getId())
+                    .title(m.getTitle())
+                    .content(m.getContent())
+                    .stationDtos(IssueResponse.getStations(m.getStations()))
+                    .line(m.getLine())
+                    .startDate(m.getStartDate())
+                    .expireDate(m.getExpireDate());
+
+            int likeCount = Optional.ofNullable(m.getLikes())
+                    .map(Set::size)
+                    .orElse(0);
+
+            builder.likeCount(likeCount);
+
+            return builder.build();
+        });
 
         return issueResponsePage;
     }
 
+
+    // 역코드로 해당역에 이슈가 있는지 파악하는 함수
+    public  List<IssueResponse.IssueSummaryDto> getIssueByStationCode(int stationCode){
+        List<Issue> issues = issueRepository.findByStations_StationCode(stationCode);
+        List<IssueResponse.IssueSummaryDto> issueResponses = (List<IssueResponse.IssueSummaryDto>) issues.stream().map(
+                m ->{
+                    IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
+                            .id(m.getId())
+                            .title(m.getTitle());
+
+                    int likeCount = Optional.ofNullable(m.getLikes())
+                            .map(Set::size)
+                            .orElse(0);
+                    builder.likeCount(likeCount);
+                    return builder.build();
+                }
+
+
+        ).collect(Collectors.toList());
+        return issueResponses;
+    }
+
+    public List<Station> getStationList(List<IssueRequest.Station> stations){
+        List<Station> stationResponse = new ArrayList<>();
+        for(IssueRequest.Station station : stations){
+            List<Station> findStationList = subwayRepository.findByStationCodeBetween(station.getStartStationCode(),station.getEndStationCode());
+            for(Station stationEntity: findStationList){
+                stationResponse.add(stationEntity);
+            }
+        }
+        return stationResponse;
+    }
 
 
 }
