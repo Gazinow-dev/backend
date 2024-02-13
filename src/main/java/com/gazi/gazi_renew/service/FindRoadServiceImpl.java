@@ -37,6 +37,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final SubwayDataService subwayDataService;
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final IssueServiceImpl issueService;
     @Value("${odsay.key}")
     public static String apiKey;
 
@@ -186,6 +187,8 @@ public class FindRoadServiceImpl implements FindRoadService {
                             FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
                             station.setStationName(stationNode.path("stationName").asText());
+                            station.setStationCode(stationNode.path("stationID").asInt());
+                            station.setIssueSummary(issueService.getIssueByStationCode(stationNode.path("stationID").asInt()));
                             stations.add(station);
                         }
                         subPath.setStations(stations);
