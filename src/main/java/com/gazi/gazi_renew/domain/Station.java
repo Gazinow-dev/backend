@@ -3,6 +3,8 @@ package com.gazi.gazi_renew.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -19,7 +21,10 @@ public class Station {
     private Long id;
     private String line;
     private String name;
-    private int code;
+    @Column(nullable = false)
+    private int stationCode;
     private double lat;
     private double lng;
+    @ManyToMany(mappedBy = "stations" ,fetch = FetchType.LAZY)
+    private List<Issue> issues;
 }
