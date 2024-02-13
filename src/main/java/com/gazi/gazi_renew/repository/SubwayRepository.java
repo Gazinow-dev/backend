@@ -11,17 +11,18 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StationRepository extends JpaRepository<Station, Long> {
+public interface SubwayRepository extends JpaRepository<Station, Long> {
     @Query("select s.name,s.line from Station s where s.name Like:name%")
     List<Double> findByName(@Param("name")String name);
-
     List<Station> findByNameStartingWith(String name);
-
     @Query("select new com.gazi.gazi_renew.dto.SubwayDataResponse(s.lat, s.lng) from Station s where s.name = :name and s.line = :line")
     SubwayDataResponse findCoordinateByNameAndLine(@Param("name")String name, @Param("line")String line);
-
     boolean existsByStationCode(int stationCode);
 
-    @Query("SELECT s.issues FROM Station s JOIN FETCH s.issues WHERE s.stationCode = :stationCode")
-    List<Issue> findWithIssuesByStationCode(@Param("stationId") int stationCode);
+    List<Station> findByLine(String line);
+
+    List<Station> findByStationCodeBetween(int lowerCode, int upperCode);
+//    @Query("SELECT s.issues FROM Station s JOIN FETCH s.issues WHERE s.stationCode = :stationCode")
+//    List<Issue> findWithIssuesByStationCode(@Param("stationCode") int stationCode);
+
 }
