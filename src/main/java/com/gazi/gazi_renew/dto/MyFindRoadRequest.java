@@ -50,6 +50,7 @@ public class MyFindRoadRequest {
     static public class Station {
         int index; // 정류장 순번
         String stationName;
+        int StationCode;
     }
 
 }
