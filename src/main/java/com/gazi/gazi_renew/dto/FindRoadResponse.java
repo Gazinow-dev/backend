@@ -39,7 +39,7 @@ public class FindRoadResponse {
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
 
-        String way; //  방면
+        String way; //  방면 ( 다음역으로 수정)
         String door; //
         ArrayList<Lane> lanes; //
         ArrayList<Station> stations;

@@ -157,7 +157,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                         subPath.setSectionTime(subPathNode.path("sectionTime").asInt());
                         subPath.setStationCount(subPathNode.path("stationCount").asInt());
                         subPath.setDoor(subPathNode.path("door").asText());
-                        subPath.setWay(subPathNode.path("way").asText());
+//                        subPath.setWay(subPathNode.path("way").asText());
 
                         // lanes 배열 처리
                         ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();
@@ -177,6 +177,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                         JsonNode passStopListNode = subPathNode.path("passStopList");
                         ArrayList<FindRoadResponse.Station> stations = new ArrayList<>();
                         JsonNode stationArray = passStopListNode.path("stations");
+
+                        // 오디세이에서 설정한 way값이 아닌 다음역을 주는 것으로 내부적으로 변경
+                        if(stationArray.size() >= 2){
+                            subPath.setWay(stationArray.get(1).path("stationName").asText());
+                        }
                         for (JsonNode stationNode : stationArray) {
                             FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
