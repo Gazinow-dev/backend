@@ -34,7 +34,7 @@ public class SubwayDataService {
         Station[] stations = objectMapper.readValue(resource.getFile(), Station[].class);
         int i = 0;
         for (Station station : stations) {
-            if(!subwayRepository.existsByCode(station.getCode())){
+            if(!subwayRepository.existsByStationCode(station.getStationCode())){
                 subwayRepository.save(station);
             }
             i ++;
