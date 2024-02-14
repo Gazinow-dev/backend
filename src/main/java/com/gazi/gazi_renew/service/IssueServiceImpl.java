@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,20 +42,28 @@ public class IssueServiceImpl implements IssueService{
             return response.fail("인증코드가 일치하지 않습니다.",HttpStatus.UNAUTHORIZED);
         }
 
+        List<Station> stationList = getStationList(dto.getStations());
+
         Issue issue = Issue.builder()
                 .crawlingNo(dto.getCrawlingNo())
                 .startDate(dto.getStartDate().withSecond(0).withNano(0))
                 .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .stations(getStationList(dto.getStations()))
+                .stations(stationList)
                 .build();
-
-        issueRepository.save(issue);
+        // station에도 추가되어야한다.
+        for(Station station : stationList){
+            List<Issue> issues = station.getIssues();
+            issues.add(issue);
+            station.setIssues(issues);
+            subwayRepository.save(station);
+        }
         return response.success();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssue(Long id) {
         Issue issue = issueRepository.findById(id).orElseThrow( () -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         IssueResponse issueResponse = IssueResponse.builder()
@@ -71,6 +80,7 @@ public class IssueServiceImpl implements IssueService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssues(Pageable pageable) {
         Page<Issue> issuePage = issueRepository.findAll(pageable);
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
@@ -79,6 +89,7 @@ public class IssueServiceImpl implements IssueService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
         Page<Issue> issuePage = issueRepository.findALlByLine(line,pageable);
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);

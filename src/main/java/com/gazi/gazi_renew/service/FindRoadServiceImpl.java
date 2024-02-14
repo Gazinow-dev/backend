@@ -3,12 +3,11 @@ package com.gazi.gazi_renew.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.config.SecurityUtil;
+import com.gazi.gazi_renew.domain.Issue;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.MyFindRoadPath;
-import com.gazi.gazi_renew.dto.FindRoadRequest;
-import com.gazi.gazi_renew.dto.FindRoadResponse;
-import com.gazi.gazi_renew.dto.Response;
-import com.gazi.gazi_renew.dto.SubwayDataResponse;
+import com.gazi.gazi_renew.domain.Station;
+import com.gazi.gazi_renew.dto.*;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import com.gazi.gazi_renew.repository.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +28,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -95,6 +97,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
 
         Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
@@ -160,12 +163,14 @@ public class FindRoadServiceImpl implements FindRoadService {
                         subPath.setDoor(subPathNode.path("door").asText());
 //                        subPath.setWay(subPathNode.path("way").asText());
 
+                        String lineName = "";
                         // lanes 배열 처리
                         ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();
                         JsonNode laneArray = subPathNode.path("lane");
                         for (JsonNode laneNode : laneArray) {
+                            lineName = laneNode.path("name").asText();
                             FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
-                            lane.setName(laneNode.path("name").asText());
+                            lane.setName(lineName);
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
@@ -188,7 +193,25 @@ public class FindRoadServiceImpl implements FindRoadService {
                             station.setIndex(stationNode.path("index").asInt());
                             station.setStationName(stationNode.path("stationName").asText());
                             station.setStationCode(stationNode.path("stationID").asInt());
-                            station.setIssueSummary(issueService.getIssueByStationCode(stationNode.path("stationID").asInt()));
+
+                            System.out.println(stationNode.path("stationName").asText());
+                            //staion 찾고 이슈 리스트 받기
+                            Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
+                            List<Issue> issues = stationEntity.getIssues();
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = issues.stream().map(
+                                    m ->{
+                                        IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
+                                                .id(m.getId())
+                                                .title(m.getTitle());
+
+                                        int likeCount = Optional.ofNullable(m.getLikes())
+                                                .map(Set::size)
+                                                .orElse(0);
+                                        builder.likeCount(likeCount);
+                                        return builder.build();
+                                    }
+                            ).collect(Collectors.toList());
+                            station.setIssueSummary(issueSummaryDto);
                             stations.add(station);
                         }
                         subPath.setStations(stations);
