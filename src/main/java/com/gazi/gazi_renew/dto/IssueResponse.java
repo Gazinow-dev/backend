@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.dto;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.gazi.gazi_renew.domain.Station;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,10 +8,12 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Builder
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class IssueResponse {
 
     private Long id;
@@ -31,12 +34,14 @@ public class IssueResponse {
     }
 
     public static List<StationDto> getStations(List<Station> stations){
-        List<StationDto> stationDtos = (List<StationDto>) stations.stream().map(
-                m -> getStation(m)
-        );
+        System.out.println("역 개수 : " + stations.size());
+        List<StationDto> stationDtos = stations.stream()
+                .map(station -> getStation(station))
+                .collect(Collectors.toList());
         return stationDtos;
     }
 
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class StationDto {
         private String line;
         private String stationName;
@@ -44,6 +49,7 @@ public class IssueResponse {
 
     // 이슈 요약
     @Builder
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class IssueSummaryDto{
         private Long id;
         private String title;
