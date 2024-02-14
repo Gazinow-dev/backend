@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubwayRepository extends JpaRepository<Station, Long> {
@@ -22,7 +24,10 @@ public interface SubwayRepository extends JpaRepository<Station, Long> {
     List<Station> findByLine(String line);
 
     List<Station> findByStationCodeBetween(int lowerCode, int upperCode);
-//    @Query("SELECT s.issues FROM Station s JOIN FETCH s.issues WHERE s.stationCode = :stationCode")
-//    List<Issue> findWithIssuesByStationCode(@Param("stationCode") int stationCode);
+
+
+    // todo: like 문으로 변경해야할수도...
+    @Transactional(readOnly = true)
+    Optional<Station> findByNameAndLine(String name, String line);
 
 }

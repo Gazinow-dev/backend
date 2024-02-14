@@ -8,12 +8,14 @@ import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.SubwayDataResponse;
 import com.gazi.gazi_renew.repository.SubwayRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -95,5 +97,21 @@ public class SubwayDataService {
             transitStations.add(transitStation);
         }
         return transitStations;
+    }
+
+    @Transactional(readOnly = true)
+    public Station getStationByNameAndLine(String name, String line){
+        try{
+            System.out.println(line);
+            Station station = subwayRepository.findByNameAndLine(name,line).orElseThrow(
+                    () -> new EntityNotFoundException("알맞는 데이터를 찾지 못했습니다.")
+            );
+            return station;
+        }catch (EntityNotFoundException e){
+            log.error(e.getMessage());
+            return null;
+        }
+
+
     }
 }
