@@ -1,7 +1,10 @@
 package com.gazi.gazi_renew.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,7 +22,11 @@ public class Station {
     private Long id;
     private String line;
     private String name;
-    private int code;
+    @Column(nullable = false)
+    private int stationCode;
     private double lat;
     private double lng;
+    @JsonIgnore // issues 필드를 JSON 시리얼라이제이션에서 무시
+    @ManyToMany(mappedBy = "stations" ,fetch = FetchType.LAZY)
+    private List<Issue> issues;
 }

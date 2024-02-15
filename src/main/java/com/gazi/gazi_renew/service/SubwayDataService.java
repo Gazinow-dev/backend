@@ -8,12 +8,14 @@ import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.SubwayDataResponse;
 import com.gazi.gazi_renew.repository.SubwayRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ public class SubwayDataService {
         Station[] stations = objectMapper.readValue(resource.getFile(), Station[].class);
         int i = 0;
         for (Station station : stations) {
-            if(!subwayRepository.existsByCode(station.getCode())){
+            if(!subwayRepository.existsByStationCode(station.getStationCode())){
                 subwayRepository.save(station);
             }
             i ++;
@@ -95,5 +97,35 @@ public class SubwayDataService {
             transitStations.add(transitStation);
         }
         return transitStations;
+    }
+
+    @Transactional(readOnly = true)
+    public Station getStationByNameAndLine(String name, String line){
+        try{
+            System.out.println(line);
+            List<Station> stations = subwayRepository.findByNameContainingAndLine(name,line);
+
+            Station stationResponse = stations.get(0);
+            int k = 0;
+            // 필터링
+            if(!stations.isEmpty() && stations.size() >=2){
+
+                for(Station station : stations){
+                    int stationLength = station.getName().length(); // 찾은 entity 역글자수
+                    int result = stationLength - name.length();
+
+                    if(k > result){
+                        stationResponse = station;
+                        k = result;
+                    }
+                }
+            }
+            return stationResponse;
+        }catch (EntityNotFoundException e){
+            log.error(e.getMessage());
+            return null;
+        }
+
+
     }
 }

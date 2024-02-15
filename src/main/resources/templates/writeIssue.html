@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,10 @@
             width: auto;
             box-sizing: border-box;
             margin-top: 10px;
-
+            margin-bottom: 10px;
+        }
+        input#title{
+            width: 40%;
         }
 
     </style>
@@ -21,31 +24,53 @@
     <!-- 입력 필드 -->
     <input type="hidden" id="crawlingNo" th:field="*{crawlingNo}" th:value="${crawlingNo}">
     <div>
-    <label th:for="title">제목 : </label>
-    <input type="text" id="title" th:field="*{title}" th:value="${title}">
+        <label th:for="title">제목 : </label>
+        <input type="text" id="title" th:field="*{title}" th:value="${title}" value="[안내] 2024년 설연휴 시내버스 성묘지 운행 증회 노선 및 막차 연장 노선 안내
+">
     </div>
 
     <label th:for="content">내용 : </label>
-    <textarea name="content" cols="40" rows="8" th:field="*{content}" th:value="${content}">
-    내용이 들어갈껍니다.
+    <textarea name="content" cols="40" rows="8" th:field="*{content}" th:value="${content}" >
+    2024년 설 연휴 시내버스 성묘지 운행 증회 및 막차 연장 노선을 안내드리오니
+    시민 여러분께서는 교통편 이용 시 참고하시기 바랍니다.
+
+    [증회 및 막차시간 연장 기간] '24.2.10.(토) ~ 2.11.(일), 2일간
     </textarea>
-    <!--<div>
-    <label th:for="date">날짜 : </label>
-    <input type="text" id="date" th:field="*{date}" th:value="${date}"required>
-    </div>-->
     <div>
-    <label th:for="line">호선 : </label>
-        <select name="selectedOption" th:field="*{line}">
-            <option value="1호선">1호선</option>
-            <option value="2호선">2호선</option>
-            <option value="3호선">3호선</option>
-            <option value="4호선">4호선</option>
-            <option value="5호선">5호선</option>
-            <option value="6호선">6호선</option>
-            <option value="7호선">7호선</option>
-            <option value="8호선">8호선</option>
+        <label for="keyword">키워드 : </label>
+        <select id="keyword" th:field="*{keyword}">
+            <option value="">선택하세요</option>
+            <option th:each="eventType : ${keyword}"
+                    th:value="${eventType}"
+                    th:text="${eventType.text}"></option>
         </select>
     </div>
+        <div class="dynamicFields">
+            <div th:each="station, stationIndex : *{stations}">
+                <label th:for="'line_' + ${stationIndex}">호선 : </label>
+                <select name="stations[__${stationIndex.index}__].line" class="selectedLine" onchange="updateStations(this)" th:field="*{stations[__${stationIndex.index}__].line}">
+                    <option value="수도권 1호선" selected>수도권 1호선</option>
+                    <option value="수도권 2호선">수도권 2호선</option>
+                    <option value="수도권 3호선">수도권 3호선</option>
+                    <option value="수도권 4호선">수도권 4호선</option>
+                    <option value="수도권 5호선">수도권 5호선</option>
+                    <option value="수도권 6호선">수도권 6호선</option>
+                    <option value="수도권 7호선">수도권 7호선</option>
+                    <option value="수도권 8호선">수도권 8호선</option>
+                </select>
+
+                <label th:for="'startStation_' + ${stationIndex}">출발역 : </label>
+                <select name="stations[__${stationIndex.index}__].startStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].startStationCode}">
+                    <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
+                </select>
+
+                <label th:for="'endStation_' + ${stationIndex}">도착역 : </label>
+                <select name="stations[__${stationIndex.index}__].endStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].endStationCode}">
+                    <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
+                </select>
+            </div>
+            <button type="button" onclick="addNewLine()">추가라는 버튼</button>
+        </div>
     <div>
         <label th:for="expireDate"> 시작일자 : </label>
         <input type="datetime-local"  id="startDate" th:field="*{startDate}" >
@@ -57,4 +82,79 @@
     <button type="submit">제출</button>
 </form>
 </body>
+<script th:inline="javascript">
+    function updateStations(selectedLineElement) {
+        var selectedLine = selectedLineElement.value;
+        if(selectedLine) {
+            fetch('/api/v1/stations?line=' + selectedLine)
+                .then(response => response.json())
+                .then(data => {
+                    var stationList = selectedLineElement.parentElement.querySelectorAll('.selectedStations');
+                    stationList.forEach(stationList => {
+                        stationList.innerHTML = ''; // 기존의 역들을 모두 제거
+                        data.forEach(station => {
+                            var option = document.createElement('option');
+                            option.value = station.stationCode;
+                            option.textContent = station.name;
+                            stationList.appendChild(option);
+                        });
+                    });
+
+                });
+        } else {
+            var stationList = selectedLineElement.parentElement.querySelectorAll('.selectedStations');
+            stationList.forEach(stationList => {
+                stationList.innerHTML = ''; // 호선이 선택되지 않은 경우, 역들을 모두 제거
+            });
+        }
+    }
+
+    var lineIndex = 0;
+
+    function addNewLine() {
+        var container = document.createElement('div');
+        container.classList.add('dynamicFields');
+
+        var lineLabel = document.createElement('label');
+        lineLabel.textContent = '호선: ';
+        container.appendChild(lineLabel);
+
+        var lineSelect = document.createElement('select');
+        lineSelect.setAttribute('onchange', 'updateStations(this)');
+        lineSelect.classList.add('selectedLine');
+        lineSelect.name = 'stations[' + lineIndex + '].line';
+        ['수도권 1호선', '수도권 2호선', '수도권 3호선', '수도권 4호선', '수도권 5호선', '수도권 6호선', '수도권 7호선', '수도권 8호선'].forEach(function (line) {
+            var option = document.createElement('option');
+            option.value = line;
+            option.textContent = line;
+            lineSelect.appendChild(option);
+        });
+        container.appendChild(lineSelect);
+
+        var startLabel = document.createElement('label');
+        startLabel.textContent = '출발역: ';
+        container.appendChild(startLabel);
+
+        var startSelect = document.createElement('select');
+        startSelect.name = 'stations[' + lineIndex + '].startStationCode';
+        startSelect.classList.add('selectedStations');
+        container.appendChild(startSelect);
+
+        var endLabel = document.createElement('label');
+        endLabel.textContent = '도착역: ';
+        container.appendChild(endLabel);
+
+        var endSelect = document.createElement('select');
+        endSelect.name = 'stations[' + lineIndex + '].endStationCode';
+        endSelect.classList.add('selectedStations');
+        container.appendChild(endSelect);
+
+        var addButton = document.querySelector('button');
+        addButton.parentElement.insertBefore(container, addButton);
+
+        lineIndex++; // 새로운 역이 추가될 때마다 인덱스를 증가시킵니다.
+    }
+</script>
+
 </html>
+``

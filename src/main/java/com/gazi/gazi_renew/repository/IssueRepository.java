@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
@@ -14,4 +16,5 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     Page<Issue> findALlByLine(String line, Pageable pageable);
 
     boolean existsByCrawlingNo(String crawlingNo);
+    List<Issue> findByStations_StationCode(int stationCode);
 }

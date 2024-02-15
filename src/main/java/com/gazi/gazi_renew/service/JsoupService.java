@@ -3,11 +3,8 @@ package com.gazi.gazi_renew.service;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.repository.IssueRepository;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -29,7 +26,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.Date;
 import java.time.Duration;
 import java.util.List;
 
@@ -72,10 +68,6 @@ public class JsoupService {
             String detailUrl = "http://www.seoulmetro.co.kr/kr/"+row.select("td.bd2 a").first().getElementsByAttribute("href").attr("href");
             String date = row.select("tr td.bd5").first().text();
 
-            System.out.println(no);
-            System.out.println(title);
-            System.out.println(detailUrl);
-            System.out.println(date);
             dto.setTitle(title);
             // 가장 최근에 조회했을때
             // 금일에 올라온 데이터가 있다면?
@@ -136,7 +128,6 @@ public class JsoupService {
 
             // 1, 2, 4번째 td 출력
             if (columns.size() >= 4) {
-
                 webDriverWait.until(
                         ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"notiList\"]/tr[1]/td[4]"))
                 );
@@ -146,7 +137,6 @@ public class JsoupService {
                 no += firstTd.getText();
                 // 번호를 통한 검증로직
                 if(issueRepository.existsByCrawlingNo(no)){
-
                     break loopOut;
                 }
                 title = secondTd.getText();
@@ -162,7 +152,6 @@ public class JsoupService {
             }
             driver.navigate().back();
 
-            System.out.println();
             IssueRequest dto = new IssueRequest();
             dto.setTitle(title);
             dto.setContent(content);

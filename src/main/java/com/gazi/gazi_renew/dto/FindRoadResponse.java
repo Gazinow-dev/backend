@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.gazi.gazi_renew.domain.MyFindRoadPath;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +38,7 @@ public class FindRoadResponse {
         int sectionTime; //이동 소요 시간
         int stationCount; // 정차하는 역 개수
 
-        String way; //  방면
+        String way; //  방면 ( 다음역으로 수정)
         String door; //
         ArrayList<Lane> lanes; //
         ArrayList<Station> stations;
@@ -71,6 +70,9 @@ public class FindRoadResponse {
     static public class Station {
         int index; // 정류장 순번
         String stationName;
+        int stationCode; //역코드
+
+        List<IssueResponse.IssueSummaryDto> issueSummary; // 역에서 발생한 이슈
     }
 
 
