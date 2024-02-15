@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.*;
+import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.MyFindRoadResponse.SubPath;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +34,9 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     //회원 인증하고
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getRoutes() {
         try {
-            System.out.println(SecurityUtil.getCurrentUserEmail());
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
@@ -61,6 +63,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
 
                         // response로 가공
+
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
                                 .name(myFindRoadLane.getName())
@@ -71,11 +74,14 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         lanes.add(lane);
 
                         ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
-
+                        String lineName =  myFindRoadLane.getName();
                         for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
+                            Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
+                            List<Issue> issues = stationEntity.getIssues();
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
+                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(issues))
                                     .build();
 
                             stations.add(station);
@@ -92,8 +98,6 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         .lastEndStation(myFindRoadPath.getLastEndStation())
                         .totalTime(myFindRoadPath.getTotalTime())
                         .subPaths(subPaths)
-//                        .transitStations(subwayDataService.getTransitStation(myFindRoadPath))
-                        //todo: issue는 추후에
                         .build();
                 myFindRoadResponses.add(myFindRoadResponse);
             }

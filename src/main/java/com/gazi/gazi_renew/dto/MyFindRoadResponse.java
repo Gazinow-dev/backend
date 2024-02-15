@@ -18,7 +18,6 @@ public class MyFindRoadResponse {
     private String roadName;
     private String lastEndStation;
     private List<transitStation> transitStations;
-    private List<MyFindRoadResponse.issue> issues;
     private ArrayList<MyFindRoadResponse.SubPath> subPaths;
 
     @Getter
@@ -44,13 +43,6 @@ public class MyFindRoadResponse {
         private String line;
     }
 
-    // 이슈
-    @Getter
-    public class issue{
-        //어디에서 어디사이에서 발생한 이슈인지
-        private String point;
-    }
-
     @Getter
     @Setter
     @Builder
@@ -71,5 +63,6 @@ public class MyFindRoadResponse {
         private int index; // 정류장 순번
         private String stationName;
         private int stationCode;
+        List<IssueResponse.IssueSummaryDto> issueSummary; // 역에서 발생한 이슈
     }
 }
