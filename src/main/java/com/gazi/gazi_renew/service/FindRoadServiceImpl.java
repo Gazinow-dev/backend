@@ -198,19 +198,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             //staion 찾고 이슈 리스트 받기
                             Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
                             List<Issue> issues = stationEntity.getIssues();
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = issues.stream().map(
-                                    m ->{
-                                        IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
-                                                .id(m.getId())
-                                                .title(m.getTitle());
-
-                                        int likeCount = Optional.ofNullable(m.getLikes())
-                                                .map(Set::size)
-                                                .orElse(0);
-                                        builder.likeCount(likeCount);
-                                        return builder.build();
-                                    }
-                            ).collect(Collectors.toList());
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issues);
                             station.setIssueSummary(issueSummaryDto);
                             stations.add(station);
                         }
