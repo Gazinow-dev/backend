@@ -103,10 +103,24 @@ public class SubwayDataService {
     public Station getStationByNameAndLine(String name, String line){
         try{
             System.out.println(line);
-            Station station = subwayRepository.findByNameAndLine(name,line).orElseThrow(
-                    () -> new EntityNotFoundException("알맞는 데이터를 찾지 못했습니다.")
-            );
-            return station;
+            List<Station> stations = subwayRepository.findByNameContainingAndLine(name,line);
+
+            Station stationResponse = stations.get(0);
+            int k = 0;
+            // 필터링
+            if(!stations.isEmpty() && stations.size() >=2){
+
+                for(Station station : stations){
+                    int stationLength = station.getName().length(); // 찾은 entity 역글자수
+                    int result = stationLength - name.length();
+
+                    if(k > result){
+                        stationResponse = station;
+                        k = result;
+                    }
+                }
+            }
+            return stationResponse;
         }catch (EntityNotFoundException e){
             log.error(e.getMessage());
             return null;
