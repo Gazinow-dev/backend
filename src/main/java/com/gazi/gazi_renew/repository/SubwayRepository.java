@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.repository;
 
-import com.gazi.gazi_renew.domain.Issue;
 import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.dto.SubwayDataResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SubwayRepository extends JpaRepository<Station, Long> {
@@ -24,10 +22,7 @@ public interface SubwayRepository extends JpaRepository<Station, Long> {
     List<Station> findByLine(String line);
 
     List<Station> findByStationCodeBetween(int lowerCode, int upperCode);
-
-
-    // todo: like 문으로 변경해야할수도...
     @Transactional(readOnly = true)
-    Optional<Station> findByNameAndLine(String name, String line);
+    List<Station> findByNameContainingAndLine(String name, String line);
 
 }
