@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class IssueServiceImpl implements IssueService{
+public class IssueServiceImpl implements IssueService {
 
     private final IssueRepository issueRepository;
     private final SubwayRepository subwayRepository;
@@ -38,45 +38,54 @@ public class IssueServiceImpl implements IssueService{
     @Override
     public ResponseEntity<Response.Body> addIssue(IssueRequest dto) {
 
-        if(!dto.getSecretCode().equals(secretCode) ){
-            return response.fail("인증코드가 일치하지 않습니다.",HttpStatus.UNAUTHORIZED);
+        try {
+            if (!dto.getSecretCode().equals(secretCode)) {
+                return response.fail("인증코드가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
+            }
+
+            List<Station> stationList = getStationList(dto.getStations());
+
+            Issue issue = Issue.builder()
+                    .crawlingNo(dto.getCrawlingNo())
+                    .startDate(dto.getStartDate().withSecond(0).withNano(0))
+                    .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
+                    .title(dto.getTitle())
+                    .content(dto.getContent())
+                    .stations(stationList)
+                    .keyword(dto.getKeyword())
+                    .build();
+
+            issueRepository.save(issue);
+            // station에도 추가되어야한다.
+            for (Station station : stationList) {
+                List<Issue> issues = station.getIssues();
+                issues.add(issue);
+                station.setIssues(issues);
+                subwayRepository.save(station);
+            }
+            return response.success();
+        } catch (Exception e) {
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        List<Station> stationList = getStationList(dto.getStations());
-
-        Issue issue = Issue.builder()
-                .crawlingNo(dto.getCrawlingNo())
-                .startDate(dto.getStartDate().withSecond(0).withNano(0))
-                .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .stations(stationList)
-                .build();
-        // station에도 추가되어야한다.
-        for(Station station : stationList){
-            List<Issue> issues = station.getIssues();
-            issues.add(issue);
-            station.setIssues(issues);
-            subwayRepository.save(station);
-        }
-        return response.success();
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssue(Long id) {
-        Issue issue = issueRepository.findById(id).orElseThrow( () -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
+        Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         IssueResponse issueResponse = IssueResponse.builder()
                 .id(issue.getId())
                 .title(issue.getTitle())
                 .content(issue.getContent())
 //                .date(issue.getDate().toString())
+                .keyword(issue.getKeyword())
                 .line(issue.getLine())
                 .stationDtos(IssueResponse.getStations(issue.getStations()))
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
                 .build();
-        return response.success(issueResponse,"이슈 조회 성공", HttpStatus.OK);
+        return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
     }
 
     @Override
@@ -85,24 +94,25 @@ public class IssueServiceImpl implements IssueService{
         Page<Issue> issuePage = issueRepository.findAll(pageable);
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
 
-        return response.success(issueResponsePage,"이슈 전체 조회 성공", HttpStatus.OK);
+        return response.success(issueResponsePage, "이슈 전체 조회 성공", HttpStatus.OK);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
-        Page<Issue> issuePage = issueRepository.findALlByLine(line,pageable);
+        Page<Issue> issuePage = issueRepository.findALlByLine(line, pageable);
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
 
-        return response.success(issueResponsePage,"line"+"이슈 조회 성공", HttpStatus.OK);
+        return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
     }
-    public Page<IssueResponse> getPostDtoPage( Page<Issue> issuePage) {
+    public Page<IssueResponse> getPostDtoPage(Page<Issue> issuePage) {
 
         Page<IssueResponse> issueResponsePage = issuePage.map(m -> {
             IssueResponse.IssueResponseBuilder builder = IssueResponse.builder()
                     .id(m.getId())
                     .title(m.getTitle())
                     .content(m.getContent())
+                    .keyword(m.getKeyword())
                     .stationDtos(IssueResponse.getStations(m.getStations()))
                     .line(m.getLine())
                     .startDate(m.getStartDate())
@@ -122,13 +132,14 @@ public class IssueServiceImpl implements IssueService{
 
 
     // 역코드로 해당역에 이슈가 있는지 파악하는 함수
-    public  List<IssueResponse.IssueSummaryDto> getIssueByStationCode(int stationCode){
+    public List<IssueResponse.IssueSummaryDto> getIssueByStationCode(int stationCode) {
         List<Issue> issues = issueRepository.findByStations_StationCode(stationCode);
         List<IssueResponse.IssueSummaryDto> issueResponses = (List<IssueResponse.IssueSummaryDto>) issues.stream().map(
-                m ->{
+                m -> {
                     IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
                             .id(m.getId())
-                            .title(m.getTitle());
+                            .title(m.getTitle())
+                            .keyword(m.getKeyword());
 
                     int likeCount = Optional.ofNullable(m.getLikes())
                             .map(Set::size)
@@ -142,11 +153,11 @@ public class IssueServiceImpl implements IssueService{
         return issueResponses;
     }
 
-    public List<Station> getStationList(List<IssueRequest.Station> stations){
+    public List<Station> getStationList(List<IssueRequest.Station> stations) {
         List<Station> stationResponse = new ArrayList<>();
-        for(IssueRequest.Station station : stations){
-            List<Station> findStationList = subwayRepository.findByStationCodeBetween(station.getStartStationCode(),station.getEndStationCode());
-            for(Station stationEntity: findStationList){
+        for (IssueRequest.Station station : stations) {
+            List<Station> findStationList = subwayRepository.findByStationCodeBetween(station.getStartStationCode(), station.getEndStationCode());
+            for (Station stationEntity : findStationList) {
                 stationResponse.add(stationEntity);
             }
         }

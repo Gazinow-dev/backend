@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.controller;
 
 
+import com.gazi.gazi_renew.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.IssueService;
@@ -37,6 +38,7 @@ public class IssueController {
         model.addAttribute("content", content);
         model.addAttribute("crawlingNo", crawlingNo);
         model.addAttribute("dto", dto);
+        model.addAttribute("keyword", IssueKeyword.values());
         return "writeIssue";
     }
 }
