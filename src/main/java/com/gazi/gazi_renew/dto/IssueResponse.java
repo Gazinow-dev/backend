@@ -23,7 +23,7 @@ public class IssueResponse {
     private Long id;
     private String title;
     private String content;
-    private String date;
+    private String agoTime; // 몇분전, 몇시간전...
     private String line;
     private int likeCount;
     private IssueKeyword keyword;
@@ -60,12 +60,13 @@ public class IssueResponse {
         private String title;
         private int likeCount;
         private IssueKeyword keyword;
+        private String agoTime; // 몇분전, 몇시간전...
 
 
         public static List<IssueSummaryDto> getIssueSummaryDto(List<Issue> issues){
             List<IssueResponse.IssueSummaryDto> issueSummaryDto = issues.stream().map(
                     m ->{
-                        IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
+                        IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueSummaryDto.builder()
                                 .id(m.getId())
                                 .title(m.getTitle())
                                 .keyword(m.getKeyword());

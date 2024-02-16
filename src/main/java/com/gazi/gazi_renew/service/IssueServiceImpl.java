@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +86,7 @@ public class IssueServiceImpl implements IssueService {
                 .stationDtos(IssueResponse.getStations(issue.getStations()))
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
+                .agoTime(getTime(issue.getStartDate()))
                 .build();
         return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
     }
@@ -129,7 +132,8 @@ public class IssueServiceImpl implements IssueService {
                     .stationDtos(IssueResponse.getStations(m.getStations()))
                     .line(m.getLine())
                     .startDate(m.getStartDate())
-                    .expireDate(m.getExpireDate());
+                    .expireDate(m.getExpireDate())
+                    .agoTime(getTime(m.getStartDate()));
 
             int likeCount = Optional.ofNullable(m.getLikes())
                     .map(Set::size)
@@ -177,5 +181,29 @@ public class IssueServiceImpl implements IssueService {
         return stationResponse;
     }
 
+    // 시간 구하기 로직
+    public static String getTime(LocalDateTime startTime) {
+
+        LocalDateTime nowDate = LocalDateTime.now();
+        Duration duration = Duration.between(startTime, nowDate);
+        Long time = duration.getSeconds();
+        String formatTime;
+
+        if (time > 60 && time <= 3600) {
+            // 분
+            time = time / 60;
+            formatTime = time + "분 전";
+        } else if (time > 3600 && time <= 86400) {
+            time = time / (60 * 60);
+            formatTime = time + "시간 전";
+        } else if (time > 86400) {
+            time = time / 86400;
+            formatTime = time + "일 전";
+        } else {
+            formatTime = time + "초 전";
+        }
+
+        return formatTime;
+    }
 
 }
