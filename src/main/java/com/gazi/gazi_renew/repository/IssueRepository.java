@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -24,4 +25,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     @Transactional(readOnly=true)
     @Query("SELECT i FROM Issue i WHERE SIZE(i.likes) >= :likesCount ORDER BY SIZE(i.likes) DESC")
     Page<Issue> findTopIssuesByLikesCount(@Param("likesCount") int likesCount, Pageable pageable);
+
+    // 현재시간보다 expireDate가 지나지 않았으면 가져오기
+    List<Issue> findByExpireDateAfter(LocalDateTime currentTime);
 }

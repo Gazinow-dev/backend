@@ -206,4 +206,10 @@ public class IssueServiceImpl implements IssueService {
         return formatTime;
     }
 
+    // 만료된 이슈를 제외하고 가지고 오는 함수
+    public  List<Issue> getActiveIssues(List<Issue> issues){
+        List<Issue> issueList = issueRepository.findByExpireDateAfter(LocalDateTime.now());
+        return issueList;
+    }
+
 }

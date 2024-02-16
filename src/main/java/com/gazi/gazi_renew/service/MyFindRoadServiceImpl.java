@@ -31,6 +31,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final SubwayDataService subwayDataService;
+    private final IssueServiceImpl issueService;
     //회원 인증하고
 
     @Override
@@ -81,7 +82,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
-                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(issues))
+                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues)))
                                     .build();
 
                             stations.add(station);
