@@ -105,6 +105,21 @@ public class IssueServiceImpl implements IssueService {
 
         return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
     }
+
+    @Override
+//    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getPopularIssues(Pageable pageable) {
+        int likeCount = 5;
+        try {
+            Page<Issue> issuePage = issueRepository.findTopIssuesByLikesCount(likeCount, pageable);
+//            Page<Issue> issuePage = issueRepository.findByLikesGreaterThanEqualOrderByLikesDesc(likeCount, pageable);
+            Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
+            return response.success(issueResponsePage, "인기 이슈 조회 성공", HttpStatus.OK);
+        }catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
     public Page<IssueResponse> getPostDtoPage(Page<Issue> issuePage) {
 
         Page<IssueResponse> issueResponsePage = issuePage.map(m -> {
