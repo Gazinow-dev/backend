@@ -57,6 +57,22 @@
                     <option value="수도권 6호선">수도권 6호선</option>
                     <option value="수도권 7호선">수도권 7호선</option>
                     <option value="수도권 8호선">수도권 8호선</option>
+                    <option value="수도권 9호선">수도권 9호선</option>
+                    <option value="경의중앙선">경의중앙선</option>
+                    <option value="수도권 경강선">수도권 경강선</option>
+                    <option value="수도권 경춘선">수도권 경춘선</option>
+                    <option value="수도권 공항철도">수도권 공항철도</option>
+                    <option value="수도권 김포골드라인">수도권 김포골드라인</option>
+                    <option value="수도권 서해선(대곡-원시)">수도권 서해선(대곡-원시)</option>
+                    <option value="수도권 수인.분당선">수도권 수인.분당선</option>
+                    <option value="수도권 신림선">수도권 신림선</option>
+                    <option value="수도권 신분당선">수도권 신분당선</option>
+                    <option value="수도권 에버라인">수도권 에버라인</option>
+                    <option value="수도권 우이신설경전철">수도권 우이신설경전철</option>
+                    <option value="수도권 의정부경전철">수도권 의정부경전철</option>
+                    <option value="인천 1호선">인천 1호선</option>
+                    <option value="인천 2호선">인천 2호선</option>
+
                 </select>
 
                 <label th:for="'startStation_' + ${stationIndex}">출발역 : </label>
@@ -69,7 +85,7 @@
                     <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
                 </select>
             </div>
-            <button type="button" onclick="addNewLine()">추가라는 버튼</button>
+            <button type="button" onclick="addNewLine()">호선 추가</button>
         </div>
     <div>
         <label th:for="expireDate"> 시작일자 : </label>
@@ -123,7 +139,9 @@
         lineSelect.setAttribute('onchange', 'updateStations(this)');
         lineSelect.classList.add('selectedLine');
         lineSelect.name = 'stations[' + lineIndex + '].line';
-        ['수도권 1호선', '수도권 2호선', '수도권 3호선', '수도권 4호선', '수도권 5호선', '수도권 6호선', '수도권 7호선', '수도권 8호선'].forEach(function (line) {
+        ['수도권 1호선', '수도권 2호선', '수도권 3호선', '수도권 4호선', '수도권 5호선', '수도권 6호선', '수도권 7호선', '수도권 8호선','경의중앙선', '수도권 9호선', '수도권 경강선', '수도권 경춘선',
+            '수도권 공항철도', '수도권 김포골드라인','수도권 서해선(대곡-원시)', '수도권 수인.분당선', '수도권 신림선', '수도권 신분당선', '수도권 에버라인',
+            '수도권 우이신설경전철', '수도권 의정부경전철', '인천 1호선', '인천 2호선'].forEach(function (line) {
             var option = document.createElement('option');
             option.value = line;
             option.textContent = line;
