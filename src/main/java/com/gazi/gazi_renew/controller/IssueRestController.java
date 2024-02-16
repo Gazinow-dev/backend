@@ -40,4 +40,8 @@ public class IssueRestController {
                                                          @Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
         return issueService.getLineByIssues(line,pageable);
     }
+    @GetMapping("/get_popular")
+    public ResponseEntity<Response.Body> getPopularIssue(@Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+        return issueService.getPopularIssues(pageable);
+    }
 }
