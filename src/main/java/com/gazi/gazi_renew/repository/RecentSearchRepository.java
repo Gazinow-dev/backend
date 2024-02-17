@@ -11,7 +11,8 @@ import java.util.Queue;
 
 @Repository
 public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long> {
-    List<RecentSearch> findAllByMember(Member member);
+    List<RecentSearch> findAllByMemberOrderByModifiedAtDesc(Member member);
+    Optional<RecentSearch> findByStationLineAndStationName(String stationLine, String stationName);
 
     Optional<RecentSearch> findByIdAndMember(Long recentSearchID, Member member);
 }

@@ -15,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,7 +41,8 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     public ResponseEntity<Response.Body> recentGet() {
         try {
             Member member = isUser();
-            List<RecentSearch> recentSearchList = recentSearchRepository.findAllByMember(member);
+            // 최근 수정일자로 정렬
+            List<RecentSearch> recentSearchList = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(member);
             List<RecentSearchResponse> recentSearchResponseList = recentSearchList.stream().map(recentSearch -> {
                 RecentSearchResponse dto = RecentSearchResponse.getDto(recentSearch);
                 return dto;
@@ -59,10 +62,16 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     public ResponseEntity<Response.Body> recentAdd(RecentSearchRequest dto) {
         try {
             Member member = isUser();
-            //todo: 최근검색이 10개가 넘어가면 어떻게 삭제 해야할지 정해야함 (10개 넘어갈시 삭제 or 시간기준 삭제)
-            validateMaxSize(member);
+            RecentSearch recentSearch;
 
-            RecentSearch recentSearch = dto.toRecentSearch(member);
+            Optional<RecentSearch> recentSearchOptional = recentSearchRepository.findByStationLineAndStationName(dto.getStationLine(),dto.getStationName());
+            if(recentSearchOptional.isPresent()){
+                recentSearch = recentSearchOptional.get();
+                recentSearch.setModifiedAt(LocalDateTime.now());
+            }else{
+                recentSearch = dto.toRecentSearch(member);
+            }
+            validateMaxSize(member);
             recentSearchRepository.save(recentSearch);
             RecentSearchResponse recentSearchResponse = RecentSearchResponse.getDto(recentSearch);
             return response.success(recentSearchResponse,"최근검색 추가 성공",HttpStatus.CREATED);
@@ -94,7 +103,7 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     }
 
     public void validateMaxSize(Member member) {
-        List<RecentSearch> recentSearches = recentSearchRepository.findAllByMember(member);
+        List<RecentSearch> recentSearches = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(member);
 
         if (recentSearches.size() >= 10) {
             RecentSearch recentSearch = recentSearches.get(0);
@@ -103,5 +112,4 @@ public class RecentSearchServiceImpl implements RecentSearchService {
         }
 
     }
-
 }
