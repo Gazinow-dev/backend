@@ -52,6 +52,7 @@ public class FindRoadResponse {
         int stationCode; //노선코드 ex:) 2
         String startName; //승차 정류장
         String endName; // 하차 정류장
+        List<IssueResponse.IssueSummaryDto> issueSummary; // 호선에서 발생한 이슈
 
     }
     @Getter

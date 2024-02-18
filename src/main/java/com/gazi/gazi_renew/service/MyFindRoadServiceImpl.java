@@ -64,18 +64,20 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
 
                         // response로 가공
-
+                        String lineName =  myFindRoadLane.getName();
+                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
                                 .name(myFindRoadLane.getName())
                                 .startName(myFindRoadLane.getStartName())
                                 .endName(myFindRoadLane.getEndName())
                                 .stationCode(myFindRoadLane.getStationCode())
+                                .issueSummary(issueSummaryDtos)
                                 .build();
                         lanes.add(lane);
 
                         ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
-                        String lineName =  myFindRoadLane.getName();
+
                         for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
                             Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
                             List<Issue> issues = stationEntity.getIssues();

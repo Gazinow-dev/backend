@@ -226,4 +226,9 @@ public class IssueServiceImpl implements IssueService {
         return issueList;
     }
 
+    public List<Issue> getIssuesByLine(String lineName){
+        List<Issue> issueList = issueRepository.findALlByLine(lineName);
+        return issueList;
+    }
+
 }
