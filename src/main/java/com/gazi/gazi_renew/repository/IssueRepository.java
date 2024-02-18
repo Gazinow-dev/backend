@@ -24,9 +24,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     List<Issue> findByStations_StationCode(int stationCode);
 
     // Like의 수가 N개 이상인 Issue를 Like의 수에 따라 내림차순으로 정렬하여 반환
-    @Transactional(readOnly=true)
-    @Query("SELECT i FROM Issue i WHERE SIZE(i.likes) >= :likesCount ORDER BY SIZE(i.likes) DESC")
-    Page<Issue> findTopIssuesByLikesCount(@Param("likesCount") int likesCount, Pageable pageable);
+    List<Issue> findTopIssuesByLikesCount(@Param("likesCount") int likesCount, Pageable pageable);
 
     // 현재시간보다 expireDate가 지나지 않았으면 가져오기
     List<Issue> findByExpireDateAfter(LocalDateTime currentTime);

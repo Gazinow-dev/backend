@@ -18,5 +18,5 @@ public interface IssueService {
     ResponseEntity<Response.Body> getLineByIssues(String line,Pageable pageable);
 
     //인기 이슈 조회
-    ResponseEntity<Response.Body> getPopularIssues(Pageable pageable);
+    ResponseEntity<Response.Body> getPopularIssues();
 }
