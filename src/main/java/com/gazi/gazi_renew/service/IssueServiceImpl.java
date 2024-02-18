@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,12 +111,34 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> getPopularIssues(Pageable pageable) {
+    public ResponseEntity<Response.Body> getPopularIssues() {
         int likeCount = 5;
         try {
-            Page<Issue> issuePage = issueRepository.findTopIssuesByLikesCount(likeCount, pageable);
-            Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
-            return response.success(issueResponsePage, "인기 이슈 조회 성공", HttpStatus.OK);
+//            Page<Issue> issuePage = issueRepository.findTopIssuesByLikesCount(likeCount, pageable);
+            List<Issue> issueList = issueRepository.findTopIssuesByLikesCount(likeCount, PageRequest.of(0, 4));
+            List<IssueResponse> issueResponseList = issueList.stream().map(
+                     m -> {
+                         IssueResponse.IssueResponseBuilder builder = IssueResponse.builder()
+                                 .id(m.getId())
+                                 .title(m.getTitle())
+                                 .content(m.getContent())
+                                 .keyword(m.getKeyword())
+                                 .stationDtos(IssueResponse.getStations(m.getStations()))
+                                 .line(m.getLine())
+                                 .startDate(m.getStartDate())
+                                 .expireDate(m.getExpireDate())
+                                 .agoTime(getTime(m.getStartDate()));
+
+                         int likeCountDto = Optional.ofNullable(m.getLikes())
+                                 .map(Set::size)
+                                 .orElse(0);
+
+                         builder.likeCount(likeCountDto);
+
+                         return builder.build();
+                     }
+            ).collect(Collectors.toList());
+            return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);
         }catch (Exception e){
             return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
         }

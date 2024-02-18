@@ -39,6 +39,8 @@ public class IssueResponse {
     }
 
     public static List<StationDto> getStations(List<Station> stations){
+
+        if(stations.isEmpty()) return null;
         System.out.println("역 개수 : " + stations.size());
         List<StationDto> stationDtos = stations.stream()
                 .map(station -> getStation(station))
