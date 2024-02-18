@@ -169,12 +169,13 @@ public class FindRoadServiceImpl implements FindRoadService {
                         JsonNode laneArray = subPathNode.path("lane");
                         for (JsonNode laneNode : laneArray) {
                             lineName = laneNode.path("name").asText();
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                             FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
                             lane.setName(lineName);
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
-
+                            lane.setIssueSummary(issueSummaryDtos);
                             lanes.add(lane);
                         }
                         subPath.setLanes(lanes);

@@ -26,6 +26,7 @@ public class IssueResponse {
     private String agoTime; // 몇분전, 몇시간전...
     private String line;
     private int likeCount;
+    private boolean isLike;
     private IssueKeyword keyword;
     private LocalDateTime startDate;
     private LocalDateTime expireDate;

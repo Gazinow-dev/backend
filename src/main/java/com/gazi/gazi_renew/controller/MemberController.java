@@ -38,7 +38,12 @@ public class MemberController {
         if (errors.hasErrors()) {
             return memberService.validateHandling(errors);
         }
-        return memberService.signUp(signUpDto, errors);
+        memberService.signUp(signUpDto, errors);
+        // 로그인 까지 진행
+        Login loginDto = new Login();
+        loginDto.setEmail(signUpDto.getEmail());
+        loginDto.setPassword(signUpDto.getPassword());
+        return memberService.login(loginDto);
     }
 
     // 로그인
