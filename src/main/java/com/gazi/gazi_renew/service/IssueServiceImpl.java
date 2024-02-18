@@ -1,11 +1,15 @@
 package com.gazi.gazi_renew.service;
 
+import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Issue;
+import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.IssueRepository;
+import com.gazi.gazi_renew.repository.LikeRepository;
+import com.gazi.gazi_renew.repository.MemberRepository;
 import com.gazi.gazi_renew.repository.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +34,9 @@ import java.util.stream.Collectors;
 public class IssueServiceImpl implements IssueService {
 
     private final IssueRepository issueRepository;
+    private final LikeRepository likeRepository;
     private final SubwayRepository subwayRepository;
+    private final MemberRepository memberRepository;
     private final Response response;
 
 
@@ -75,20 +81,28 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssue(Long id) {
-        Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
-        IssueResponse issueResponse = IssueResponse.builder()
-                .id(issue.getId())
-                .title(issue.getTitle())
-                .content(issue.getContent())
-//                .date(issue.getDate().toString())
-                .keyword(issue.getKeyword())
-                .line(issue.getLine())
-                .stationDtos(IssueResponse.getStations(issue.getStations()))
-                .startDate(issue.getStartDate())
-                .expireDate(issue.getExpireDate())
-                .agoTime(getTime(issue.getStartDate()))
-                .build();
-        return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
+        try {
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+
+            Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
+            IssueResponse issueResponse = IssueResponse.builder()
+                    .id(issue.getId())
+                    .title(issue.getTitle())
+                    .content(issue.getContent())
+                    .isLike(likeRepository.existsByIssueAndMember(issue,member))
+                    .keyword(issue.getKeyword())
+                    .line(issue.getLine())
+                    .stationDtos(IssueResponse.getStations(issue.getStations()))
+                    .startDate(issue.getStartDate())
+                    .expireDate(issue.getExpireDate())
+                    .agoTime(getTime(issue.getStartDate()))
+                    .build();
+            return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
+        }catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Override
