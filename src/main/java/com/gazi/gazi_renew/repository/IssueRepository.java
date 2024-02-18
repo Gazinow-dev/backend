@@ -11,13 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     @Transactional(readOnly=true)
     Page<Issue> findALlByLine(String line, Pageable pageable);
-
+    @Transactional(readOnly=true)
+    List<Issue> findALlByLine(String line);
     boolean existsByCrawlingNo(String crawlingNo);
     List<Issue> findByStations_StationCode(int stationCode);
 
