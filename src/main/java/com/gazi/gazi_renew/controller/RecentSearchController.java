@@ -20,10 +20,9 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/recentSearch")
 @RestController
-public class RecentSearchController {
+public class RecentSearchController extends BaseController{
 
     private final RecentSearchService recentSearchService;
 

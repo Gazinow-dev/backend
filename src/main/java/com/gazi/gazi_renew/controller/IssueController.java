@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequestMapping("/api/v1/issue")
 @Controller
-public class IssueController {
+public class IssueController extends BaseController{
 
     private final JsoupService jsoupService;
     private final IssueService issueService;

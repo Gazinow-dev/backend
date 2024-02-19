@@ -25,7 +25,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @CrossOrigin
 @RequestMapping("/api/v1/find_road")
 @RestController
-public class FindRoadController {
+public class FindRoadController extends BaseController{
     private final FindRoadService findRoadService;
 
     @Hidden

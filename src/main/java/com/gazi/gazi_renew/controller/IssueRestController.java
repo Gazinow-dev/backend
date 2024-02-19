@@ -15,9 +15,8 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "Bearer Authentication")
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/issue")
-public class IssueRestController {
+public class IssueRestController extends BaseController{
     private final JsoupService jsoupService;
     private final IssueService issueService;
 

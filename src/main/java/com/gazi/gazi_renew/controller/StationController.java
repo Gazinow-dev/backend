@@ -10,10 +10,9 @@ import java.util.List;
 
 @SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/stations")
 @RestController
-public class StationController {
+public class StationController extends BaseController{
 
     private final SubwayRepository subwayRepository;
 

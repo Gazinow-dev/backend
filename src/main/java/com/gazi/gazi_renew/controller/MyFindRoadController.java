@@ -16,10 +16,9 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/my_find_road")
 @RestController
-public class MyFindRoadController {
+public class MyFindRoadController extends BaseController{
     private final MyFindRoadService myFindRoadService;
 
     @GetMapping("/get_roads")

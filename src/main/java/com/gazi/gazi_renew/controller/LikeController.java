@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin
 @SecurityRequirement(name = "Bearer Authentication")
 @RequestMapping("/api/v1/like")
-public class LikeController {
+public class LikeController extends BaseController{
 
     private final LikeService likeService;
     @PostMapping

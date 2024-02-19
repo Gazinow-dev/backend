@@ -25,10 +25,9 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/member")
 @RestController
-public class MemberController {
+public class MemberController extends BaseController{
     private final MemberService memberService;
 
     // 회원가입
