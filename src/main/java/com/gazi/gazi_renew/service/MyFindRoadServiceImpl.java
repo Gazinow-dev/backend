@@ -188,7 +188,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
 
             }
-            return response.success(myFindRoadPath.getName(), "데이터 저장완료", HttpStatus.CREATED);
+            return response.success(myFindRoadPath.getId(), "데이터 저장완료", HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
