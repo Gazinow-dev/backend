@@ -9,9 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -24,7 +22,7 @@ public class IssueResponse {
     private String title;
     private String content;
     private String agoTime; // 몇분전, 몇시간전...
-    private String line;
+    private List<String> lines;
     private int likeCount;
     private boolean isLike;
     private IssueKeyword keyword;
@@ -54,6 +52,8 @@ public class IssueResponse {
     }
 
     // 이슈 요약
+    @Setter
+    @Getter
     @Builder
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class IssueSummaryDto{
@@ -80,6 +80,24 @@ public class IssueResponse {
                     }
             ).collect(Collectors.toList());
             return issueSummaryDto;
+        }
+
+
+        public static List<IssueSummaryDto> getIssueSummaryDtoByLine(List<IssueResponse.IssueSummaryDto> issues){
+            List<IssueResponse.IssueSummaryDto> issueSummaryDtoList = new ArrayList<>();
+
+            Set<Long> idSet = new HashSet<>();
+            // 중복된거면 넣지않기
+            for(IssueResponse.IssueSummaryDto issue : issues){
+                System.out.println("id: " + issue.getId());
+                if (!idSet.contains(issue.getId())) {
+                    // HashSet에 아직 존재하지 않는 id인 경우에만 리스트에 추가합니다.
+                    issueSummaryDtoList.add(issue);
+                    idSet.add(issue.getId());
+                }
+            }
+
+            return issueSummaryDtoList;
         }
     }
 }

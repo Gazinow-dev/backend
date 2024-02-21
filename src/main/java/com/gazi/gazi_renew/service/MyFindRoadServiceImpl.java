@@ -65,31 +65,39 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
                         // response로 가공
                         String lineName =  myFindRoadLane.getName();
-                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
+//                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
                                 .name(myFindRoadLane.getName())
                                 .startName(myFindRoadLane.getStartName())
                                 .endName(myFindRoadLane.getEndName())
                                 .stationCode(myFindRoadLane.getStationCode())
-                                .issueSummary(issueSummaryDtos)
+//                                .issueSummary(issueSummaryDtos)
                                 .build();
                         lanes.add(lane);
 
+                        List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
                         ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
 
                         for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
                             Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
                             List<Issue> issues = stationEntity.getIssues();
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues));
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
-                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues)))
+                                    .issueSummary(issueSummaryDtos)
                                     .build();
-
                             stations.add(station);
+
+                            issueDtoList.addAll(issueSummaryDtos);
                         }
                         subPathResponse.setLanes(lanes);
+
+                        // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
+                        if(!subPathResponse.getLanes().isEmpty()) {
+                            subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                        }
                         subPathResponse.setStations(stations);
                     }
                     subPaths.add(subPathResponse);

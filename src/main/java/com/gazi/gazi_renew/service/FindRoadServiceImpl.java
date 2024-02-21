@@ -28,8 +28,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -169,17 +167,15 @@ public class FindRoadServiceImpl implements FindRoadService {
                         JsonNode laneArray = subPathNode.path("lane");
                         for (JsonNode laneNode : laneArray) {
                             lineName = laneNode.path("name").asText();
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
+//                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                             FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
                             lane.setName(lineName);
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
-                            lane.setIssueSummary(issueSummaryDtos);
                             lanes.add(lane);
                         }
                         subPath.setLanes(lanes);
-
                         // passStopList 처리
                         JsonNode passStopListNode = subPathNode.path("passStopList");
                         ArrayList<FindRoadResponse.Station> stations = new ArrayList<>();
@@ -189,6 +185,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                         if(stationArray.size() >= 2){
                             subPath.setWay(stationArray.get(1).path("stationName").asText());
                         }
+                        List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
                         for (JsonNode stationNode : stationArray) {
                             FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
@@ -200,9 +197,14 @@ public class FindRoadServiceImpl implements FindRoadService {
                             Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
                             List<Issue> issues = stationEntity.getIssues();
                             List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues));
+                            issueDtoList.addAll(issueSummaryDto);
                             station.setIssueSummary(issueSummaryDto);
                             stations.add(station);
                         }
+                        if(!subPath.getLanes().isEmpty()){
+                            subPath.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                        }
+
                         subPath.setStations(stations);
                         subPaths.add(subPath);
                     }
