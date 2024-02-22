@@ -56,11 +56,12 @@ dependencies {
     //thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
-    implementation group: 'org.seleniumhq.selenium', name: 'selenium-server', version: '3.141.59'
+//    implementation group: 'org.seleniumhq.selenium', name: 'selenium-server', version: '3.141.59'
 //    implementation 'org.seleniumhq.selenium:selenium-java:4.10.0'
 //    implementation 'org.seleniumhq.selenium:selenium-chrome-driver:4.10.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.10.0'
 
-    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.5.3'
+    implementation group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '5.7.0'
 }
 
 tasks.named('test') {

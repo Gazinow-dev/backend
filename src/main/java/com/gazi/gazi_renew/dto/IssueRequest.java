@@ -18,6 +18,7 @@ public class IssueRequest {
     private String secretCode;
     private String crawlingNo;
     private IssueKeyword keyword;
+    private List<String> lines;
     private List<Station> stations;
 
     @Getter

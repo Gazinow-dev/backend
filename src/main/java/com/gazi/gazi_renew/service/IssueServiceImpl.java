@@ -2,19 +2,18 @@ package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Issue;
+import com.gazi.gazi_renew.domain.Line;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
-import com.gazi.gazi_renew.repository.IssueRepository;
-import com.gazi.gazi_renew.repository.LikeRepository;
-import com.gazi.gazi_renew.repository.MemberRepository;
-import com.gazi.gazi_renew.repository.SubwayRepository;
+import com.gazi.gazi_renew.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -38,6 +37,7 @@ public class IssueServiceImpl implements IssueService {
     private final LikeRepository likeRepository;
     private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
+    private final LineRepository lineRepository;
     private final Response response;
 
 
@@ -53,7 +53,7 @@ public class IssueServiceImpl implements IssueService {
             }
 
             List<Station> stationList = getStationList(dto.getStations());
-
+            List<Line> lineList =  getLineList(dto.getLines());
             Issue issue = Issue.builder()
                     .crawlingNo(dto.getCrawlingNo())
                     .startDate(dto.getStartDate().withSecond(0).withNano(0))
@@ -62,6 +62,7 @@ public class IssueServiceImpl implements IssueService {
                     .content(dto.getContent())
                     .stations(stationList)
                     .keyword(dto.getKeyword())
+                    .lines(lineList)
                     .build();
 
             issueRepository.save(issue);
@@ -72,6 +73,15 @@ public class IssueServiceImpl implements IssueService {
                 station.setIssues(issues);
                 subwayRepository.save(station);
             }
+
+            // line에도 추가
+            for (Line line : lineList){
+                List<Issue> issues = line.getIssues();
+                issues.add(issue);
+                line.setIssues(issues);
+                lineRepository.save(line);
+            }
+
             return response.success();
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -92,7 +102,11 @@ public class IssueServiceImpl implements IssueService {
                     .content(issue.getContent())
                     .isLike(likeRepository.existsByIssueAndMember(issue,member))
                     .keyword(issue.getKeyword())
-                    .line(issue.getLine())
+                    .lines(
+                            issue.getLines().stream()
+                            .map(Line::getLineName)
+                            .collect(Collectors.toList())
+                    )
                     .stationDtos(IssueResponse.getStations(issue.getStations()))
                     .startDate(issue.getStartDate())
                     .expireDate(issue.getExpireDate())
@@ -118,8 +132,12 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
-        Page<Issue> issuePage = issueRepository.findALlByLine(line, pageable);
-        Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
+        Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
+                () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
+        );
+
+        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues());
+        Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
 
         return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
     }
@@ -138,7 +156,11 @@ public class IssueServiceImpl implements IssueService {
                                 .content(m.getContent())
                                 .keyword(m.getKeyword())
                                 .stationDtos(IssueResponse.getStations(m.getStations()))
-                                .line(m.getLine())
+                                .lines(
+                                        m.getLines().stream()
+                                                .map(Line::getLineName)
+                                                .collect(Collectors.toList())
+                                )
                                 .startDate(m.getStartDate())
                                 .expireDate(m.getExpireDate())
                                 .agoTime(getTime(m.getStartDate()));
@@ -167,10 +189,15 @@ public class IssueServiceImpl implements IssueService {
                     .content(m.getContent())
                     .keyword(m.getKeyword())
                     .stationDtos(IssueResponse.getStations(m.getStations()))
-                    .line(m.getLine())
+                    .lines(
+                            m.getLines().stream()
+                                    .map(Line::getLineName)
+                                    .collect(Collectors.toList())
+                    )
                     .startDate(m.getStartDate())
                     .expireDate(m.getExpireDate())
                     .agoTime(getTime(m.getStartDate()));
+
 
             int likeCount = Optional.ofNullable(m.getLikes())
                     .map(Set::size)
@@ -218,6 +245,16 @@ public class IssueServiceImpl implements IssueService {
         return stationResponse;
     }
 
+    public List<Line> getLineList(List<String> lines){
+        List<Line> lineResponse = new ArrayList<>();
+        for(String line : lines){
+            Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
+                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
+            );
+            lineResponse.add(lineEntity);
+        }
+        return lineResponse;
+    }
     // 시간 구하기 로직
     public static String getTime(LocalDateTime startTime) {
 

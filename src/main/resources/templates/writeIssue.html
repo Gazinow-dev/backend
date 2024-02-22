@@ -95,7 +95,9 @@
     </div>
     <label th:for="secretCode">관리자 인증 코드 : </label>
     <input type="password" id="secretCode" th:field="*{secretCode}">
-    <button type="submit">제출</button>
+
+    <input type="hidden" id="selectedLines" name="lines" th:fild="*{lines}">
+    <button type="submit" onclick="collectSelectedLines()">제출</button>
 </form>
 </body>
 <script th:inline="javascript">
@@ -172,7 +174,19 @@
 
         lineIndex++; // 새로운 역이 추가될 때마다 인덱스를 증가시킵니다.
     }
+    // 선택된 호선들을 hidden input에 할당하는 함수
+    function collectSelectedLines() {
+        var selectedLines = [];
+        var selectedLineElements = document.querySelectorAll('.selectedLine');
+        console.log(document.querySelectorAll('.selectedLine'))
+        selectedLineElements.forEach(function(element) {
+            selectedLines.push(element.value);
+        });
+        document.getElementById('selectedLines').value = selectedLines.join(','); // 선택된 호선들을 쉼표로 구분하여 문자열로 변환하여 hidden input에 할당
+        console.log(document.getElementById('selectedLines').value);
+
+    }
 </script>
 
 </html>
-``
+

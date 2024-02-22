@@ -13,16 +13,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-@CrossOrigin
 @RequestMapping("/api/v1/issue")
 @Controller
-public class IssueController extends BaseController{
+public class IssueController {
 
-    private final JsoupService jsoupService;
     private final IssueService issueService;
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/add")
     public ResponseEntity addIssue(@ModelAttribute("dto") IssueRequest dto ){
         return issueService.addIssue(dto);
