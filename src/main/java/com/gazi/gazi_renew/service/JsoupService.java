@@ -90,13 +90,19 @@ public class JsoupService {
     }
 
     public void noticeCrawler() throws Exception {
-        WebDriverManager.chromedriver().setup();
+        // 자동업데이트
+//        WebDriverManager.chromedriver().setup();
+        // 수동 업데이트
+        // https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.57/mac-x64/chromedriver-mac-x64.zip
+        System.setProperty("webdriver.chrome.driver", "./chromedriver");
+
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("--disable-popup-blocking");   // 팝업 안띄움
         options.addArguments("headless");   // 브라우저 안띄움
         options.addArguments("--disable-gpu");  // gpu 비활성화
         options.addArguments("--blink-settings=imagesEnabled=false");   // 이미지 다운 안받음
+        options.addArguments("--remote-allow-origins=*");
         WebDriver driver = new ChromeDriver(options);
 
         // WebDriver 가 로드될때까지 10초 기다림
@@ -137,6 +143,7 @@ public class JsoupService {
                 no += firstTd.getText();
                 // 번호를 통한 검증로직
                 if(issueRepository.existsByCrawlingNo(no)){
+                    System.out.println("no: " + no);
                     break loopOut;
                 }
                 title = secondTd.getText();
