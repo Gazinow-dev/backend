@@ -6,6 +6,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,12 +22,14 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
 import java.time.Duration;
 import java.util.List;
 
@@ -36,8 +40,6 @@ public class JsoupService {
     private final IssueRepository issueRepository;
     private final JavaMailSender emailSender;
     private final SpringTemplateEngine templateEngine;
-
-
 
     public static Connection getJsoupConnection(String url) throws Exception {
         return Jsoup.connect(url);
@@ -69,9 +71,6 @@ public class JsoupService {
             String date = row.select("tr td.bd5").first().text();
 
             dto.setTitle(title);
-            // 가장 최근에 조회했을때
-            // 금일에 올라온 데이터가 있다면?
-
             if(!no.equals("NOTICE")){
                 // 상세정보 크롤링
                 Document detailDoc = getJsoupConnection(detailUrl).get();
@@ -89,9 +88,10 @@ public class JsoupService {
         }
     }
 
+    @Scheduled(cron = "0 */30 * * * *") // 매 30분마다 실행
     public void noticeCrawler() throws Exception {
         // 자동업데이트
-//        WebDriverManager.chromedriver().setup();
+        // WebDriverManager.chromedriver().setup();
         // 수동 업데이트
         // https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.57/mac-x64/chromedriver-mac-x64.zip
         System.setProperty("webdriver.chrome.driver", "./chromedriver");
@@ -121,13 +121,12 @@ public class JsoupService {
         loopOut:
         // 각 tr 요소 출력
         for (int i = 0; i < rows.size(); i++) {
-            if(i == 1){
-                System.out.println("요기까지");
-                break loopOut;
-            }
+
+            Thread.sleep(5000);
             String title = "";
             String no = "topis-";
             String content = "";
+            int latestNo = 0;
             WebElement row = rows.get(i);
             // 현재 행에서 모든 td 요소 가져오기
             List<WebElement> columns = row.findElements(By.tagName("td"));
@@ -141,6 +140,18 @@ public class JsoupService {
                 WebElement firstTd = columns.get(0);
                 WebElement secondTd = columns.get(1);
                 no += firstTd.getText();
+
+                // 최근 조회 넘버가 변경되지 않으면 크롤링을 돌필요가 없다.
+                if(i == 0){
+                    latestNo = Integer.parseInt(firstTd.getText());
+                    if(!issueRepository.existsByLatestNo(latestNo)){
+                        latestNo = Integer.parseInt(firstTd.getText());
+                        System.out.println("latestNo: " + latestNo);
+                    }else{
+                        break loopOut;
+                    }
+                }
+
                 // 번호를 통한 검증로직
                 if(issueRepository.existsByCrawlingNo(no)){
                     System.out.println("no: " + no);
@@ -163,6 +174,8 @@ public class JsoupService {
             dto.setTitle(title);
             dto.setContent(content);
             dto.setCrawlingNo(no);
+            dto.setLatestNo(latestNo);
+
             sendEmail(dto);
         }
 
@@ -192,14 +205,21 @@ public class JsoupService {
         context.setVariable("title", dto.getTitle());
         context.setVariable("content", dto.getContent());
         context.setVariable("crawlingNo", dto.getCrawlingNo());
+        context.setVariable("latestNo", dto.getLatestNo());
         return templateEngine.process("emailTemplate", context); // mail.html
     }
 
-    public void sendEmail(IssueRequest dto) throws Exception {
-        MimeMessage message = createMessage(dto);
+    public void sendEmail(IssueRequest dto)  {
+        try{
+            MimeMessage message = createMessage(dto);
+            // 이메일 전송
+            emailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
 
-        // 이메일 전송
-        emailSender.send(message);
     }
 
 }
