@@ -52,6 +52,10 @@ public class IssueServiceImpl implements IssueService {
                 return response.fail("인증코드가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
             }
 
+            if(issueRepository.existsByCrawlingNo(dto.getCrawlingNo())){
+                return response.fail("이미 해당 데이터가 존재합니다.", HttpStatus.BAD_REQUEST);
+            }
+
             List<Station> stationList = getStationList(dto.getStations());
             List<Line> lineList = getLineList(dto.getLines());
             Issue issue = Issue.builder()
