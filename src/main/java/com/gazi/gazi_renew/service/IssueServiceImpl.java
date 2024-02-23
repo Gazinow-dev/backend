@@ -53,7 +53,7 @@ public class IssueServiceImpl implements IssueService {
             }
 
             List<Station> stationList = getStationList(dto.getStations());
-            List<Line> lineList =  getLineList(dto.getLines());
+            List<Line> lineList = getLineList(dto.getLines());
             Issue issue = Issue.builder()
                     .crawlingNo(dto.getCrawlingNo())
                     .startDate(dto.getStartDate().withSecond(0).withNano(0))
@@ -63,6 +63,7 @@ public class IssueServiceImpl implements IssueService {
                     .stations(stationList)
                     .keyword(dto.getKeyword())
                     .lines(lineList)
+                    .latestNo(dto.getLatestNo())
                     .build();
 
             issueRepository.save(issue);
@@ -75,7 +76,7 @@ public class IssueServiceImpl implements IssueService {
             }
 
             // line에도 추가
-            for (Line line : lineList){
+            for (Line line : lineList) {
                 List<Issue> issues = line.getIssues();
                 issues.add(issue);
                 line.setIssues(issues);
@@ -86,8 +87,8 @@ public class IssueServiceImpl implements IssueService {
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -104,8 +105,8 @@ public class IssueServiceImpl implements IssueService {
                     .keyword(issue.getKeyword())
                     .lines(
                             issue.getLines().stream()
-                            .map(Line::getLineName)
-                            .collect(Collectors.toList())
+                                    .map(Line::getLineName)
+                                    .collect(Collectors.toList())
                     )
                     .stationDtos(IssueResponse.getStations(issue.getStations()))
                     .startDate(issue.getStartDate())
@@ -119,7 +120,6 @@ public class IssueServiceImpl implements IssueService {
             return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
-
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssues(Pageable pageable) {

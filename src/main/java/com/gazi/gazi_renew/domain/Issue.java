@@ -35,6 +35,8 @@ public class Issue extends AuditingFields{
     private LocalDateTime startDate;
     private LocalDateTime expireDate;
     private IssueKeyword keyword;
+    @Column(nullable = true)
+    private int latestNo;
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Like> likes = new HashSet<>();
     // 다대다 관계 매핑
