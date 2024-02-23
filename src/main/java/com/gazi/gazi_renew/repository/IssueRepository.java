@@ -30,4 +30,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     // 현재시간보다 expireDate가 지나지 않았으면 가져오기
     List<Issue> findByExpireDateAfter(LocalDateTime currentTime);
+
+    boolean existsByLatestNo(int latestNo);
 }

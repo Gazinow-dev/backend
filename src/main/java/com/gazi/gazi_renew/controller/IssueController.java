@@ -30,13 +30,15 @@ public class IssueController {
     public String writeIssue(Model model,IssueRequest dto,
                              @RequestParam(name = "title")String title,
                              @RequestParam(name = "content")String content,
-                             @RequestParam(name = "crawlingNo")String crawlingNo)
+                             @RequestParam(name = "crawlingNo")String crawlingNo,
+                             @RequestParam(name = "latestNo")int latestNo)
     {
         model.addAttribute("title", title);
         model.addAttribute("content", content);
         model.addAttribute("crawlingNo", crawlingNo);
         model.addAttribute("dto", dto);
         model.addAttribute("keyword", IssueKeyword.values());
+        model.addAttribute("latestNo",latestNo);
         return "writeIssue";
     }
 }

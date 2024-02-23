@@ -20,6 +20,7 @@ public class IssueRequest {
     private IssueKeyword keyword;
     private List<String> lines;
     private List<Station> stations;
+    private int latestNo;
 
     @Getter
     @Setter
