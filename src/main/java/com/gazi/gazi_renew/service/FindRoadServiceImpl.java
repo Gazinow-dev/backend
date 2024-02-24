@@ -3,11 +3,9 @@ package com.gazi.gazi_renew.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.config.SecurityUtil;
-import com.gazi.gazi_renew.domain.Issue;
-import com.gazi.gazi_renew.domain.Member;
-import com.gazi.gazi_renew.domain.MyFindRoadPath;
-import com.gazi.gazi_renew.domain.Station;
+import com.gazi.gazi_renew.domain.*;
 import com.gazi.gazi_renew.dto.*;
+import com.gazi.gazi_renew.repository.LineRepository;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import com.gazi.gazi_renew.repository.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +36,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueServiceImpl issueService;
+    private final LineRepository lineRepository;
     @Value("${odsay.key}")
     public static String apiKey;
 
@@ -167,7 +166,6 @@ public class FindRoadServiceImpl implements FindRoadService {
                         JsonNode laneArray = subPathNode.path("lane");
                         for (JsonNode laneNode : laneArray) {
                             lineName = laneNode.path("name").asText();
-//                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                             FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
                             lane.setName(lineName);
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
@@ -187,6 +185,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                         }
                         List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
                         for (JsonNode stationNode : stationArray) {
+
+                            Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                                    () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
+                            );
+
                             FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
                             station.setStationName(stationNode.path("stationName").asText());
@@ -196,12 +199,14 @@ public class FindRoadServiceImpl implements FindRoadService {
                             //staion 찾고 이슈 리스트 받기
                             Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
                             List<Issue> issues = stationEntity.getIssues();
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues));
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
                             issueDtoList.addAll(issueSummaryDto);
                             station.setIssueSummary(issueSummaryDto);
                             stations.add(station);
                         }
                         if(!subPath.getLanes().isEmpty()){
+
+
                             subPath.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
                         }
 

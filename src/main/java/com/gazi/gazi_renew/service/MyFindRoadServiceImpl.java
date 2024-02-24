@@ -30,6 +30,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final LineRepository lineRepository;
     private final SubwayDataService subwayDataService;
     private final IssueServiceImpl issueService;
     //회원 인증하고
@@ -65,6 +66,10 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
                         // response로 가공
                         String lineName =  myFindRoadLane.getName();
+                        // line entity
+                        Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                                () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
+                        );
 //                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
@@ -82,7 +87,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
                             Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
                             List<Issue> issues = stationEntity.getIssues();
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(issues));
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
