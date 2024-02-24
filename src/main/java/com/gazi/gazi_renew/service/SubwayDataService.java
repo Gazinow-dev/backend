@@ -103,6 +103,10 @@ public class SubwayDataService {
     public Station getStationByNameAndLine(String name, String line){
         try{
             System.out.println(line);
+            if(line.equals("수도권 9호선(급행)")){
+                line = "수도권 9호선";
+            }
+
             List<Station> stations = subwayRepository.findByNameContainingAndLine(name,line);
 
             Station stationResponse = stations.get(0);
