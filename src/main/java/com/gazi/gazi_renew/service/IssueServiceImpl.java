@@ -117,6 +117,10 @@ public class IssueServiceImpl implements IssueService {
                     .expireDate(issue.getExpireDate())
                     .agoTime(getTime(issue.getStartDate()))
                     .build();
+            int likeCount = Optional.ofNullable(issue.getLikes())
+                    .map(Set::size)
+                    .orElse(0);
+            issueResponse.setLikeCount(likeCount);
             return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
         }catch (EntityNotFoundException e){
             return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
