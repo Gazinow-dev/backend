@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.repository;
 
 import com.gazi.gazi_renew.domain.Issue;
+import com.gazi.gazi_renew.domain.Line;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,8 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     List<Issue> findByExpireDateAfter(LocalDateTime currentTime);
 
     boolean existsByLatestNo(int latestNo);
+    @Query("SELECT i FROM Issue i JOIN i.lines l " +
+            "WHERE i.expireDate > CURRENT_TIMESTAMP " +
+            "AND l = :line")
+    List<Issue> findActiveIssuesForLine(@Param("line") Line line);
 }
