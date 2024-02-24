@@ -128,6 +128,8 @@ public class SubwayDataService {
         }catch (EntityNotFoundException e){
             log.error(e.getMessage());
             return null;
+        }catch (IndexOutOfBoundsException e){
+            return null;
         }
 
 
