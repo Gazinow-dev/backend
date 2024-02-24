@@ -209,7 +209,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                                 }
                             }
 
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
                             issueDtoList.addAll(issueSummaryDto);
                             station.setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues));
                             stations.add(station);

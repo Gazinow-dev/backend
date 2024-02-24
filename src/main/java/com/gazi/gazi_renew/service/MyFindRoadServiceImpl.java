@@ -97,7 +97,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                                     activeIssues.add(issue);
                                 }
                             }
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
