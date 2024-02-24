@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -158,7 +159,6 @@ public class FindRoadServiceImpl implements FindRoadService {
                         subPath.setSectionTime(subPathNode.path("sectionTime").asInt());
                         subPath.setStationCount(subPathNode.path("stationCount").asInt());
                         subPath.setDoor(subPathNode.path("door").asText());
-//                        subPath.setWay(subPathNode.path("way").asText());
 
                         String lineName = "";
                         // lanes 배열 처리
@@ -199,9 +199,19 @@ public class FindRoadServiceImpl implements FindRoadService {
                             //staion 찾고 이슈 리스트 받기
                             Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
                             List<Issue> issues = stationEntity.getIssues();
+                            List<Issue> activeIssues = new ArrayList<>();
+                            // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
+                            LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
+
+                            for (Issue issue : issues) {
+                                if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                                    activeIssues.add(issue);
+                                }
+                            }
+
                             List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
                             issueDtoList.addAll(issueSummaryDto);
-                            station.setIssueSummary(issueSummaryDto);
+                            station.setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues));
                             stations.add(station);
                         }
                         if(!subPath.getLanes().isEmpty()){

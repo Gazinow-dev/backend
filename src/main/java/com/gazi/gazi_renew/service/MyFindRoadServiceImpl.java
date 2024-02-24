@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,11 +88,20 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
                             Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
                             List<Issue> issues = stationEntity.getIssues();
+                            List<Issue> activeIssues = new ArrayList<>();
+                            // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
+                            LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
+
+                            for (Issue issue : issues) {
+                                if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                                    activeIssues.add(issue);
+                                }
+                            }
                             List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getActiveIssues(line));
                             MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                     .stationName(myFindRoadStation.getStationName())
                                     .index(myFindRoadStation.getIndex())
-                                    .issueSummary(issueSummaryDtos)
+                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues))
                                     .build();
                             stations.add(station);
 
