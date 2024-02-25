@@ -185,7 +185,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                         }
                         List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
                         for (JsonNode stationNode : stationArray) {
-
+                            System.out.println("lineName :" + lineName);
+                            if(lineName.equals("수도권 9호선(급행)")){
+                                System.out.println("수도권 9호선 급행이 나옴");
+                                lineName = "수도권 9호선";
+                            }
                             Line line = lineRepository.findByLineName(lineName).orElseThrow(
                                     () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
                             );
