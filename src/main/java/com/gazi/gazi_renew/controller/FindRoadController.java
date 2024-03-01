@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@SecurityRequirement(name = "Bearer Authentication")
+
 @RequiredArgsConstructor
 @CrossOrigin
 @RequestMapping("/api/v1/find_road")

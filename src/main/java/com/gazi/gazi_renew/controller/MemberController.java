@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@SecurityRequirement(name = "Bearer Authentication")
+
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/member")
 @RestController
@@ -65,6 +65,7 @@ public class MemberController extends BaseController{
     }
 
     // 닉네임 수정
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/change_nickname")
     @Operation(summary = "닉네임 수정")
     @ApiResponses(value = {
@@ -79,6 +80,7 @@ public class MemberController extends BaseController{
         return memberService.changeNickName(nickNameDto, errors);
     }
     // 비밀번호 변경
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/change_password")
     @Operation(summary = "비밀번호 변경")
     @ApiResponses(value = {
@@ -105,6 +107,7 @@ public class MemberController extends BaseController{
         return memberService.checkPassword(password);
     }
     // 회원 탈퇴
+    @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/delete_member")
     @Operation(summary = "회원 탈퇴")
     @ApiResponses(value = {

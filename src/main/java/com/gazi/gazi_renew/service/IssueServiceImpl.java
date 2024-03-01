@@ -98,14 +98,20 @@ public class IssueServiceImpl implements IssueService {
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssue(Long id) {
         try {
-            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
             Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
+            boolean isLike = false;
+            if(member.isPresent()){
+                isLike = likeRepository.existsByIssueAndMember(issue,member.get());
+            }else{
+                isLike = false;
+            }
             IssueResponse issueResponse = IssueResponse.builder()
                     .id(issue.getId())
                     .title(issue.getTitle())
                     .content(issue.getContent())
-                    .isLike(likeRepository.existsByIssueAndMember(issue,member))
+                    .isLike(isLike)
                     .keyword(issue.getKeyword())
                     .lines(
                             issue.getLines().stream()

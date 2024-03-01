@@ -98,7 +98,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     @Transactional
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
 
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
         SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
@@ -130,24 +130,27 @@ public class FindRoadServiceImpl implements FindRoadService {
                 path.setFirstStartStation(pathNode.path("info").path("firstStartStation").asText());
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
-                Optional<List<MyFindRoadPath>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
-                        pathNode.path("info").path("firstStartStation").asText(),
-                        pathNode.path("info").path("lastEndStation").asText(),
-                        member,
-                        pathNode.path("info").path("totalTime").asInt()
-                );
-                List<Long> myPathId = new ArrayList<>();
+                if(member.isPresent()) {
+                    Optional<List<MyFindRoadPath>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
+                            pathNode.path("info").path("firstStartStation").asText(),
+                            pathNode.path("info").path("lastEndStation").asText(),
+                            member.get(),
+                            pathNode.path("info").path("totalTime").asInt()
+                    );
+                    List<Long> myPathId = new ArrayList<>();
 
-                if(myFindRoadPath.get().size() > 0){
-                    path.setMyPath(true);
-                    for (MyFindRoadPath myFindRoadPath1 : myFindRoadPath.get()) {
-                        myPathId.add(myFindRoadPath1.getId());
+                    if (myFindRoadPath.get().size() > 0) {
+                        path.setMyPath(true);
+                        for (MyFindRoadPath myFindRoadPath1 : myFindRoadPath.get()) {
+                            myPathId.add(myFindRoadPath1.getId());
+                        }
+                        path.setMyPathId(myPathId);
+                    } else {
+                        path.setMyPath(false);
                     }
-                    path.setMyPathId(myPathId);
-                }else{
+                } else{
                     path.setMyPath(false);
                 }
-
                 // subPaths 배열 처리
                 ArrayList<FindRoadResponse.SubPath> subPaths = new ArrayList<>();
                 JsonNode subPathArray = pathNode.path("subPath");
