@@ -87,7 +87,7 @@ public class JsoupService {
         }
     }
 
-    @Scheduled(cron = "0 */10 * * * *") // 매 10분마다 실행
+    @Scheduled(cron = "0 */5 * * * *") // 매 10분마다 실행
     public void noticeCrawler() throws Exception {
         // 자동업데이트
         // WebDriverManager.chromedriver().setup();
@@ -98,7 +98,7 @@ public class JsoupService {
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("--disable-popup-blocking");   // 팝업 안띄움
-//        options.addArguments("headless");   // 브라우저 안띄움
+        options.addArguments("headless");   // 브라우저 안띄움
         options.addArguments("--disable-gpu");  // gpu 비활성화
         options.addArguments("--blink-settings=imagesEnabled=false");   // 이미지 다운 안받음
         options.addArguments("--remote-allow-origins=*");

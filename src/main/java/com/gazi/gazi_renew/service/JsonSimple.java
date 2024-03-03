@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -16,7 +17,7 @@ import java.io.IOException;
 public class JsonSimple {
 
     public void writeJson(int number) throws IOException{
-        String filePath = "./src/main/resources/latestNumber.json";
+        String filePath = "/home/ubuntu/backend/src/main/resources/latestNumber.json";
 
         // ObjectMapper를 사용하여 JSON 파일 읽기
         ObjectMapper objectMapper = new ObjectMapper();
@@ -31,7 +32,7 @@ public class JsonSimple {
     }
 
     public Integer getLastestNumber() throws IOException {
-        String filePath = "./src/main/resources/latestNumber.json";
+        String filePath = "/home/ubuntu/backend/src/main/resources/latestNumber.json";
 
         // ObjectMapper를 사용하여 JSON 파일 읽기
         ObjectMapper objectMapper = new ObjectMapper();
