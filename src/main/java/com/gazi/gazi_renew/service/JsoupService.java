@@ -2,12 +2,10 @@ package com.gazi.gazi_renew.service;
 
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.repository.IssueRepository;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
-import org.json.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,17 +27,18 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.UnsupportedEncodingException;
-import java.net.SocketException;
 import java.time.Duration;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JsoupService {
 
     private final IssueRepository issueRepository;
     private final JavaMailSender emailSender;
     private final SpringTemplateEngine templateEngine;
+    private final JsonSimple jsonSimple;
 
     public static Connection getJsoupConnection(String url) throws Exception {
         return Jsoup.connect(url);
@@ -88,7 +87,7 @@ public class JsoupService {
         }
     }
 
-    @Scheduled(cron = "0 */30 * * * *") // 매 30분마다 실행
+    @Scheduled(cron = "0 */10 * * * *") // 매 10분마다 실행
     public void noticeCrawler() throws Exception {
         // 자동업데이트
         // WebDriverManager.chromedriver().setup();
@@ -99,7 +98,7 @@ public class JsoupService {
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("--disable-popup-blocking");   // 팝업 안띄움
-        options.addArguments("headless");   // 브라우저 안띄움
+//        options.addArguments("headless");   // 브라우저 안띄움
         options.addArguments("--disable-gpu");  // gpu 비활성화
         options.addArguments("--blink-settings=imagesEnabled=false");   // 이미지 다운 안받음
         options.addArguments("--remote-allow-origins=*");
@@ -128,6 +127,7 @@ public class JsoupService {
             String content = "";
             int latestNo = 0;
             WebElement row = rows.get(i);
+            Thread.sleep(5000);
             // 현재 행에서 모든 td 요소 가져오기
             List<WebElement> columns = row.findElements(By.tagName("td"));
 
@@ -144,21 +144,21 @@ public class JsoupService {
                 // 최근 조회 넘버가 변경되지 않으면 크롤링을 돌필요가 없다.
                 if(i == 0){
                     latestNo = Integer.parseInt(firstTd.getText());
-                    if(!issueRepository.existsByLatestNo(latestNo)){
-                        latestNo = Integer.parseInt(firstTd.getText());
-                        System.out.println("latestNo: " + latestNo);
-                    }else{
+                    int latestStoredNo = jsonSimple.getLastestNumber();
+                    log.info("latestNo: " + latestNo);
+                    log.info("latestStoredNo: " + latestStoredNo);
+                    if(latestNo == latestStoredNo){
                         break loopOut;
+                    }else{
+                        jsonSimple.writeJson(latestNo);
                     }
                 }
 
                 // 번호를 통한 검증로직
                 if(issueRepository.existsByCrawlingNo(no)){
-                    System.out.println("no: " + no);
-                    break loopOut;
+                    continue;
                 }
                 title = secondTd.getText();
-
                 WebElement aTag = secondTd.findElement(By.tagName("a"));
 
                 if (!aTag.equals("")) {
@@ -175,10 +175,10 @@ public class JsoupService {
             dto.setContent(content);
             dto.setCrawlingNo(no);
             dto.setLatestNo(latestNo);
-
-            sendEmail(dto);
+            if(dto.getTitle() != null && dto.getTitle() != null){
+                sendEmail(dto);
+            }
         }
-
         // WebDriver 종료
         driver.quit();
 
