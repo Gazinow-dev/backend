@@ -16,11 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -54,7 +52,7 @@ public class SecurityConfig {
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/api/v1/issue/add", "/api/v1/like/*", "/api/v1/member/logout", "/api/v1/member/reissue", "/api/v1/member/change_nickname", "/api/v1/member/change_password"
-                                        ,"/api/v1/delete_member", "/api/v1/my_find_road/*", "/api/v1/recentSearch").authenticated() // 요청에 대해 인증 필요
+                                        ,"/api/v1/member/delete_member", "/api/v1/my_find_road/*", "/api/v1/recentSearch").authenticated() // 요청에 대해 인증 필요
                                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class)
