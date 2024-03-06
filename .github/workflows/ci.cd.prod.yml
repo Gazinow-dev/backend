@@ -28,9 +28,16 @@ jobs:
 
       # (2) application.properties 설정
       - uses : actions/checkout@v3
-      - run: touch ./src/main/resources/application.properties
-      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
-      - run: cat ./src/main/resources/application.properties
+      - run: touch ./src/main/resources/application.yaml
+      - run: touch ./src/main/resources/application-aws.yaml
+      - run: touch ./src/main/resources/application-mail.yaml
+      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yaml
+      - run: echo "${{ secrets.APPLICATION_AWS }}" > ./src/main/resources/application_aws.yaml
+      - run: echo "${{ secrets.APPLICATION_MAIL }}" > ./src/main/resources/application_mail.yaml
+
+      - run: cat ./src/main/resources/application.yaml
+      - run: cat ./src/main/resources/application_aws.yaml
+      - run: cat ./src/main/resources/application_mail.yaml
 
       # (3) gradlew 권한 추가
       - name: Run chmod to make gradlew executable
@@ -53,7 +60,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
