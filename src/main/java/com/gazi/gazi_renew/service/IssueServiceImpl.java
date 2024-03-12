@@ -121,7 +121,7 @@ public class IssueServiceImpl implements IssueService {
                     .stationDtos(IssueResponse.getStations(issue.getStations()))
                     .startDate(issue.getStartDate())
                     .expireDate(issue.getExpireDate())
-                    .agoTime(getTime(issue.getStartDate()))
+                    .agoTime(getTime(issue.getCreatedAt()))
                     .build();
             int likeCount = Optional.ofNullable(issue.getLikes())
                     .map(Set::size)
