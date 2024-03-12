@@ -177,7 +177,7 @@ public class IssueServiceImpl implements IssueService {
                                 )
                                 .startDate(m.getStartDate())
                                 .expireDate(m.getExpireDate())
-                                .agoTime(getTime(m.getStartDate()));
+                                .agoTime(getTime(m.getCreatedAt()));
 
                         int likeCountDto = Optional.ofNullable(m.getLikes())
                                 .map(Set::size)
@@ -210,8 +210,7 @@ public class IssueServiceImpl implements IssueService {
                     )
                     .startDate(m.getStartDate())
                     .expireDate(m.getExpireDate())
-                    .agoTime(getTime(m.getStartDate()));
-
+                    .agoTime(getTime(m.getCreatedAt()));
 
             int likeCount = Optional.ofNullable(m.getLikes())
                     .map(Set::size)
@@ -271,6 +270,7 @@ public class IssueServiceImpl implements IssueService {
     }
     // 시간 구하기 로직
     public static String getTime(LocalDateTime startTime) {
+        System.out.println(startTime);
 
         LocalDateTime nowDate = LocalDateTime.now();
         Duration duration = Duration.between(startTime, nowDate);
