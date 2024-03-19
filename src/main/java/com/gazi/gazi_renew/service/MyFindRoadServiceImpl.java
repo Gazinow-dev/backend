@@ -50,8 +50,6 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 ArrayList<SubPath> subPaths = new ArrayList<>();
                 // subpathID로 lane과 station을 찾는다.
                 for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
-                    System.out.println(subPath.getId());
-
                     SubPath subPathResponse = SubPath.builder()
                             .way(subPath.getWay())
                             .door(subPath.getDoor())
