@@ -32,10 +32,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -242,6 +239,63 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public ResponseEntity<Response.Body> findPassword(MemberRequest.IsUser isUserRequest){
+        try{
+            String password = "";
+
+            MemberResponse.isUser isUser = new MemberResponse.isUser();
+
+            Optional<Member> member =memberRepository.findByEmailAndNickName(isUserRequest.getEmail(),isUserRequest.getNickname());
+            if(member.isPresent()) {
+                isUser.setIsUser(true);
+                // 비밀번호 발급
+                password = getTempPassword();
+                // 비밀번호 수정
+                member.get().setPassword(passwordEncoder.encode(password));
+                memberRepository.save(member.get());
+                // 이메일로 임시비밀번호 전송
+                MimeMessage message = createMessageToPassword(isUserRequest.getEmail(), password);
+                try{//예외처리
+                    emailSender.send(message);
+                }catch(MailException es){
+                    es.printStackTrace();
+                    throw new IllegalArgumentException();
+                }
+            }
+            return response.success("임시비밀번호 발급: " +password);
+        }catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    //랜덤함수로 임시비밀번호 구문 만들기
+    public String getTempPassword(){
+        char[] charSet = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+        char[] specialSet = new char[] {'!', '#', '$', '%', '&','~'};
+
+
+        String str = "";
+
+        // 문자 배열 길이의 값을 랜덤으로 10개를 뽑아 구문을 작성함
+        int idx = 0;
+        for (int i = 0; i < 8; i++) {
+            idx = (int) (charSet.length * Math.random());
+            str += charSet[idx];
+        }
+
+        for (int i = 0; i < 2 ; i++) {
+            idx = (int) (specialSet.length * Math.random());
+            str += specialSet[idx];
+        }
+        return str;
+    }
+
+
+
+    @Override
     public ResponseEntity<Response.Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors) {
         try {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
@@ -300,6 +354,39 @@ public class MemberServiceImpl implements MemberService {
             validatorResult.put(validKeyName, error.getDefaultMessage());
         }
         return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
+    }
+
+    private MimeMessage createMessageToPassword(String to, String password)throws Exception{
+        MimeMessage  message = emailSender.createMimeMessage();
+
+        message.addRecipients(Message.RecipientType.TO, to);//보내는 대상
+        message.setSubject("가는길 지금 이메일 인증");//제목
+
+        String msgg="";
+        msgg+= "<div style='margin:20px; color=#000000'>";
+        msgg+= "<h1> 임시 비밀번호 발급 </h1>";
+        msgg+= "<p> 안녕하세요 가는길지금 Gazi 입니다.";
+        msgg+= "<br>";
+        msgg+= "아래 임시비밀번호를 통해 로그인 해주세요.</p>";
+        msgg+= "비밀번호 변경을 통해 원하시는 비밀번호로 변경 바랍니다.";
+        msgg+= "<br>";
+        msgg+= "<p>감사합니다.<p>";
+        msgg+= "<br>";
+        msgg+= "<div align='center' style='border:1px solid white; font-family:verdana; background-color: #F2EBFF';>";
+        msgg+= "<div style='font-size:300%; color: #8446E7'>";
+        msgg+= password;
+        msgg+= "</div>";
+        msgg+= "</div>";
+        msgg+= "<hr>";
+        msgg+= "<p><span style='color:#323232; font-weight:bold'>가는길지금에 가입하신 적이 없다면, 이 메일을 무시하세요.</span> <br> ";
+        msgg+= "<span style='color:#9D9D9D'>본 메일은 발신 전용으로 문의에 대한 회신이 되지 않습니다. 궁금한 사항은 gazinowcs@gmail.com로 문의 부탁드립니다.</span></p>";
+
+
+        msgg+= "</div>";
+        message.setText(msgg, "utf-8", "html");//내용
+        message.setFrom(new InternetAddress("gazinowcs@gmail.com","gazi"));//보내는 사람
+
+        return message;
     }
 
     private MimeMessage createMessage(String to, String keyValue)throws Exception{
