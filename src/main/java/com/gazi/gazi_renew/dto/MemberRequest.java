@@ -62,6 +62,13 @@ public class MemberRequest {
 
     @Getter
     @Setter
+    public static class IsUser{
+        String email;
+        String nickname;
+    }
+
+    @Getter
+    @Setter
     public static class CheckPassword {
         private String checkPassword;
     }

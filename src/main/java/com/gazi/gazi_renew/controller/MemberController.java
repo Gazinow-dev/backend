@@ -124,6 +124,11 @@ public class MemberController extends BaseController{
         return memberService.sendSimpleMessage(email.getEmail());
     }
 
+    @Operation(summary = "비밀번호 찾기")
+    @PostMapping("/find-password")
+    public ResponseEntity<Body> findPassword(MemberRequest.IsUser isUser, Errors errors){
+        return memberService.findPassword(isUser);
+    }
 
     @Operation(summary = "닉네임 중복검사")
     @PostMapping("/check-nickname")
