@@ -212,7 +212,7 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                             for (Issue issue : issues) {
                                 // 만약 현재시간 시작시간 이전이고 만료시간이 현재시간 이후이면
-                                if (issue.getStartDate().isAfter(currentDateTime) && issue.getExpireDate().isBefore(currentDateTime)) {
+                                if (currentDateTime.isAfter(issue.getStartDate()) && currentDateTime.isBefore(issue.getExpireDate())) {
                                     activeIssues.add(issue);
                                 }
                             }
