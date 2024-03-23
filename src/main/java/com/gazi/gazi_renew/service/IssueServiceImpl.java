@@ -150,7 +150,9 @@ public class IssueServiceImpl implements IssueService {
                 () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
         );
 
-        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues());
+        int start = (int)pageable.getOffset();
+        int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
+        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues().subList(start,end),pageable,lineEntity.getIssues().size());
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
 
         return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
