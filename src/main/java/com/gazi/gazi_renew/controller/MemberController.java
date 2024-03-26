@@ -92,6 +92,7 @@ public class MemberController extends BaseController{
         return memberService.changePassword(passwordDto, errors);
     }
     // 비밀번호 확인
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/check_password")
     @Operation(summary = "비밀번호 확인")
     @ApiResponses(value = {
