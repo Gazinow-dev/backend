@@ -64,7 +64,7 @@ public class RecentSearchServiceImpl implements RecentSearchService {
             Member member = isUser();
             RecentSearch recentSearch;
 
-            Optional<RecentSearch> recentSearchOptional = recentSearchRepository.findByStationLineAndStationName(dto.getStationLine(),dto.getStationName());
+            Optional<RecentSearch> recentSearchOptional = recentSearchRepository.findByMemberAndStationLineAndStationName(member, dto.getStationLine(),dto.getStationName());
             if(recentSearchOptional.isPresent()){
                 recentSearch = recentSearchOptional.get();
                 recentSearch.setModifiedAt(LocalDateTime.now());
