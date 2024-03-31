@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.controller;
 
+import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.IssueService;
 import com.gazi.gazi_renew.service.JsoupService;
@@ -26,6 +27,7 @@ public class IssueRestController extends BaseController{
         jsoupService.noticeCrawler();
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/get")
     public ResponseEntity<Response.Body> getIssue(@RequestParam(name="id") Long id){
         return issueService.getIssue(id);
@@ -44,5 +46,10 @@ public class IssueRestController extends BaseController{
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue(){
         return issueService.getPopularIssues();
+    }
+
+    @PostMapping("/update_content")
+    public ResponseEntity<Response.Body> updateContent(@RequestBody IssueRequest.updateContentDto dto){
+        return issueService.updateIssueContent(dto);
     }
 }

@@ -37,4 +37,11 @@ public class IssueRequest {
             this.endStationCode = endStationCode;
         }
     }
+
+    @Getter
+    @NoArgsConstructor
+    public static class updateContentDto{
+        private Long id;
+        private String content;
+    }
 }
