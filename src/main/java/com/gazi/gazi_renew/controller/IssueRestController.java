@@ -26,6 +26,7 @@ public class IssueRestController extends BaseController{
         jsoupService.noticeCrawler();
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/get")
     public ResponseEntity<Response.Body> getIssue(@RequestParam(name="id") Long id){
         return issueService.getIssue(id);
