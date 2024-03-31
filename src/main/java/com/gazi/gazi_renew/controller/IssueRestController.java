@@ -32,13 +32,13 @@ public class IssueRestController extends BaseController{
     }
 
     @GetMapping("/get_all")
-    public ResponseEntity<Response.Body> getIssues(@Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+    public ResponseEntity<Response.Body> getIssues(@Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable){
         return issueService.getIssues(pageable);
     }
 
     @GetMapping("/get_line")
     public ResponseEntity<Response.Body> getLineByIssues(@RequestParam(name="line") String line,
-                                                         @Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "id", direction = Sort.Direction.DESC) Pageable pageable){
+                                                         @Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable){
         return issueService.getLineByIssues(line,pageable);
     }
     @GetMapping("/get_popular")

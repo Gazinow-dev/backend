@@ -1,11 +1,83 @@
-name: 🚀 Deploy workflow on production environment
-
+name: Deploy to Amazon EC2
+run-name: Running
 on:
-  pull_request:
-    branches: [main]
-      types: [closed]
+  push:
+    branches:
+      - main #브랜치명
+
+# 본인이 설정한 값을 여기서 채워넣는다.
+env:
+  AWS_REGION: ap-northeast-2 #리전
+  S3_BUCKET_NAME: gazi-cicd #버킷 이름
+  CODE_DEPLOY_APPLICATION_NAME: gazi-cicd #CodeDeploy 애플리케이션 이름
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: production #CodeDeploy 배포 그룹 이름
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+    name: Deploy
+    runs-on: ubuntu-latest
     environment: production
+
+    steps:
+      # (1) 기본 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # (2) application.properties 설정
+      - uses : actions/checkout@v3
+      - run: touch ./src/main/resources/application.yaml
+      - run: touch ./src/main/resources/application-aws.yaml
+      - run: touch ./src/main/resources/application-mail.yaml
+      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yaml
+      - run: echo "${{ secrets.APPLICATION_AWS }}" > ./src/main/resources/application_aws.yaml
+      - run: echo "${{ secrets.APPLICATION_MAIL }}" > ./src/main/resources/application_mail.yaml
+
+      - run: cat ./src/main/resources/application.yaml
+      - run: cat ./src/main/resources/application_aws.yaml
+      - run: cat ./src/main/resources/application_mail.yaml
+
+      # (3) gradlew 권한 추가
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+
+      # (4) JDK 11 세팅
+      - name: JDK 17 설치
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      # (5) Gradle build (Test 제외)
+      - name: gradlew에 실행권한 부여
+        run: chmod +x ./gradlew
+      - name: 프로젝트 빌드
+        run: ./gradlew clean build -x test
+
+      # (6) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # (7) 빌드 결과물을 S3 버킷에 업로드
+      - name: Upload to AWS S3
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+
+      # (8) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+      - name: Deploy to AWS EC2 from S3
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip

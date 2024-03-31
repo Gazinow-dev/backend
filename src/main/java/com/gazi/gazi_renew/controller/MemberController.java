@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.controller;
 
-import com.gazi.gazi_renew.dto.FindRoadResponse;
 import com.gazi.gazi_renew.dto.MemberRequest;
 import com.gazi.gazi_renew.dto.MemberRequest.Login;
 import com.gazi.gazi_renew.dto.MemberRequest.Logout;
@@ -9,9 +8,6 @@ import com.gazi.gazi_renew.dto.MemberRequest.SignUp;
 import com.gazi.gazi_renew.dto.Response.Body;
 import com.gazi.gazi_renew.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 
 @RequiredArgsConstructor
@@ -52,12 +46,14 @@ public class MemberController extends BaseController{
     }
 
     // 로그아웃
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/logout")
     public ResponseEntity<Body> logout(@RequestBody Logout logoutDto) {
         return memberService.logout(logoutDto);
     }
 
     // 자동 로그인
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "토큰 재발급(자동 로그인)")
     @PostMapping("/reissue")
     public ResponseEntity<Body> reissue(@RequestBody Reissue reissueDto) {
@@ -96,6 +92,7 @@ public class MemberController extends BaseController{
         return memberService.changePassword(passwordDto, errors);
     }
     // 비밀번호 확인
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/check_password")
     @Operation(summary = "비밀번호 확인")
     @ApiResponses(value = {
@@ -128,6 +125,11 @@ public class MemberController extends BaseController{
         return memberService.sendSimpleMessage(email.getEmail());
     }
 
+    @Operation(summary = "비밀번호 찾기")
+    @PostMapping("/find-password")
+    public ResponseEntity<Body> findPassword(MemberRequest.IsUser isUser, Errors errors){
+        return memberService.findPassword(isUser);
+    }
 
     @Operation(summary = "닉네임 중복검사")
     @PostMapping("/check-nickname")

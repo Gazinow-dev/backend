@@ -29,6 +29,8 @@ public interface MemberService {
     // 비밀번호 확인
     ResponseEntity<Body> checkPassword(MemberRequest.CheckPassword checkPassword);
 
+    ResponseEntity<Body> findPassword(MemberRequest.IsUser isUserRequest);
+
     // 비밀번호 변경
     ResponseEntity<Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors);
     // 회원 탈퇴

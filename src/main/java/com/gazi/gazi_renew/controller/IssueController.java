@@ -20,7 +20,6 @@ public class IssueController {
 
     private final IssueService issueService;
 
-    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/add")
     public ResponseEntity addIssue(@ModelAttribute("dto") IssueRequest dto ){
         return issueService.addIssue(dto);

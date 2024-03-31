@@ -34,6 +34,7 @@ public class FindRoadController extends BaseController{
         return findRoadService.subwayRouteSearch(CID, SID, EID, sopt);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "길찾기 API")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "길찾기 데이터 조회 성공",
             headers = @Header(name = AUTHORIZATION, description = "Access Token"),

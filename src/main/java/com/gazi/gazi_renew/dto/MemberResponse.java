@@ -29,6 +29,12 @@ public class MemberResponse {
 
     @Getter
     @Setter
+    public static class isUser{
+        private Boolean isUser;
+    }
+
+    @Getter
+    @Setter
     public static class Login {
         @NotBlank(message = "Email는 필수 입력 값입니다.")
         private String email;

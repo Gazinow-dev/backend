@@ -121,7 +121,7 @@ public class IssueServiceImpl implements IssueService {
                     .stationDtos(IssueResponse.getStations(issue.getStations()))
                     .startDate(issue.getStartDate())
                     .expireDate(issue.getExpireDate())
-                    .agoTime(getTime(issue.getStartDate()))
+                    .agoTime(getTime(issue.getCreatedAt()))
                     .build();
             int likeCount = Optional.ofNullable(issue.getLikes())
                     .map(Set::size)
@@ -150,7 +150,9 @@ public class IssueServiceImpl implements IssueService {
                 () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
         );
 
-        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues());
+        int start = (int)pageable.getOffset();
+        int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
+        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues().subList(start,end),pageable,lineEntity.getIssues().size());
         Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
 
         return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
@@ -177,7 +179,7 @@ public class IssueServiceImpl implements IssueService {
                                 )
                                 .startDate(m.getStartDate())
                                 .expireDate(m.getExpireDate())
-                                .agoTime(getTime(m.getStartDate()));
+                                .agoTime(getTime(m.getCreatedAt()));
 
                         int likeCountDto = Optional.ofNullable(m.getLikes())
                                 .map(Set::size)
@@ -210,8 +212,7 @@ public class IssueServiceImpl implements IssueService {
                     )
                     .startDate(m.getStartDate())
                     .expireDate(m.getExpireDate())
-                    .agoTime(getTime(m.getStartDate()));
-
+                    .agoTime(getTime(m.getCreatedAt()));
 
             int likeCount = Optional.ofNullable(m.getLikes())
                     .map(Set::size)
@@ -271,6 +272,7 @@ public class IssueServiceImpl implements IssueService {
     }
     // 시간 구하기 로직
     public static String getTime(LocalDateTime startTime) {
+        System.out.println(startTime);
 
         LocalDateTime nowDate = LocalDateTime.now();
         Duration duration = Duration.between(startTime, nowDate);
