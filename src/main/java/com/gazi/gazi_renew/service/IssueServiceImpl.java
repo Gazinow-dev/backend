@@ -137,25 +137,38 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssues(Pageable pageable) {
-        Page<Issue> issuePage = issueRepository.findAll(pageable);
-        Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
+        try{
+            Page<Issue> issuePage = issueRepository.findAll(pageable);
+            Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
 
-        return response.success(issueResponsePage, "이슈 전체 조회 성공", HttpStatus.OK);
+            return response.success(issueResponsePage, "이슈 전체 조회 성공", HttpStatus.OK);
+        } catch (Exception e){
+            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
-        Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
-                () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
-        );
+        try {
+            Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
+                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
+            );
 
-        int start = (int)pageable.getOffset();
-        int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
-        Page<Issue> issues = new PageImpl<>(lineEntity.getIssues().subList(start,end),pageable,lineEntity.getIssues().size());
-        Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
+            int start = (int)pageable.getOffset();
+            int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
+            Page<Issue> issues = new PageImpl<>(lineEntity.getIssues().subList(start,end),pageable,lineEntity.getIssues().size());
+            Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
 
-        return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
+            return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
+
+        } catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e){
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @Override
@@ -194,6 +207,28 @@ public class IssueServiceImpl implements IssueService {
         }catch (Exception e){
             return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> updateIssueContent(IssueRequest.updateContentDto dto){
+        try {
+            System.out.println(dto.getId());
+            Issue issue = issueRepository.findById(dto.getId()).orElseThrow(
+                    () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
+            );
+
+            System.out.println("ddddd");
+            issue.setContent(dto.getContent());
+            issueRepository.save(issue);
+            return response.success(" 내용 수정 성공");
+        }catch (EntityNotFoundException e){
+            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+
+
     }
 
     public Page<IssueResponse> getPostDtoPage(Page<Issue> issuePage) {
