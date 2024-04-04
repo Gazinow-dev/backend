@@ -12,10 +12,7 @@ import com.gazi.gazi_renew.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -158,8 +152,12 @@ public class IssueServiceImpl implements IssueService {
 
             int start = (int)pageable.getOffset();
             int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
-            Page<Issue> issues = new PageImpl<>(lineEntity.getIssues().subList(start,end),pageable,lineEntity.getIssues().size());
-            Page<IssueResponse> issueResponsePage = getPostDtoPage(issues);
+            List<Issue> sortedList = lineEntity.getIssues().stream()
+                    .sorted(Comparator.comparing(Issue::getStartDate).reversed()) // startDate를 기준으로 내림차순 정렬
+                    .collect(Collectors.toList());
+            sortedList = sortedList.subList(start, end);
+            Page<Issue> sortedIssues = new PageImpl<>(sortedList, pageable, sortedList.size());
+            Page<IssueResponse> issueResponsePage = getPostDtoPage(sortedIssues);
 
             return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
 
