@@ -39,11 +39,12 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final IssueServiceImpl issueService;
     private final LineRepository lineRepository;
     @Value("${odsay.key}")
-    public static String apiKey;
+    public String apiKey;
 
     public JSONObject getJsonArray(String urlInfo) throws IOException {
         URL url = new URL(urlInfo.toString());
         System.out.println(url);
+        System.out.println(apiKey);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
@@ -67,6 +68,7 @@ public class FindRoadServiceImpl implements FindRoadService {
 
     public JSONObject getJsonArray(Double sx, Double sy, Double ex, Double ey) throws IOException {
 
+        System.out.println("apiKey: " + apiKey);
         StringBuilder urlInfo = new StringBuilder("https://api.odsay.com/v1/api"); /*URL*/
         urlInfo.append("/" + URLEncoder.encode("searchPubTransPathT", "UTF-8"));
         urlInfo.append("?LANG=" + URLEncoder.encode(String.valueOf(1), "UTF-8"));
@@ -76,7 +78,7 @@ public class FindRoadServiceImpl implements FindRoadService {
         urlInfo.append("&EY=" + URLEncoder.encode(String.valueOf(ey), "UTF-8"));
         urlInfo.append("&OPT=" + URLEncoder.encode("0", "UTF-8"));
         urlInfo.append("&SearchPathType=" + URLEncoder.encode("1", "UTF-8"));
-        urlInfo.append("&apiKey=" + URLEncoder.encode("mdn3gFOpu1TYxWEF80iAU4Fmlo2/OSQruUG1Vqw18Xw", "UTF-8"));
+        urlInfo.append("&apiKey=" + URLEncoder.encode(apiKey, "UTF-8"));
 
         return getJsonArray(urlInfo.toString());
     }
