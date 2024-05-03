@@ -176,6 +176,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
+                            if(lineName.equals("수도권 9호선(급행)")||lineName.equals("수도권 1호선(급행)")){
+                                lane.setDirect(true);
+                            }else{
+                                lane.setDirect(false);
+                            }
                             lanes.add(lane);
                         }
                         subPath.setLanes(lanes);
