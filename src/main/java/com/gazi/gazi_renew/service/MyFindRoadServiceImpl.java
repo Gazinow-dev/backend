@@ -69,14 +69,17 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         Line line = lineRepository.findByLineName(lineName).orElseThrow(
                                 () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
                         );
-//                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos = IssueResponse.IssueSummaryDto.getIssueSummaryDto(issueService.getIssuesByLine(lineName));
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
+                        boolean isDirect = false;
+                        if(lineName.contains("(급행)")) {
+                            isDirect = true;
+                        }
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
                                 .name(myFindRoadLane.getName())
                                 .startName(myFindRoadLane.getStartName())
                                 .endName(myFindRoadLane.getEndName())
                                 .stationCode(myFindRoadLane.getStationCode())
-//                                .issueSummary(issueSummaryDtos)
+                                .direct(isDirect)
                                 .build();
                         lanes.add(lane);
 
