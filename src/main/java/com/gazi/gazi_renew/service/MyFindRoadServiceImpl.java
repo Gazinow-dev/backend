@@ -71,7 +71,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         );
                         ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
                         boolean isDirect = false;
-                        if(lineName.equals("수도권 9호선(급행)")||lineName.equals("수도권 1호선(급행)")){
+                        if(lineName.contains("(급행)")) {
                             isDirect = true;
                         }
                         MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
@@ -79,7 +79,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                                 .startName(myFindRoadLane.getStartName())
                                 .endName(myFindRoadLane.getEndName())
                                 .stationCode(myFindRoadLane.getStationCode())
-                                .isDirect(isDirect)
+                                .direct(isDirect)
                                 .build();
                         lanes.add(lane);
 

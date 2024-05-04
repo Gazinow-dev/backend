@@ -176,7 +176,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             lane.setStationCode(laneNode.path("subwayCode").asInt());
                             lane.setStartName(laneNode.path("startName").asText());
                             lane.setEndName(laneNode.path("endName").asText());
-                            if(lineName.equals("수도권 9호선(급행)")||lineName.equals("수도권 1호선(급행)")){
+                            if(lineName.contains("(급행)")) {
                                 lane.setDirect(true);
                             }else{
                                 lane.setDirect(false);
@@ -197,7 +197,6 @@ public class FindRoadServiceImpl implements FindRoadService {
                         for (JsonNode stationNode : stationArray) {
                             System.out.println("lineName :" + lineName);
                             if(lineName.equals("수도권 9호선(급행)")){
-                                System.out.println("수도권 9호선 급행이 나옴");
                                 lineName = "수도권 9호선";
                             }
                             Line line = lineRepository.findByLineName(lineName).orElseThrow(
