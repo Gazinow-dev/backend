@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.domain;
 
+import com.gazi.gazi_renew.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,14 +26,15 @@ public class Member extends AuditingFields {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    @Column()
     private String email;
     @Column(nullable = false)
     private String password;
     @Column(nullable = false, unique = true)
     private String nickName;
+    @Enumerated(EnumType.STRING)
     @Column
-    private String provider;
+    private OAuthProvider provider;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -56,13 +58,18 @@ public class Member extends AuditingFields {
         recentSearch.setMember(this);
         recentSearches.add(recentSearch);
     }
-
-    public Member update(String nickName, String email, String provider) {
+    public Member update(String nickName, String email, OAuthProvider provider) {
         this.nickName = nickName;
         this.email = email;
         this.provider = provider;
         return this;
     }
 
+    @Builder
+    public Member(String email, String nickname, OAuthProvider provider) {
+        this.email = email;
+        this.nickName = nickname;
+        this.provider = provider;
+    }
 
 }
