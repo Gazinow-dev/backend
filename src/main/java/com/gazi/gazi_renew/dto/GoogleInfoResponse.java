@@ -3,9 +3,7 @@ package com.gazi.gazi_renew.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gazi.gazi_renew.domain.enums.OAuthProvider;
-import lombok.Getter;
 
-@Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GoogleInfoResponse implements OAuthInfoResponse {
     @JsonProperty("email")

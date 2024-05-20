@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.dto.NaverInfoResponse;
 import com.gazi.gazi_renew.dto.OAuthInfoResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 @Component
+@Getter
 @RequiredArgsConstructor
 public class NaverApiClient implements OAuthApiClient {
 
@@ -27,6 +29,9 @@ public class NaverApiClient implements OAuthApiClient {
 
     @Value("${oauth.naver.url.api}")
     private String apiUrl;
+
+    @Value("${oauth.naver.url.redirect}")
+    private String redirectUrl;
 
     @Value("${oauth.naver.client-id}")
     private String clientId;

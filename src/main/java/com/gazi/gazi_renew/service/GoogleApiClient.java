@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.dto.GoogleInfoResponse;
 import com.gazi.gazi_renew.dto.OAuthInfoResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 @Component
+@Getter
 @RequiredArgsConstructor
 public class GoogleApiClient implements OAuthApiClient {
 
