@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.controller;
 
 import com.gazi.gazi_renew.domain.GoogleLoginParams;
-import com.gazi.gazi_renew.domain.KakaoLoginParams;
+//import com.gazi.gazi_renew.domain.KakaoLoginParams;
 import com.gazi.gazi_renew.domain.NaverLoginParams;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.GoogleApiClient;
@@ -29,11 +29,11 @@ public class OAuthController extends BaseController{
     private final GoogleApiClient googleApiClient;
     private final NaverApiClient naverApiClient;
 
-    @GetMapping("/kakao")
-    public ResponseEntity<Response.Body> kakaoCalllback(@RequestParam String code) {
-        KakaoLoginParams kakaoLoginParams = new KakaoLoginParams(code);
-        return oAuthLoginService.login(kakaoLoginParams);
-    }
+//    @GetMapping("/kakao")
+//    public ResponseEntity<Response.Body> kakaoCalllback(@RequestParam String code) {
+//        KakaoLoginParams kakaoLoginParams = new KakaoLoginParams(code);
+//        return oAuthLoginService.login(kakaoLoginParams);
+//    }
 
 
     @GetMapping("/naver")
