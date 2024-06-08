@@ -3,10 +3,7 @@ package com.gazi.gazi_renew.controller;
 
 import com.gazi.gazi_renew.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.dto.IssueRequest;
-import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.IssueService;
-import com.gazi.gazi_renew.service.JsoupService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
