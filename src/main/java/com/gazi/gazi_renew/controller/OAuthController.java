@@ -7,6 +7,7 @@ import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.GoogleApiClient;
 import com.gazi.gazi_renew.service.NaverApiClient;
 import com.gazi.gazi_renew.service.OAuthLoginService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,12 +37,13 @@ public class OAuthController extends BaseController{
 //    }
 
 
+    @Hidden
     @GetMapping("/naver")
     public ResponseEntity<Response.Body> naverCalllback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
         return oAuthLoginService.login(naverLoginParams);
     }
-
+    @Hidden
     @GetMapping("/google")
     public ResponseEntity<Response.Body> googleCalllback(@RequestParam String code) {
         GoogleLoginParams googleLoginParams = new GoogleLoginParams(code);
