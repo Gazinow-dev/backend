@@ -14,7 +14,10 @@ public interface MemberService {
     // 회원가입
     ResponseEntity<Body> signUp(@Valid MemberRequest.SignUp signUpDto, Errors errors);
 
-    // 로그인
+    void validateEmail(String email);
+    void validateNickName(String nickName);
+
+        // 로그인
     ResponseEntity<Body> login(MemberRequest.Login loginDto);
 
     // 로그아웃
