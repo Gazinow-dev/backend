@@ -1,6 +1,8 @@
 package com.gazi.gazi_renew.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.dto.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +29,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate redisTemplate;
+    private final Response response;
+    private final ObjectMapper objectMapper;
 
 
     CorsConfigurationSource corsConfigurationSource() {
@@ -56,6 +60,21 @@ public class SecurityConfig {
                                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(
+                        exception ->
+                                exception.authenticationEntryPoint(
+                                                new CustomAuthenticationEntryPoint(
+                                                        response,
+                                                        objectMapper
+                                                )
+                                        )
+                                        .accessDeniedHandler(
+                                                new CustomAccessDeniedHandler(
+                                                        response,
+                                                        objectMapper
+                                                )
+                                        )
+                )
                 .build();
     }
 
