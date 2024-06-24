@@ -40,6 +40,8 @@ public class OAuthLoginService {
         Collection<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
+        responseToken.setEmail(email);
+        responseToken.setNickName(oAuthInfoResponse.getNickname());
         return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
     }
 
