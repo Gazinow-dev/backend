@@ -17,6 +17,7 @@ public class MyFindRoadResponse {
     int totalTime; // 총소요시간
     private String roadName;
     private String lastEndStation;
+    private Boolean notification;
     private List<transitStation> transitStations;
     private ArrayList<MyFindRoadResponse.SubPath> subPaths;
 

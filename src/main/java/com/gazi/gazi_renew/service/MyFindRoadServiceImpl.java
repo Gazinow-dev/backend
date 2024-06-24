@@ -123,6 +123,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         .id(myFindRoadPath.getId())
                         .roadName(myFindRoadPath.getName())
                         .lastEndStation(myFindRoadPath.getLastEndStation())
+                        .notification(myFindRoadPath.getNotification())
                         .totalTime(myFindRoadPath.getTotalTime())
                         .subPaths(subPaths)
                         .build();
@@ -236,5 +237,18 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> updateRouteNotification(Long id, Boolean enabled) {
+        try {
+            MyFindRoadPath myPath = myFindRoadPathRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+            myPath.setNotification(enabled);
+            myFindRoadPathRepository.save(myPath);
+        } catch (EntityNotFoundException e) {
+            return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        return response.success("알림 설정(notification "+ enabled + ") 변경 완료");
     }
 }

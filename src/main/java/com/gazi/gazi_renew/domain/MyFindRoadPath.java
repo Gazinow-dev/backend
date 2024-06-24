@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,4 +27,5 @@ public class MyFindRoadPath {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
     private String name;
+    private Boolean notification;
 }

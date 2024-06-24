@@ -60,4 +60,14 @@ public class MyFindRoadController extends BaseController{
     public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id) {
         return myFindRoadService.deleteRoute(id);
     }
+
+    @PostMapping("/enable_notification")
+    public ResponseEntity<Response.Body> enableRouteNotification(@RequestParam Long id) {
+        return myFindRoadService.updateRouteNotification(id, true);
+    }
+
+    @PostMapping("/disable_notification")
+    public ResponseEntity<Response.Body> disableRouteNotification(@RequestParam Long id) {
+        return myFindRoadService.updateRouteNotification(id, false);
+    }
 }

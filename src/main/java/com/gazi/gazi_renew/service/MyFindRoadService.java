@@ -13,4 +13,6 @@ public interface MyFindRoadService {
     ResponseEntity<Response.Body> addRoute(MyFindRoadRequest request);
     // 경로 삭제
     ResponseEntity<Response.Body> deleteRoute(Long id);
+    // 경로 알림 상태 변경
+    ResponseEntity<Response.Body> updateRouteNotification(Long id, Boolean enabled);
 }
