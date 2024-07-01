@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -72,13 +73,13 @@ public class NaverApiClient implements OAuthApiClient {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        System.out.println("accessToken" + accessToken);
         httpHeaders.set("Authorization", "Bearer " + accessToken);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
+        ResponseEntity<NaverInfoResponse> response = restTemplate.postForEntity(url, request, NaverInfoResponse.class);
 
-        return restTemplate.postForObject(url, request, NaverInfoResponse.class);
+        return response.getBody();
     }
 }
