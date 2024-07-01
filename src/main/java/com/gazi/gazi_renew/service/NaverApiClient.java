@@ -79,7 +79,7 @@ public class NaverApiClient implements OAuthApiClient {
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
         ResponseEntity<NaverInfoResponse> response = restTemplate.postForEntity(url, request, NaverInfoResponse.class);
-
+        System.out.println(response);
         return response.getBody();
     }
 }
