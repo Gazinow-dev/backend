@@ -89,6 +89,9 @@ public class MemberServiceImpl implements MemberService {
         // loginDto email, password 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = loginDto.usernamePasswordAuthenticationToken();
         try {
+            // login 시 받은 firebase token 저장
+            member.setFirebaseToken(loginDto.getFirebaseToken());
+            memberRepository.save(member);
             // 실제 검증 (사용자 비밀번호 체크)
             // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
             Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken); // 인증 정보를 기반으로 JWT 토큰 생성
@@ -96,6 +99,7 @@ public class MemberServiceImpl implements MemberService {
             responseToken.setMemberId(member.getId());
             responseToken.setNickName(member.getNickName());
             responseToken.setEmail(member.getEmail());
+            responseToken.setFirebaseToken(member.getFirebaseToken());
 
             redisTemplate.opsForValue()
                     .set("RT:" + authentication.getName(), responseToken.getRefreshToken(),

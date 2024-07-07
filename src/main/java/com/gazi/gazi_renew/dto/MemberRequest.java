@@ -55,6 +55,8 @@ public class MemberRequest {
         @NotBlank(message = "Password는 필수 입력 값입니다.")
         private String password;
 
+        private String firebaseToken;
+
         public UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken() {
             return new UsernamePasswordAuthenticationToken(email, password);
         }
