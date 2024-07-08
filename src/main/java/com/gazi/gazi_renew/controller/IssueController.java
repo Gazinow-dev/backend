@@ -19,6 +19,7 @@ public class IssueController {
 
     @PostMapping("/add")
     public ResponseEntity addIssue(@ModelAttribute("dto") IssueRequest dto ){
+        // TODO: Trigger check push notification
         return issueService.addIssue(dto);
     }
 

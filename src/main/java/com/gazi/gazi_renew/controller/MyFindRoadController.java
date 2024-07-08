@@ -1,8 +1,10 @@
 package com.gazi.gazi_renew.controller;
 
+import com.gazi.gazi_renew.dto.MyFindRoadNotificationRequest;
 import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.MyFindRoadService;
+import com.gazi.gazi_renew.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +22,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RestController
 public class MyFindRoadController extends BaseController{
     private final MyFindRoadService myFindRoadService;
+    private final NotificationService notificationService;
 
     @GetMapping("/get_roads")
     public ResponseEntity<Response.Body> getRoutes() {
@@ -62,12 +65,24 @@ public class MyFindRoadController extends BaseController{
     }
 
     @PostMapping("/enable_notification")
-    public ResponseEntity<Response.Body> enableRouteNotification(@RequestParam Long id) {
-        return myFindRoadService.updateRouteNotification(id, true);
+    public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotificationRequest request) {
+        myFindRoadService.updateRouteNotification(request.getMyPathId(), true);
+        return notificationService.saveNotificationTimes(request);
     }
 
     @PostMapping("/disable_notification")
     public ResponseEntity<Response.Body> disableRouteNotification(@RequestParam Long id) {
-        return myFindRoadService.updateRouteNotification(id, false);
+        myFindRoadService.updateRouteNotification(id, false);
+        return notificationService.deleteNotificationTimes(id);
+    }
+
+    @GetMapping("/get_notifications")
+    public ResponseEntity<Response.Body> getNotificationTimes(@RequestParam Long myPathId) {
+        return notificationService.getNotificationTimes(myPathId);
+    }
+
+    @PostMapping("/update_notification")
+    public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotificationRequest request) {
+        return notificationService.saveNotificationTimes(request);
     }
 }

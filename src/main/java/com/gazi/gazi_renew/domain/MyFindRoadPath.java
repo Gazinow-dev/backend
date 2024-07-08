@@ -28,4 +28,6 @@ public class MyFindRoadPath {
     private Member member;
     private String name;
     private Boolean notification;
+    @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 }
