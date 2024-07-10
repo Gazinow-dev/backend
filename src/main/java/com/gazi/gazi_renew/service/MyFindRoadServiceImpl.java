@@ -169,6 +169,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .firstStartStation(request.getFirstStartStation())
                     .lastEndStation(request.getLastEndStation())
                     .stationTransitCount(request.getStationTransitCount())
+                    .notification(false)
                     .build();
 
             if (myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(), member)) {
