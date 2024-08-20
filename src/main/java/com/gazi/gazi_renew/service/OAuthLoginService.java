@@ -36,29 +36,31 @@ public class OAuthLoginService {
 
     public ResponseEntity<Response.Body> login(OAuthLoginParams params) {
         OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
-        String email = findOrCreateMember(oAuthInfoResponse);
+        Member member = findOrCreateMember(oAuthInfoResponse);
         Collection<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), null, authorities);
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
-        responseToken.setEmail(email);
-        responseToken.setNickName(oAuthInfoResponse.getNickname());
+        responseToken.setEmail(member.getEmail());
+        responseToken.setNickName(member.getNickName());
         return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
     }
-
-    private String findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
+    private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
         return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
-                .map(Member::getEmail)
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
-
-    private String newMember(OAuthInfoResponse oAuthInfoResponse) {
+    private Member newMember(OAuthInfoResponse oAuthInfoResponse) {
         String email = oAuthInfoResponse.getEmail();
+        String nickname = oAuthInfoResponse.getNickname();
+        // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
+        if (nickname == null || nickname.isEmpty()) {
+            nickname = email.substring(0, email.indexOf("@"));
+        }
         Member member = Member.builder()
                 .isAgree(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))
-                .nickName(oAuthInfoResponse.getNickname())
+                .nickName(nickname)
                 .provider(oAuthInfoResponse.getOAuthProvider())
                 .build();
 
@@ -66,6 +68,6 @@ public class OAuthLoginService {
         memberService.validateNickName(member.getNickName());
         memberRepository.save(member);
 
-        return member.getEmail();
+        return member;
     }
 }
