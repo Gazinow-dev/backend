@@ -41,6 +41,7 @@ public class OAuthLoginService {
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
         responseToken.setEmail(email);
+
         responseToken.setNickName(oAuthInfoResponse.getNickname());
         return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
     }
@@ -51,14 +52,19 @@ public class OAuthLoginService {
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
 
-    private String newMember(OAuthInfoResponse oAuthInfoResponse) {
+    public String newMember(OAuthInfoResponse oAuthInfoResponse) {
         String email = oAuthInfoResponse.getEmail();
+        String nickname = oAuthInfoResponse.getNickname();
+        // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
+        if (nickname == null || nickname.isEmpty()) {
+            nickname = email.substring(0, email.indexOf("@"));
+        }
         Member member = Member.builder()
                 .isAgree(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))
-                .nickName(oAuthInfoResponse.getNickname())
+                .nickName(nickname)
                 .provider(oAuthInfoResponse.getOAuthProvider())
                 .build();
 
