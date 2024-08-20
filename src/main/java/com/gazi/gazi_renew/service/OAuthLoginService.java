@@ -45,14 +45,12 @@ public class OAuthLoginService {
         responseToken.setNickName(oAuthInfoResponse.getNickname());
         return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
     }
-
     private String findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
         return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
                 .map(Member::getEmail)
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
-
-    public String newMember(OAuthInfoResponse oAuthInfoResponse) {
+    private String newMember(OAuthInfoResponse oAuthInfoResponse) {
         String email = oAuthInfoResponse.getEmail();
         String nickname = oAuthInfoResponse.getNickname();
         // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
