@@ -42,6 +42,8 @@ public class MemberController extends BaseController{
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<Body> login(@RequestBody @Valid Login loginDto, Errors errors) {
+        System.out.println("login: " + loginDto.getEmail());
+        System.out.println("login: " + loginDto.getFirebaseToken());
         return memberService.login(loginDto);
     }
 

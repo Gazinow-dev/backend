@@ -29,6 +29,11 @@ public class MyFindRoadController extends BaseController{
         return myFindRoadService.getRoutes();
     }
 
+    @GetMapping("/get_roads/by_id")
+    public ResponseEntity<Response.Body> getRoutes(@RequestParam Long myPathId) {
+        return myFindRoadService.getRoute(myPathId);
+    }
+
     @Operation(summary = "내 경로 저장")
     @ApiResponses(value = {
             @ApiResponse(
@@ -83,6 +88,6 @@ public class MyFindRoadController extends BaseController{
 
     @PostMapping("/update_notification")
     public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotificationRequest request) {
-        return notificationService.saveNotificationTimes(request);
+        return notificationService.updateNotificationTimes(request);
     }
 }

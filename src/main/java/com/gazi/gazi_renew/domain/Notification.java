@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-
 import lombok.*;
 import java.time.LocalTime;
 
@@ -28,5 +28,6 @@ public class Notification extends AuditingFields {
 
     @ManyToOne
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
+    @JsonBackReference
     private MyFindRoadPath myFindRoadPath;
 }

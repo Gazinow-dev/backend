@@ -1,18 +1,24 @@
 package com.gazi.gazi_renew.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Issue;
 import com.gazi.gazi_renew.domain.Line;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.Station;
+import com.gazi.gazi_renew.dto.IssueRedisDto;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.json.JSONParser;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +40,9 @@ public class IssueServiceImpl implements IssueService {
     private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
     private final Response response;
+    private final RedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
 
     @Value("${issue.code}")
@@ -65,6 +75,10 @@ public class IssueServiceImpl implements IssueService {
                     .build();
 
             issueRepository.save(issue);
+
+            // Redis에 이슈 추가
+            addIssueToRedis(issue);
+
             // station에도 추가되어야한다.
             for (Station station : stationList) {
                 List<Issue> issues = station.getIssues();
@@ -80,13 +94,18 @@ public class IssueServiceImpl implements IssueService {
                 line.setIssues(issues);
                 lineRepository.save(line);
             }
-
             return response.success();
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
+    public void addIssueToRedis(Issue issue) throws JsonProcessingException {
+        String issueId = issue.getId().toString();
+        IssueRedisDto issueDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
+        redisTemplate.opsForHash().put("issues", issueId, issueDto);
+    }
 
     @Override
     @Transactional(readOnly = true)

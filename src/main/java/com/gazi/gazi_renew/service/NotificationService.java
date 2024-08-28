@@ -10,4 +10,8 @@ public interface NotificationService {
     ResponseEntity<Response.Body> getNotificationTimes(Long myPathId);
 
     ResponseEntity<Response.Body> deleteNotificationTimes(Long myPathId);
+
+    ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request);
+
+    ResponseEntity<Response.Body> pushNotifications(Long issueId);
 }

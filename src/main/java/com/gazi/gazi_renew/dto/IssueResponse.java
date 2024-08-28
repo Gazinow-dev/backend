@@ -89,7 +89,7 @@ public class IssueResponse {
             Set<Long> idSet = new HashSet<>();
             // 중복된거면 넣지않기
             for(IssueResponse.IssueSummaryDto issue : issues){
-                System.out.println("id: " + issue.getId());
+//                System.out.println("id: " + issue.getId());
                 if (!idSet.contains(issue.getId())) {
                     // HashSet에 아직 존재하지 않는 id인 경우에만 리스트에 추가합니다.
                     issueSummaryDtoList.add(issue);

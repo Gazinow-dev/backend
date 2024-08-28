@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class FcmMessageDto {
@@ -16,6 +18,7 @@ public class FcmMessageDto {
     public static class Message {
         private FcmMessageDto.Notification notification;
         private String token;
+        private FcmMessageDto.Data data;
     }
 
     @Builder
@@ -24,5 +27,12 @@ public class FcmMessageDto {
     public static class Notification {
         private String title;
         private String body;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class Data {
+        private MyFindRoadResponse path;
     }
 }
