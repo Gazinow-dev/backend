@@ -157,7 +157,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request) {
         try {
-            //TODO
+            deleteNotificationTimes(request.getMyPathId());
+            myFindRoadPathRepository.flush();
             return saveNotificationTimes(request);
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
