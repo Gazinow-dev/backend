@@ -26,7 +26,13 @@ public class Station {
     private int stationCode;
     private double lat;
     private double lng;
+    private Integer issueStationCode;
     @JsonIgnore // issues 필드를 JSON 시리얼라이제이션에서 무시
     @ManyToMany(mappedBy = "stations" ,fetch = FetchType.LAZY)
     private List<Issue> issues;
+
+    public Station update(Integer issueStationCode) {
+        this.issueStationCode = issueStationCode;
+        return this;
+    }
 }

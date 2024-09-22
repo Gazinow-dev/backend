@@ -25,4 +25,5 @@ public interface SubwayRepository extends JpaRepository<Station, Long> {
     @Transactional(readOnly = true)
     List<Station> findByNameContainingAndLine(String name, String line);
 
+    Station findByNameAndLine(String stationName, String line);
 }

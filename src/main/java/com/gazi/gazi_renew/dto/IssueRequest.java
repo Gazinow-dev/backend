@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.dto;
 
 import com.gazi.gazi_renew.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.domain.enums.SubwayDirection;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class IssueRequest {
         private int startStationCode;
         private int endStationCode;
         private IssueKeyword keyword;
+        private SubwayDirection direction;
         // 생성자 추가
         public Station(String line, int startStationCode, int endStationCode) {
             this.line = line;
