@@ -21,7 +21,7 @@ public interface SubwayRepository extends JpaRepository<Station, Long> {
 
     List<Station> findByLine(String line);
 
-    List<Station> findByStationCodeBetween(int lowerCode, int upperCode);
+    List<Station> findByIssueStationCodeBetween(int lowerCode, int upperCode);
     @Transactional(readOnly = true)
     List<Station> findByNameContainingAndLine(String name, String line);
 

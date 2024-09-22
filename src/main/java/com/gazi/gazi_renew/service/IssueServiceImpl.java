@@ -391,7 +391,7 @@ public class IssueServiceImpl implements IssueService {
     private List<Station> handleClockwiseDirection(int startStationCode, int endStationCode) {
         if (startStationCode < endStationCode) {
             // 구간이 연속되는 경우
-            return subwayRepository.findByStationCodeBetween(startStationCode, endStationCode);
+            return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
         } else {
             // 구간이 원형을 넘어가는 경우 (예: 역 번호가 큰 출발역에서 작은 도착역으로 이동)
             return getStationsForCircularRoute(startStationCode, endStationCode);
@@ -407,7 +407,7 @@ public class IssueServiceImpl implements IssueService {
     private List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
         // 반시계일때, 구간이 시작역이 끝역코드보다 커야 연속
         if (startStationCode > endStationCode) {
-            return subwayRepository.findByStationCodeBetween(endStationCode, startStationCode);
+            return subwayRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
         } else {
             return getStationsForCircularRoute(endStationCode, startStationCode);
         }
@@ -422,8 +422,8 @@ public class IssueServiceImpl implements IssueService {
      */
     private List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode) {
         // 구간을 두 부분으로 나누어 처리
-        List<Station> leftList = subwayRepository.findByStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
-        List<Station> rightList = subwayRepository.findByStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
+        List<Station> leftList = subwayRepository.findByIssueStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
+        List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
 
         // 두 구간의 결과를 합침
         leftList.addAll(rightList);
@@ -437,7 +437,7 @@ public class IssueServiceImpl implements IssueService {
      * @return 구간에 해당하는 Station 목록
      */
     private List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
-        return subwayRepository.findByStationCodeBetween(startStationCode, endStationCode);
+        return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
     }
 
 

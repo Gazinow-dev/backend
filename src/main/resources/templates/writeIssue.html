@@ -127,7 +127,7 @@
                         stationList.innerHTML = ''; // 기존의 역들을 모두 제거
                         data.forEach(station => {
                             var option = document.createElement('option');
-                            option.value = station.stationCode;
+                            option.value = station.issueStationCode;
                             option.textContent = station.name;
                             stationList.appendChild(option);
                         });
