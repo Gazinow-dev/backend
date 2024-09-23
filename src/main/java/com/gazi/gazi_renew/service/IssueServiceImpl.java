@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.domain.Issue;
 import com.gazi.gazi_renew.domain.Line;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.Station;
+import com.gazi.gazi_renew.domain.enums.SubwayDirection;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
@@ -34,9 +35,11 @@ public class IssueServiceImpl implements IssueService {
     private final LineRepository lineRepository;
     private final Response response;
 
-
     @Value("${issue.code}")
     private String secretCode;
+    private static final int minStationNo = 201;
+    private static final int maxStationNo = 243;
+
 
     @Override
     public ResponseEntity<Response.Body> addIssue(IssueRequest dto) {
@@ -49,7 +52,6 @@ public class IssueServiceImpl implements IssueService {
             if(issueRepository.existsByCrawlingNo(dto.getCrawlingNo())){
                 return response.fail("이미 해당 데이터가 존재합니다.", HttpStatus.BAD_REQUEST);
             }
-
             List<Station> stationList = getStationList(dto.getStations());
             List<Line> lineList = getLineList(dto.getLines());
             Issue issue = Issue.builder()
@@ -284,10 +286,19 @@ public class IssueServiceImpl implements IssueService {
 
     public List<Station> getStationList(List<IssueRequest.Station> stations) {
         List<Station> stationResponse = new ArrayList<>();
+
+        // 입력된 모든 역 정보를 순회하며 각 역을 처리
         for (IssueRequest.Station station : stations) {
-            List<Station> findStationList = subwayRepository.findByStationCodeBetween(station.getStartStationCode(), station.getEndStationCode());
-            for (Station stationEntity : findStationList) {
-                stationResponse.add(stationEntity);
+            // 2호선인 경우와 아닌 경우 분기 처리
+            if (station.getLine().equals("수도권 2호선")) {
+                List<Station> stationList = handleLineTwo(station, station.getStartStationCode(), station.getEndStationCode());
+                stationResponse.addAll(stationList);
+            } else {
+                int startStationCode = Math.min(station.getStartStationCode(), station.getEndStationCode());
+                int endStationCode = Math.max(station.getStartStationCode(), station.getEndStationCode());
+
+                List<Station> stationList = findStationsForOtherLines(startStationCode, endStationCode);
+                stationResponse.addAll(stationList);
             }
         }
         return stationResponse;
@@ -344,5 +355,90 @@ public class IssueServiceImpl implements IssueService {
         List<Issue> issueList = issueRepository.findALlByLine(lineName);
         return issueList;
     }
+    /**
+     * 2호선의 경우, 시계방향과 반시계방향에 따라 다르게 처리
+     * @param station IssueRequest의 역 정보
+     * @param startStationCode 출발역 코드
+     * @param endStationCode 도착역 코드
+     * @return 구간에 해당하는 Station 목록
+     */
+    private List<Station> handleLineTwo(IssueRequest.Station station, int startStationCode, int endStationCode) {
+        if (station.getDirection() == SubwayDirection.Clockwise) {
+            // 2호선 내선 처리
+            return handleClockwiseDirection(startStationCode, endStationCode);
+        } else if (station.getDirection() == SubwayDirection.Counterclockwise) {
+            // 2호선 외선 처리
+            return handleCounterClockwiseDirection(startStationCode, endStationCode);
+        }
+        //지선인 경우
+        else{
+            // 시작역이 끝역 보다 작게
+            if (startStationCode > endStationCode) {
+                int temp = startStationCode;
+                startStationCode = endStationCode;
+                endStationCode = temp;
+            }
+            return findStationsForOtherLines(startStationCode, endStationCode);
+        }
+    }
+
+    /**
+     * 시계방향(내선)일 때의 역 구간 처리
+     * @param startStationCode 출발역 코드
+     * @param endStationCode 도착역 코드
+     * @return 구간에 해당하는 Station 목록
+     */
+    private List<Station> handleClockwiseDirection(int startStationCode, int endStationCode) {
+        if (startStationCode < endStationCode) {
+            // 구간이 연속되는 경우
+            return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
+        } else {
+            // 구간이 원형을 넘어가는 경우 (예: 역 번호가 큰 출발역에서 작은 도착역으로 이동)
+            return getStationsForCircularRoute(startStationCode, endStationCode);
+        }
+    }
+
+    /**
+     * 반시계방향(외선)일 때의 역 구간 처리
+     * @param startStationCode 출발역 코드
+     * @param endStationCode 도착역 코드
+     * @return 구간에 해당하는 Station 목록
+     */
+    private List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
+        // 반시계일때, 구간이 시작역이 끝역코드보다 커야 연속
+        if (startStationCode > endStationCode) {
+            return subwayRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
+        } else {
+            return getStationsForCircularRoute(endStationCode, startStationCode);
+        }
+    }
+
+    /**
+     * 원형을 넘는 구간을 처리하는 메서드
+     * 구간이 역 번호의 최대값에서 시작하여 다시 처음으로 돌아가는 경우 두 구간으로 나누어 처리
+     * @param startStationCode 출발역 코드
+     * @param endStationCode 도착역 코드
+     * @return 구간에 해당하는 Station 목록
+     */
+    private List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode) {
+        // 구간을 두 부분으로 나누어 처리
+        List<Station> leftList = subwayRepository.findByIssueStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
+        List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
+
+        // 두 구간의 결과를 합침
+        leftList.addAll(rightList);
+        return leftList;
+    }
+
+    /**
+     * 2호선 이외의 다른 노선에 대한 역 구간 처리
+     * @param startStationCode 출발역 코드
+     * @param endStationCode 도착역 코드
+     * @return 구간에 해당하는 Station 목록
+     */
+    private List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
+        return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
+    }
+
 
 }
