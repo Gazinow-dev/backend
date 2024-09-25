@@ -93,3 +93,4 @@ chromedriver
 *.xml
 *.iml
 # End of https://www.toptal.com/developers/gitignore/api/macos,java,gradle
+/src/main/resources/AuthKey_579FW95LY9.p8
