@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.controller;
 
+import com.gazi.gazi_renew.domain.AppleLoginParams;
 import com.gazi.gazi_renew.domain.GoogleLoginParams;
 //import com.gazi.gazi_renew.domain.KakaoLoginParams;
 import com.gazi.gazi_renew.domain.NaverLoginParams;
@@ -36,64 +37,19 @@ public class OAuthController extends BaseController{
 //        return oAuthLoginService.login(kakaoLoginParams);
 //    }
 
-
-    @Hidden
     @GetMapping("/naver")
-    public ResponseEntity<Response.Body> naverCalllback(@RequestParam String code, @RequestParam String state) {
+    public ResponseEntity<Response.Body> naverCallback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
         return oAuthLoginService.login(naverLoginParams);
     }
-    @Hidden
     @GetMapping("/google")
-    public ResponseEntity<Response.Body> googleCalllback(@RequestParam String code) {
+    public ResponseEntity<Response.Body> googleCallback(@RequestParam String code) {
         GoogleLoginParams googleLoginParams = new GoogleLoginParams(code);
         return oAuthLoginService.login(googleLoginParams);
     }
-
-    @GetMapping("/login")
-    public ResponseEntity redirectToOAuth(String socialLoginType) {
-        if (socialLoginType == null || socialLoginType.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
-                    .body("{\"error\": \"소셜 로그인 타입이 입력되지 않았습니다\"}");
-        }
-        switch (socialLoginType) {
-            case "google": {
-                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://accounts.google.com/o/oauth2/v2/auth")
-                        .queryParam("client_id", googleApiClient.getClientId())
-                        .queryParam("redirect_uri", googleApiClient.getRedirectUrl())
-                        .queryParam("response_type", "code")
-                        .queryParam("scope", "email profile");
-
-                URI googleAuthUri = uriBuilder.build().toUri();
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.setLocation(googleAuthUri);
-
-                return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
-            }
-            case "naver": {
-                String randomState = UUID.randomUUID().toString();
-
-                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://nid.naver.com/oauth2.0/authorize")
-                        .queryParam("client_id", naverApiClient.getClientId())
-                        .queryParam("redirect_uri", naverApiClient.getRedirectUrl())
-                        .queryParam("response_type", "code")
-                        .queryParam("state", randomState);
-
-                URI naverAuthUri = uriBuilder.build().toUri();
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.setLocation(naverAuthUri);
-
-                return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
-            }
-            default: {
-                return ResponseEntity.badRequest()
-                        .header("Content-Type", "application/json")
-                        .body("{\"error\": \"유효하지 않은 소셜 로그인 타입입니다\"}");
-            }
-        }
-
+    @GetMapping("/apple")
+    public ResponseEntity<Response.Body> appleCallback(@RequestParam String code) {
+        AppleLoginParams appleLoginParams = new AppleLoginParams(code);
+        return oAuthLoginService.login(appleLoginParams);
     }
 }

@@ -32,14 +32,4 @@ public class SearchController extends BaseController{
     public ResponseEntity<Response.Body> SubwayInfos(@Parameter(description = "지하철 이름") @RequestParam String stationName) {
         return subwayDataService.getSubwayInfo(stationName);
     }
-    // CSV 파일에서 issue_station_code 업데이트를 수행하는 API
-    @GetMapping("/update-issue-station-code")
-    public ResponseEntity<String> updateIssueStationCode() {
-        try {
-            subwayDataService.updateIssueStationCodeFromCsv();
-            return ResponseEntity.ok("Issue station code updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to update issue station code: " + e.getMessage());
-        }
-    }
 }
