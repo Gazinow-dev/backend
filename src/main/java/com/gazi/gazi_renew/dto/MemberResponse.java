@@ -86,4 +86,16 @@ public class MemberResponse {
         private String email;
     }
 
+    @Setter
+    @Getter
+    public static class AlertAgree {
+        private String email;
+        private boolean alertAgree;
+
+        public AlertAgree(String email, boolean alertAgree) {
+            this.email = email;
+            this.alertAgree = alertAgree;
+        }
+    }
+
 }

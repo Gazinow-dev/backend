@@ -480,4 +480,19 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
+
+    @Override
+    public ResponseEntity<Response.Body> setAlert(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setIsAgree(alertAgreeRequest.isAlertAgree());
+        memberRepository.save(member);
+        return response.success("알림 수신 설정이 저장되었습니다.");
+    }
+
+    @Override
+    public ResponseEntity<Response.Body> getAlert(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getIsAgree());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
 }

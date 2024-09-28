@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.service;
 
 
 import com.gazi.gazi_renew.dto.MemberRequest;
-import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.Response.Body;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -47,4 +46,8 @@ public interface MemberService {
     ResponseEntity<Body> checkEmail(String email);
 
     ResponseEntity<Body> checkNickName(String nickName);
+
+    ResponseEntity<Body> setAlert(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> getAlert(String email);
 }

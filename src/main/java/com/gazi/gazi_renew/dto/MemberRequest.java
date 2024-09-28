@@ -117,4 +117,16 @@ public class MemberRequest {
     @Getter
     public static class DeleteMember {
     }
+
+    @Getter
+    @Setter
+    public static class AlertAgree {
+        private String email;
+        private boolean alertAgree;
+    }
+
+    @Getter
+    public static class GetAlertAgree {
+        private String email;
+    }
 }
