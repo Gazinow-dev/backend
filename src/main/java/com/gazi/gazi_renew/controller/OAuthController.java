@@ -9,6 +9,7 @@ import com.gazi.gazi_renew.service.GoogleApiClient;
 import com.gazi.gazi_renew.service.NaverApiClient;
 import com.gazi.gazi_renew.service.OAuthLoginService;
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,17 +37,19 @@ public class OAuthController extends BaseController{
 //        KakaoLoginParams kakaoLoginParams = new KakaoLoginParams(code);
 //        return oAuthLoginService.login(kakaoLoginParams);
 //    }
-
+    @Operation(summary = "네이버 소셜 로그인")
     @GetMapping("/naver")
     public ResponseEntity<Response.Body> naverCallback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
         return oAuthLoginService.login(naverLoginParams);
     }
+    @Operation(summary = "구글 소셜 로그인")
     @GetMapping("/google")
     public ResponseEntity<Response.Body> googleCallback(@RequestParam String code) {
         GoogleLoginParams googleLoginParams = new GoogleLoginParams(code);
         return oAuthLoginService.login(googleLoginParams);
     }
+    @Operation(summary = "애플 소셜 로그인")
     @GetMapping("/apple")
     public ResponseEntity<Response.Body> appleCallback(@RequestParam String code) {
         AppleLoginParams appleLoginParams = new AppleLoginParams(code);
