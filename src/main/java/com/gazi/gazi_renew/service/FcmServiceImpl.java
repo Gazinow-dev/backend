@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.domain.Issue;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.MyFindRoadPath;
+import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.dto.FcmMessageDto;
 import com.gazi.gazi_renew.dto.FcmSendDto;
+import com.gazi.gazi_renew.dto.MyFindRoadResponse;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.repository.IssueRepository;
 import com.gazi.gazi_renew.repository.MemberRepository;
@@ -16,7 +18,6 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -84,42 +86,6 @@ public class FcmServiceImpl implements FcmService {
         return token.getTokenValue();
     }
 
-//    private String makeMessage(FcmDto fcmDto) throws JsonProcessingException {
-//        ObjectMapper om = new ObjectMapper();
-//
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("body", fcmDto.getBody());
-//        jsonObject.put("issueType", fcmDto.getIssueType());
-//        jsonObject.put("myRoadId", fcmDto.getMyRoadId());
-//
-//        FcmMessageDto fcmMessageDto = FcmMessageDto.builder()
-//                .message(FcmMessageDto.Message.builder()
-//                        .token(fcmDto.getToken())
-//                        .notification(FcmMessageDto.Notification.builder()
-//                                .title(fcmDto.getTitle())
-//                                .body(jsonObject.toString())
-//                                .build()
-//                        ).build()).validateOnly(false).build();
-//
-//        return om.writeValueAsString(fcmMessageDto);
-//    }
-
-/*    private JSONObject getDetails(Long userMyRoadId) {
-        Optional<MyFindRoadPath> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(userMyRoadId));
-        if(myPath.isEmpty()) {
-            throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
-        } else {
-            JSONObject obj = new JSONObject();
-            Optional<Member> member = memberRepository.findById(myPath.get().getMember().getId());
-            if(member.isEmpty()) {
-                throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
-            }
-            obj.put("myPathName", myPath.get().getName());
-            obj.put("firebaseToken", member.get().getFirebaseToken());
-            return obj;
-        }
-    }*/
-
     private String makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
         Optional<MyFindRoadPath> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
         if(myPath.isEmpty()) {
@@ -139,25 +105,26 @@ public class FcmServiceImpl implements FcmService {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
-
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("myRoad", myPathName);
-//        jsonObject.put("body", fcmDto.getBody());
-//        jsonObject.put("issueType", issue.get().getKeyword());
+        MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
+        List<Station> stations = issue.get().getStations();
 
         FcmMessageDto fcmMessageDto = FcmMessageDto.builder()
                .message(FcmMessageDto.Message.builder()
                        .token(firebaseToken)
                        .notification(FcmMessageDto.Notification.builder()
                                .title(makeTitle(myPathName, issue.get().getKeyword()))
-                               .body("body test")
+                               .body(makeBody(issue.get().getLine(), stations.get(0).getName(), stations.get(stations.size()-1).getName() ))
                                .build()
                         )
                        .data(FcmMessageDto.Data.builder().path(
-                               myFindRoadService.getRouteById(fcmSendDto.getMyRoadId())
+                               routeById
                        ).build()).build()).validateOnly(false).build();
 
         return om.writeValueAsString(fcmMessageDto);
+    }
+
+    private String makeBody(String line, String startStationName, String endStationName) {
+        return line + startStationName + " - " + endStationName + " 방면";
     }
 
     private String makeTitle(String pathName, IssueKeyword issueType) {

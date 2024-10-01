@@ -13,5 +13,5 @@ public interface NotificationService {
 
     ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request);
 
-    ResponseEntity<Response.Body> pushNotifications(Long issueId);
+    ResponseEntity<Response.Body> getPathId(Long notificationId);
 }

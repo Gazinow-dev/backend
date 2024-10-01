@@ -24,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,12 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueRepository issueRepository;
     private final RedisTemplate<String, Object> redisTemplate;  // Inject RedisTemplate
-    private final ObjectMapper objectMapper = new ObjectMapper(); // Create an ObjectMapper instance
-
-
-    public List<Notification> getAll() {
-        return notificationRepository.findAll();
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotificationRequest request) {
@@ -106,7 +98,6 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private String convertListToJson(List<Map<String, Object>> notificationJsonList) throws JsonProcessingException {
-        // Convert the list of maps to a JSON array
         return objectMapper.writeValueAsString(notificationJsonList);
     }
 
@@ -134,7 +125,7 @@ public class NotificationServiceImpl implements NotificationService {
             return response.success(myFindRoadNotificationResponse, "마이 길찾기 알람 찾기 성공", HttpStatus.OK);
 
         } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -163,36 +154,18 @@ public class NotificationServiceImpl implements NotificationService {
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
 
-    public ResponseEntity<Response.Body> pushNotifications(Long issueId) {
+    @Override
+    public ResponseEntity<Response.Body> getPathId(Long notificationId) {
         try {
-            Issue issue = issueRepository.findById(issueId).orElseThrow(
-                    () -> new EntityNotFoundException("해당 이슈가 존재하지 않습니다.")
-            );
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            LocalDateTime issueStartDate = issue.getStartDate();
-            LocalDateTime issueExpireDate = issue.getExpireDate();
-            if (isWithinIssueDateRange(issueStartDate, issueExpireDate, currentDateTime)) {
-                DayOfWeek currentDayOfWeek = currentDateTime.getDayOfWeek();
-                LocalTime currentTime = currentDateTime.toLocalTime();
-
-//                List<Notification> notifications = notificationRepository.findNotificationsForCurrentTime(
-//                        myFindRoadPathIds,
-//                        currentDayOfWeek.toString().toUpperCase(),
-//                        currentTime
-//                );
-
-            }
-            return null;
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
+            Long myPathId = notification.getMyFindRoadPath().getId();
+            return response.success(myPathId, "알림 경로 ID 조회 성공", HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
         }
-
-    }
-
-    private boolean isWithinIssueDateRange(LocalDateTime issueStartDate, LocalDateTime issueExpireDate, LocalDateTime currentDateTime) {
-        return (currentDateTime.isEqual(issueStartDate) || currentDateTime.isAfter(issueStartDate)) &&
-                (currentDateTime.isEqual(issueExpireDate) || currentDateTime.isBefore(issueExpireDate));
     }
 }
