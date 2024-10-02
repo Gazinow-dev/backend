@@ -24,7 +24,6 @@ import java.util.Base64;
 @Service
 @RequiredArgsConstructor
 public class AppleApiClient implements OAuthApiClient {
-    //Todo apple 로그인 설정 후 관련 정보들
     private static final String GRANT_TYPE = "authorization_code";
 
     private final AppleProperties appleProperties;
@@ -60,7 +59,6 @@ public class AppleApiClient implements OAuthApiClient {
 
         return response.getIdToken();
     }
-
     @Override
     public OAuthInfoResponse requestOauthInfo(String idToken) {
         return decodePayload(idToken, AppleInfoResponse.class);

@@ -29,30 +29,43 @@ import java.util.UUID;
 @RestController
 public class OAuthController extends BaseController{
     private final OAuthLoginService oAuthLoginService;
-    private final GoogleApiClient googleApiClient;
-    private final NaverApiClient naverApiClient;
 
-//    @GetMapping("/kakao")
-//    public ResponseEntity<Response.Body> kakaoCalllback(@RequestParam String code) {
-//        KakaoLoginParams kakaoLoginParams = new KakaoLoginParams(code);
-//        return oAuthLoginService.login(kakaoLoginParams);
-//    }
-    @Operation(summary = "네이버 소셜 로그인")
+    @Hidden
     @GetMapping("/naver")
     public ResponseEntity<Response.Body> naverCallback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
         return oAuthLoginService.login(naverLoginParams);
     }
-    @Operation(summary = "구글 소셜 로그인")
+    @Hidden
     @GetMapping("/google")
     public ResponseEntity<Response.Body> googleCallback(@RequestParam String code) {
         GoogleLoginParams googleLoginParams = new GoogleLoginParams(code);
         return oAuthLoginService.login(googleLoginParams);
     }
-    @Operation(summary = "애플 소셜 로그인")
+    @Hidden
     @GetMapping("/apple")
     public ResponseEntity<Response.Body> appleCallback(@RequestParam String code) {
         AppleLoginParams appleLoginParams = new AppleLoginParams(code);
         return oAuthLoginService.login(appleLoginParams);
+    }
+
+    @Operation(summary = "소셜 로그인")
+    @GetMapping("/login")
+    public ResponseEntity redirectToOAuth(@RequestParam String socialLoginType) {
+        if (socialLoginType == null || socialLoginType.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .body("{\"error\": \"소셜 로그인 타입이 입력되지 않았습니다\"}");
+        }
+        try {
+            URI redirectUri = oAuthLoginService.getOAuthRedirectUri(socialLoginType);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(redirectUri);
+            return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .body("{\"error\": \"유효하지 않은 소셜 로그인 타입입니다\"}");
+        }
     }
 }
