@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.service;
 
+import com.gazi.gazi_renew.config.AppleProperties;
 import com.gazi.gazi_renew.config.JwtTokenProvider;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.enums.Role;
@@ -17,9 +18,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +35,64 @@ public class OAuthLoginService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RequestOAuthInfoService requestOAuthInfoService;
 
+    private final GoogleApiClient googleApiClient;
+    private final NaverApiClient naverApiClient;
+    private final AppleApiClient appleApiClient;
+
+    private final AppleProperties appleProperties;
     private final PasswordEncoder passwordEncoder;
-
-
+    /**
+     * socialLogin 타입에 따라 분기 처리
+     * @param : String socialLoginType
+     * return URI
+     */
+    public URI getOAuthRedirectUri(String socialLoginType) {
+        switch (socialLoginType) {
+            case "google":
+                return getGoogleAuthUri();
+            case "naver":
+                return getNaverAuthUri();
+            case "apple":
+                return getAppleAuthUri();
+            default:
+                throw new IllegalArgumentException("유효하지 않은 소셜 로그인 타입입니다.");
+        }
+    }
+    /**
+     * 구글 인가 코드 받아오기
+     */
+    private URI getGoogleAuthUri() {
+        return UriComponentsBuilder.fromHttpUrl("https://accounts.google.com/o/oauth2/v2/auth")
+                .queryParam("client_id", googleApiClient.getClientId())
+                .queryParam("redirect_uri", googleApiClient.getRedirectUrl())
+                .queryParam("response_type", "code")
+                .queryParam("scope", "email profile")
+                .build().toUri();
+    }
+    /**
+     * 네이버 인가 코드 받아오기
+     */
+    private URI getNaverAuthUri() {
+        String randomState = UUID.randomUUID().toString();
+        return UriComponentsBuilder.fromHttpUrl("https://nid.naver.com/oauth2.0/authorize")
+                .queryParam("client_id", naverApiClient.getClientId())
+                .queryParam("redirect_uri", naverApiClient.getRedirectUrl())
+                .queryParam("response_type", "code")
+                .queryParam("state", randomState)
+                .build().toUri();
+    }
+    /**
+     * 애플 인가 코드 받아오기
+     */
+    private URI getAppleAuthUri() {
+        return UriComponentsBuilder.fromHttpUrl("https://appleid.apple.com/auth/authorize")
+                .queryParam("client_id", appleProperties.getClientId())
+                .queryParam("redirect_uri", appleProperties.getRedirectUrl())
+                .queryParam("response_type", "code")
+                .queryParam("scope", "email name")
+                .queryParam("response_mode", "form_post")
+                .build().toUri();
+    }
     public ResponseEntity<Response.Body> login(OAuthLoginParams params) {
         OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
         Member member = findOrCreateMember(oAuthInfoResponse);
