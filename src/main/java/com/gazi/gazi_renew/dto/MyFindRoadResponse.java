@@ -14,7 +14,7 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class MyFindRoadResponse {
     private Long id;
-    int totalTime; // 총소요시간
+    private int totalTime; // 총소요시간
     private String roadName;
     private String lastEndStation;
     private Boolean notification;

@@ -33,6 +33,6 @@ public class FcmMessageDto {
     @AllArgsConstructor
     @Getter
     public static class Data {
-        private MyFindRoadResponse path;
+        private String path;
     }
 }

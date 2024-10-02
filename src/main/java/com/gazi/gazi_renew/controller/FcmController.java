@@ -23,7 +23,6 @@ import java.io.IOException;
 public class FcmController extends BaseController {
     private final FcmService fcmService;
 
-    @Hidden
     @PostMapping("/send")
     public ResponseEntity<Response.Body> pushMessage(@RequestBody @Validated FcmSendDto fcmSendDto) throws IOException {
         return fcmService.sendMessageTo(fcmSendDto);

@@ -23,6 +23,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -30,9 +31,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class FcmServiceImpl implements FcmService {
     private final Response response;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
@@ -41,9 +41,14 @@ public class FcmServiceImpl implements FcmService {
     private final MyFindRoadService myFindRoadService;
 
     @Value("${push.properties.firebase-create-scoped}")
-    String fireBaseCreateScoped;
+    private String fireBaseCreateScoped;
+    @Value("${push.properties.firebase-config-path}")
+    private String firebaseConfigPath;
+    @Value("${push.properties.api-url}")
+    private String API_URL;
 
     @Override
+    @Transactional
     public ResponseEntity<Response.Body> sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
         String message = makeFcmDto(fcmSendDto);
         RestTemplate restTemplate = new RestTemplate();
@@ -56,26 +61,21 @@ public class FcmServiceImpl implements FcmService {
 
         HttpEntity<String> entity = new HttpEntity<>(message, headers);
 
-        String API_URL = "https://fcm.googleapis.com/v1/projects/gazi-81f38/messages:send";
         ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
         return restResponse.getStatusCode() == HttpStatus.OK ? response.success("성공") : response.fail("실패", HttpStatus.BAD_REQUEST);
     }
 
     private String getAccessToken() throws IOException {
-        String firebaseConfigPath = "firebase/gazi-81f38-firebase-adminsdk-g89dw-f57852c34b.json";
-
         GoogleCredentials googleCredentials = GoogleCredentials
                 .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
                 .createScoped((Collections.singletonList(fireBaseCreateScoped)));
 
-        // Ensure credentials are refreshed
         googleCredentials.refreshIfExpired();
 
-        // Get the refreshed access token
+        // access token 가져오기
         AccessToken token = googleCredentials.getAccessToken();
         if (token == null) {
-            // Refresh manually if it's still null
             googleCredentials.refresh();
             token = googleCredentials.getAccessToken();
         }
@@ -108,17 +108,18 @@ public class FcmServiceImpl implements FcmService {
         MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
         List<Station> stations = issue.get().getStations();
 
+        String pathJson = om.writeValueAsString(routeById);
+
         FcmMessageDto fcmMessageDto = FcmMessageDto.builder()
-               .message(FcmMessageDto.Message.builder()
-                       .token(firebaseToken)
-                       .notification(FcmMessageDto.Notification.builder()
-                               .title(makeTitle(myPathName, issue.get().getKeyword()))
-                               .body(makeBody(issue.get().getLine(), stations.get(0).getName(), stations.get(stations.size()-1).getName() ))
-                               .build()
+                .message(FcmMessageDto.Message.builder()
+                        .token(firebaseToken)
+                        .notification(FcmMessageDto.Notification.builder()
+                                .title(makeTitle(myPathName, issue.get().getKeyword()))
+                                .body(makeBody(issue.get().getLine(), stations.get(0).getName(), stations.get(stations.size() - 1).getName()))
+                                .build()
                         )
-                       .data(FcmMessageDto.Data.builder().path(
-                               routeById
-                       ).build()).build()).validateOnly(false).build();
+                        .data(FcmMessageDto.Data.builder().path(pathJson)
+                                .build()).build()).validateOnly(false).build();
 
         return om.writeValueAsString(fcmMessageDto);
     }
