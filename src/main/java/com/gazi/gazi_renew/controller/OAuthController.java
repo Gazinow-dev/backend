@@ -45,6 +45,7 @@ public class OAuthController extends BaseController{
     @Hidden
     @GetMapping("/apple")
     public ResponseEntity<Response.Body> appleCallback(@RequestParam String code) {
+        System.out.println("Apple Login appleCallback 메서드 컨트롤러 :"+ code);
         AppleLoginParams appleLoginParams = new AppleLoginParams(code);
         return oAuthLoginService.login(appleLoginParams);
     }

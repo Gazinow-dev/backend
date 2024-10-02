@@ -45,7 +45,8 @@ public class AppleApiClient implements OAuthApiClient {
         MultiValueMap<String, String> body = params.makeBody();
 
         String clientSecret = appleLoginUtilService.generateClientSecret();
-
+        System.out.println("Apple Login appleCallback 메서드 컨트롤러 :"+ body);
+        System.out.println("Apple Login appleCallback 메서드 컨트롤러 :"+ url);
         body.add("client_id", appleProperties.getClientId());
         body.add("redirect_url", appleProperties.getRedirectUrl());
         body.add("client_secret", clientSecret);
