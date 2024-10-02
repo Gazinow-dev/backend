@@ -42,6 +42,8 @@ public class MemberController extends BaseController{
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<Body> login(@RequestBody @Valid Login loginDto, Errors errors) {
+        System.out.println("login: " + loginDto.getEmail());
+        System.out.println("login: " + loginDto.getFirebaseToken());
         return memberService.login(loginDto);
     }
 
@@ -140,5 +142,16 @@ public class MemberController extends BaseController{
         return memberService.checkNickName(nickName.getNickName());
     }
 
+    @Operation(summary = "알람 on/off 설정")
+    @PostMapping("/set-alert")
+    public ResponseEntity<Body> setAlert(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors){
+        return memberService.setAlert(alertAgreeDto);
+    }
+
+    @Operation(summary = "알람 on/off 설정 확인")
+    @PostMapping("/get-alert")
+    public ResponseEntity<Body> getAlert(@RequestBody MemberRequest.GetAlertAgree alertAgreeDto, Errors errors){
+        return memberService.getAlert(alertAgreeDto.getEmail());
+    }
 
 }

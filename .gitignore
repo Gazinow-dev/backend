@@ -92,5 +92,6 @@ chromedriver
 *.yaml
 *.xml
 *.iml
+src/main/resources/firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json
+src/main/resources/AuthKey_579FW95LY9.p8
 # End of https://www.toptal.com/developers/gitignore/api/macos,java,gradle
-/src/main/resources/AuthKey_579FW95LY9.p8
