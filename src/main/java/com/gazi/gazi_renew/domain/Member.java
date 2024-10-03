@@ -67,10 +67,8 @@ public class Member extends AuditingFields {
         recentSearch.setMember(this);
         recentSearches.add(recentSearch);
     }
-    public Member update(String nickName, String email, OAuthProvider provider) {
-        this.nickName = nickName;
-        this.email = email;
-        this.provider = provider;
+    public Member saveFcmToken(String firebaseToken) {
+        this.firebaseToken = firebaseToken;
         return this;
     }
 

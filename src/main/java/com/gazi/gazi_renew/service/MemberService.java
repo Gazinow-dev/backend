@@ -50,4 +50,6 @@ public interface MemberService {
     ResponseEntity<Body> setAlert(MemberRequest.AlertAgree alertAgreeRequest);
 
     ResponseEntity<Body> getAlert(String email);
+
+    ResponseEntity<Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest);
 }

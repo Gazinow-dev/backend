@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final Response response;
@@ -68,13 +69,13 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
-
+    @Transactional(readOnly = true)
     public void validateEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 가입된 이메일입니다.");
         }
     }
-
+    @Transactional(readOnly = true)
     public void validateNickName(String nickName) {
         if (memberRepository.existsByNickName(nickName)) {
             throw new IllegalStateException("중복된 닉네임입니다.");
@@ -114,7 +115,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
 
-    @Transactional
     @Override
     public ResponseEntity<Response.Body> logout(MemberRequest.Logout logoutDto) {
         // Access Token 검증
@@ -228,6 +228,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkPassword(MemberRequest.CheckPassword checkPassword) {
         try {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
@@ -243,6 +244,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> findPassword(MemberRequest.IsUser isUserRequest){
         try{
             String password = "";
@@ -462,6 +464,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkEmail(String email) {
         try {
             validateEmail(email);
@@ -472,6 +475,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkNickName(String nickName) {
         if(memberRepository.existsByNickName(nickName)) {
             return response.fail("중복된 닉네임입니다.", HttpStatus.CONFLICT);
@@ -490,9 +494,22 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getAlert(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getIsAgree());
         return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    /**
+     * 소셜로그인시 푸시알림을 위해 토큰 저장할 메서드
+     * @param : MemberRequest.FcmTokenRequest fcmTokenRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest) {
+        Member member = memberRepository.findByEmail(fcmTokenRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.saveFcmToken(fcmTokenRequest.getFirebaseToken());
+        memberRepository.save(member);
+        return response.success("FireBase 토큰 저장 완료.");
     }
 }
