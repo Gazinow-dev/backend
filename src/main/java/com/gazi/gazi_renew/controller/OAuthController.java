@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.domain.GoogleLoginParams;
 //import com.gazi.gazi_renew.domain.KakaoLoginParams;
 import com.gazi.gazi_renew.domain.NaverLoginParams;
 import com.gazi.gazi_renew.dto.Response;
+import com.gazi.gazi_renew.dto.ResponseToken;
 import com.gazi.gazi_renew.service.GoogleApiClient;
 import com.gazi.gazi_renew.service.NaverApiClient;
 import com.gazi.gazi_renew.service.OAuthLoginService;
@@ -30,22 +31,22 @@ import java.util.UUID;
 public class OAuthController extends BaseController{
     private final OAuthLoginService oAuthLoginService;
 
-    @Hidden
     @GetMapping("/naver")
-    public ResponseEntity<Response.Body> naverCallback(@RequestParam String code, @RequestParam String state) {
+    public ResponseEntity<Void> naverCallback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
         return oAuthLoginService.login(naverLoginParams);
     }
+
     @Hidden
     @GetMapping("/google")
-    public ResponseEntity<Response.Body> googleCallback(@RequestParam String code) {
+    public ResponseEntity<Void> googleCallback(@RequestParam String code) {
         GoogleLoginParams googleLoginParams = new GoogleLoginParams(code);
         return oAuthLoginService.login(googleLoginParams);
     }
+
     @Hidden
     @GetMapping("/apple")
-    public ResponseEntity<Response.Body> appleCallback(@RequestParam String code) {
-        System.out.println("Apple Login appleCallback 메서드 컨트롤러 :"+ code);
+    public ResponseEntity<Void> appleCallback(@RequestParam String code) {
         AppleLoginParams appleLoginParams = new AppleLoginParams(code);
         return oAuthLoginService.login(appleLoginParams);
     }
