@@ -9,6 +9,7 @@ import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.ResponseToken;
 import com.gazi.gazi_renew.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.repository.MemberRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -91,15 +92,17 @@ public class OAuthLoginService {
                 .queryParam("response_type", "code")
                 .build().toUri();
     }
-    public ResponseEntity<Response.Body> login(OAuthLoginParams params) {
+    public ResponseEntity<Void> login(OAuthLoginParams params) {
         OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
         Member member = findOrCreateMember(oAuthInfoResponse);
+
         Collection<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), null, authorities);
+
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
         responseToken.setEmail(member.getEmail());
         responseToken.setNickName(member.getNickName());
-        return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
+        return createRedirectResponse(responseToken);
     }
     private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
         return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
@@ -126,5 +129,19 @@ public class OAuthLoginService {
         memberRepository.save(member);
 
         return member;
+    }
+    // URI 생성과 리다이렉트 응답을 담당하는 메서드
+    private ResponseEntity<Void> createRedirectResponse(ResponseToken responseToken) {
+        URI redirectUri = UriComponentsBuilder.fromUriString("gazinow://main")
+                .queryParam("accessToken", responseToken.getAccessToken())
+                .queryParam("refreshToken", responseToken.getRefreshToken())
+                .queryParam("email", responseToken.getEmail())
+                .queryParam("nickName", responseToken.getNickName())
+                .build()
+                .toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(redirectUri);
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }
