@@ -117,6 +117,17 @@ public class MemberController extends BaseController{
         return memberService.deleteMember(deleteMemberDto);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PostMapping("/fcm-token")
+    @Operation(summary = "FireBase 토큰 저장")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "FireBase 토큰 저장 완료."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> saveFcmToken(@RequestBody MemberRequest.FcmTokenRequest fcmTokenRequest) {
+        return memberService.saveFcmToken(fcmTokenRequest);
+    }
+
     @Operation(summary = "이메일 인증")
     @PostMapping("/email-confirm")
     public ResponseEntity<Body> emailConfirm(@RequestBody @Valid MemberRequest.Email email, Errors errors) throws Exception {
