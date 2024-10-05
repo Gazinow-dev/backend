@@ -61,7 +61,16 @@ public class AppleApiClient implements OAuthApiClient {
     }
     @Override
     public OAuthInfoResponse requestOauthInfo(String idToken) {
-        return decodePayload(idToken, AppleInfoResponse.class);
+        AppleInfoResponse appleInfoResponse = decodePayload(idToken, AppleInfoResponse.class);
+
+        // email과 nickname이 null 또는 빈 값일 경우, sub 값을 할당
+        if (appleInfoResponse.getEmail() == null || appleInfoResponse.getEmail().isEmpty()) {
+            appleInfoResponse.setEmail(appleInfoResponse.getSub());
+        }
+        if (appleInfoResponse.getNickname() == null || appleInfoResponse.getNickname().isEmpty()) {
+            appleInfoResponse.setName(appleInfoResponse.getSub());
+        }
+        return appleInfoResponse;
     }
     private static <T> T decodePayload(String token, Class<T> targetClass) {
 
