@@ -90,7 +90,8 @@ public class OAuthLoginService {
                 .queryParam("client_id", appleProperties.getClientId())
                 .queryParam("redirect_uri", appleProperties.getRedirectUrl())
                 .queryParam("scope", "email name")
-                .queryParam("response_type", "form_post")
+                .queryParam("response_type", "code")
+                .queryParam("response_mode", "form_post")
                 .build().toUri();
     }
     public ResponseEntity<Void> login(OAuthLoginParams params) {
