@@ -71,7 +71,7 @@ public class AppleApiClient implements OAuthApiClient {
         String payload = new String(decoder.decode(payloadJWT));
         ObjectMapper objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        log.info("Apple 로그인 응답: " + payload);
         try {
             return objectMapper.readValue(payload, targetClass);
         } catch (Exception e) {
