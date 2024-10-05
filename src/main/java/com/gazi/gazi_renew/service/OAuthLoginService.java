@@ -89,7 +89,8 @@ public class OAuthLoginService {
         return UriComponentsBuilder.fromHttpUrl("https://appleid.apple.com/auth/authorize")
                 .queryParam("client_id", appleProperties.getClientId())
                 .queryParam("redirect_uri", appleProperties.getRedirectUrl())
-                .queryParam("response_type", "code")
+                .queryParam("scope", "email name")
+                .queryParam("response_type", "form_post")
                 .build().toUri();
     }
     public ResponseEntity<Void> login(OAuthLoginParams params) {
