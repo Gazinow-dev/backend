@@ -25,7 +25,7 @@ public class Issue extends AuditingFields{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-    @Column(columnDefinition = "text")
+    @Lob
     private String content;
     private String line;
     private String crawlingNo;

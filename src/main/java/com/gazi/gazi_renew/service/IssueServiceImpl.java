@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService {
 
@@ -53,6 +52,7 @@ public class IssueServiceImpl implements IssueService {
 
 
     @Override
+    @Transactional
     public ResponseEntity<Response.Body> addIssue(IssueRequest dto) {
 
         try {
@@ -228,6 +228,7 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response.Body> updateIssueContent(IssueRequest.updateContentDto dto){
         try {
             System.out.println(dto.getId());
@@ -235,7 +236,6 @@ public class IssueServiceImpl implements IssueService {
                     () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
             );
 
-            System.out.println("ddddd");
             issue.setContent(dto.getContent());
             issueRepository.save(issue);
             return response.success(" 내용 수정 성공");
