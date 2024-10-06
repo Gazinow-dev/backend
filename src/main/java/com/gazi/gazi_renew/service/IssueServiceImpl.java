@@ -8,6 +8,7 @@ import com.gazi.gazi_renew.domain.Line;
 import com.gazi.gazi_renew.domain.Member;
 import com.gazi.gazi_renew.domain.Station;
 import com.gazi.gazi_renew.domain.enums.SubwayDirection;
+import com.gazi.gazi_renew.dto.IssueRedisDto;
 import com.gazi.gazi_renew.dto.IssueRequest;
 import com.gazi.gazi_renew.dto.IssueResponse;
 import com.gazi.gazi_renew.dto.Response;
@@ -31,6 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService {
 
@@ -76,7 +78,8 @@ public class IssueServiceImpl implements IssueService {
                     .build();
 
             issueRepository.save(issue);
-
+            // Redis에 이슈 추가
+            addIssueToRedis(issue);
 
             // station에도 추가되어야한다.
             for (Station station : stationList) {
@@ -98,7 +101,12 @@ public class IssueServiceImpl implements IssueService {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
+    public void addIssueToRedis(Issue issue) throws JsonProcessingException {
+        String issueId = issue.getId().toString();
+        IssueRedisDto issueDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
+        redisTemplate.opsForHash().put("issues", issueId, issueDto);
+    }
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getIssue(Long id) {
@@ -181,6 +189,7 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getPopularIssues() {
         int likeCount = 5;
         try{
@@ -239,7 +248,6 @@ public class IssueServiceImpl implements IssueService {
 
 
     }
-
     public Page<IssueResponse> getPostDtoPage(Page<Issue> issuePage) {
 
         Page<IssueResponse> issueResponsePage = issuePage.map(m -> {
@@ -292,7 +300,6 @@ public class IssueServiceImpl implements IssueService {
         ).collect(Collectors.toList());
         return issueResponses;
     }
-
     public List<Station> getStationList(List<IssueRequest.Station> stations) {
         List<Station> stationResponse = new ArrayList<>();
 
