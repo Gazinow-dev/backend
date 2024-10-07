@@ -69,22 +69,20 @@ public class NotificationServiceImpl implements NotificationService {
                 // 생성된 Notification 객체 저장
                 savedTimes.add(notificationRepository.save(notification));
 
-                // Convert Notification to JSON Map
                 Map<String, Object> notificationData = new HashMap<>();
-                notificationData.put("day", notification.getDayOfWeek()); // Ensure days are correctly listed
+                notificationData.put("day", notification.getDayOfWeek());
                 notificationData.put("from_time", notification.getFromTime().toString());
                 notificationData.put("to_time", notification.getToTime().toString());
 
                 notificationJsonList.add(notificationData);
             }
 
-            String fieldName = request.getMyPathId().toString(); // Adjust field name logic as needed
+            String fieldName = myPath.getMember().getId().toString();
 
-            // Convert list of notifications to JSON array
             String notificationJsonArray = convertListToJson(notificationJsonList);
             System.out.println(notificationJsonArray);
 
-            // Save to Redis Hash
+            // redis에 저장
             redisTemplate.opsForHash().put("user_notifications", fieldName, notificationJsonArray);
             return response.success(savedTimes, "마이 길찾기 알람 저장 성공", HttpStatus.OK);
 
