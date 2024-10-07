@@ -14,4 +14,5 @@ public interface MyFindRoadPathRepository extends JpaRepository<MyFindRoadPath,L
     boolean existsByNameAndMember(String roadName, Member member);
     Optional<List<MyFindRoadPath>> findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(String startStation, String lastStation, Member member, int totalTime);
     MyFindRoadPath findMyFindRoadPathById(Long id);
+    List<MyFindRoadPath> findByMemberId(Long memberId);
 }
