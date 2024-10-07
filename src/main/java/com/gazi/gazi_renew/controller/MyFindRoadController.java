@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.dto.MyFindRoadRequest;
 import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.service.MyFindRoadService;
 import com.gazi.gazi_renew.service.NotificationService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,18 +30,13 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "200", description = "마이 길찾기 조회 성공"),
             @ApiResponse(responseCode = "404", description = "0호선으로된 데이터 정보를 찾을 수 없습니다.")}
     )
-    public ResponseEntity<Response.Body> getRoute() {
+    public ResponseEntity<Response.Body> getRoutes() {
         return myFindRoadService.getRoutes();
     }
-
+    @Hidden
     @GetMapping("/get_roads/by_id")
-    @Operation(summary = "내 경로 전체 조회")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "마이 길찾기 조회 성공"),
-            @ApiResponse(responseCode = "404", description = "0호선으로된 데이터 정보를 찾을 수 없습니다.")}
-    )
-    public ResponseEntity<Response.Body> getRoutes(@RequestParam Long myPathId) {
-        return myFindRoadService.getRoute(myPathId);
+    public ResponseEntity<Response.Body> getRoutesByMember(@RequestParam Long memberId) {
+        return myFindRoadService.getRoutesByMember(memberId);
     }
 
     @Operation(summary = "내 경로 저장")
