@@ -118,7 +118,9 @@ public class OAuthLoginService {
             nickname = email.substring(0, email.indexOf("@"));
         }
         Member member = Member.builder()
-                .isAgree(true)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))

@@ -3,10 +3,7 @@ package com.gazi.gazi_renew.service;
 import com.gazi.gazi_renew.config.JwtTokenProvider;
 import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Member;
-import com.gazi.gazi_renew.dto.MemberRequest;
-import com.gazi.gazi_renew.dto.MemberResponse;
-import com.gazi.gazi_renew.dto.Response;
-import com.gazi.gazi_renew.dto.ResponseToken;
+import com.gazi.gazi_renew.dto.*;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
@@ -46,11 +43,13 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final MyFindRoadService myFindRoadService;
     private final AuthenticationManagerBuilder managerBuilder;
     private final RedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender emailSender;
     private final RedisUtilService redisUtilService;
+    private final NotificationService notificationService;
 
     @Override
     public ResponseEntity<Response.Body> signUp(@Valid MemberRequest.SignUp signUpDto, Errors errors) {
@@ -484,20 +483,83 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
-
+    /**
+     * 유저 푸시 알림 활성/비활성 메서드
+     * 푸시 알림 꺼지면 내가 저장한 경로 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
     @Override
-    public ResponseEntity<Response.Body> setAlert(MemberRequest.AlertAgree alertAgreeRequest) {
+    public ResponseEntity<Response.Body> updatePushNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
         Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        member.setIsAgree(alertAgreeRequest.isAlertAgree());
+        member.setPushNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            updateMySavedRouteNotificationStatus(alertAgreeRequest);
+        }
         memberRepository.save(member);
-        return response.success("알림 수신 설정이 저장되었습니다.");
+        return response.success("푸시 알림 수신 설정이 저장되었습니다.");
     }
+    /**
+     * 내가 저장한 경로 알림 활성/비활성 메서드
+     * 내가 저장한 경로 꺼지면 경로별 상세 설정 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> updateMySavedRouteNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setMySavedRouteNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            updateRouteDetailNotificationStatus(alertAgreeRequest);
+        }
+        memberRepository.save(member);
+        return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
+    }
+    /**
+     * 경로별 상세 설정 알림 활성/비활성 메서드
+     * 경로별 상세 설정 알림 꺼지면 나의 상세 경로 알림들 모두 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> updateRouteDetailNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setRouteDetailNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            // myFindRoadService에서 경로 데이터를 가져옴
+            ResponseEntity<Response.Body> response = myFindRoadService.getRoutes();
 
+            // Response.Body에서 데이터를 추출
+            List<MyFindRoadResponse> routes = (List<MyFindRoadResponse>) response.getBody().getData();
+
+            // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
+            for (MyFindRoadResponse route : routes) {
+                notificationService.deleteNotificationTimes(route.getId());  // MyPathId를 넘겨서 삭제 메서드 호출
+            }
+
+        }
+        memberRepository.save(member);
+        return response.success("경로 상세 설정 알림 수신 설정이 저장되었습니다.");
+    }
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getAlert(String email) {
+    public ResponseEntity<Response.Body> getPushNotificationStatus(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getIsAgree());
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getPushNotificationEnabled());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getMySavedRouteNotificationStatus(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getMySavedRouteNotificationEnabled());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getRouteDetailNotificationStatus(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getRouteDetailNotificationEnabled());
         return response.success(memberResponse, "", HttpStatus.OK);
     }
     /**

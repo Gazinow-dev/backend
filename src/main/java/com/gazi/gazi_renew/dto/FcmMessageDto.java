@@ -35,4 +35,16 @@ public class FcmMessageDto {
     public static class Data {
         private String path;
     }
+    public static FcmMessageDto createMessage(String firebaseToken, String title, String body, String pathJson) {
+        return FcmMessageDto.builder()
+                .message(FcmMessageDto.Message.builder()
+                        .token(firebaseToken)
+                        .notification(FcmMessageDto.Notification.builder()
+                                .title(title)
+                                .body(body)
+                                .build()
+                        )
+                        .data(FcmMessageDto.Data.builder().path(pathJson)
+                                .build()).build()).validateOnly(false).build();
+    }
 }

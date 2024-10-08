@@ -42,11 +42,13 @@ public class Member extends AuditingFields {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    // 푸시 알림 관련 필드 추가
+    private Boolean pushNotificationEnabled; // 푸시 알림 받기 여부
 
-    @Column(nullable = false)
-    private Boolean isAgree;
+    private Boolean mySavedRouteNotificationEnabled; // 내가 저장한 경로 알림 여부
 
-    @Column()
+    private Boolean routeDetailNotificationEnabled; // 경로 상세 설정 알림 여부
+
     private String firebaseToken;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -63,10 +65,6 @@ public class Member extends AuditingFields {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Like> likes = new HashSet<>();
 
-    public void addRecentSearch(RecentSearch recentSearch) {
-        recentSearch.setMember(this);
-        recentSearches.add(recentSearch);
-    }
     public Member saveFcmToken(String firebaseToken) {
         this.firebaseToken = firebaseToken;
         return this;

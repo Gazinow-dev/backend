@@ -2,10 +2,7 @@ package com.gazi.gazi_renew.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.domain.Issue;
-import com.gazi.gazi_renew.domain.Member;
-import com.gazi.gazi_renew.domain.MyFindRoadPath;
-import com.gazi.gazi_renew.domain.Station;
+import com.gazi.gazi_renew.domain.*;
 import com.gazi.gazi_renew.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.dto.FcmMessageDto;
 import com.gazi.gazi_renew.dto.FcmSendDto;
@@ -28,9 +25,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class FcmServiceImpl implements FcmService {
@@ -50,7 +50,8 @@ public class FcmServiceImpl implements FcmService {
     @Override
     @Transactional
     public ResponseEntity<Response.Body> sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
-        String message = makeFcmDto(fcmSendDto);
+        // FCM 메시지를 리스트로 받음 (각 호선에 대해 개별 메시지 생성)
+        List<String> messages = makeFcmDto(fcmSendDto);
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -59,11 +60,21 @@ public class FcmServiceImpl implements FcmService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + getAccessToken());
 
-        HttpEntity<String> entity = new HttpEntity<>(message, headers);
+        // 각 메시지를 순회하며 FCM 전송
+        for (String message : messages) {
+            HttpEntity<String> entity = new HttpEntity<>(message, headers);
 
-        ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
+            // FCM 메시지 전송
+            ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
-        return restResponse.getStatusCode() == HttpStatus.OK ? response.success("성공") : response.fail("실패", HttpStatus.BAD_REQUEST);
+            // 하나라도 실패하면 즉시 실패 응답 반환
+            if (restResponse.getStatusCode() != HttpStatus.OK) {
+                return response.fail("FCM 메시지 전송 실패", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        // 모든 메시지 전송이 성공하면 성공 응답 반환
+        return response.success("FCM 메시지 전송 성공");
     }
 
     private String getAccessToken() throws IOException {
@@ -86,7 +97,7 @@ public class FcmServiceImpl implements FcmService {
         return token.getTokenValue();
     }
 
-    private String makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
+    private List<String> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
         Optional<MyFindRoadPath> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
         if(myPath.isEmpty()) {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
@@ -110,22 +121,36 @@ public class FcmServiceImpl implements FcmService {
 
         String pathJson = om.writeValueAsString(routeById);
 
-        FcmMessageDto fcmMessageDto = FcmMessageDto.builder()
-                .message(FcmMessageDto.Message.builder()
-                        .token(firebaseToken)
-                        .notification(FcmMessageDto.Notification.builder()
-                                .title(makeTitle(myPathName, issue.get().getKeyword()))
-                                .body(makeBody(issue.get().getLine(), stations.get(0).getName(), stations.get(stations.size() - 1).getName()))
-                                .build()
-                        )
-                        .data(FcmMessageDto.Data.builder().path(pathJson)
-                                .build()).build()).validateOnly(false).build();
+        // 각 Line에 대해 FCM 메시지 생성
+        List<String> fcmMessages = new ArrayList<>();
+        List<Line> lines = issue.get().getLines();
+        for (Line line : lines) {
+            // 해당 호선에 속하는 역들만 필터링
+            List<Station> stationsForLine = stations.stream()
+                    .filter(station -> station.getLine().equals(line.getLineName()))
+                    .collect(Collectors.toList());
 
-        return om.writeValueAsString(fcmMessageDto);
+            // 필터링한 역들 중 첫 번째 역과 마지막 역 가져오기
+            if (!stationsForLine.isEmpty()) {
+                Station startStation = stationsForLine.get(0);
+                Station endStation = stationsForLine.get(stationsForLine.size() - 1);
+
+                FcmMessageDto fcmMessageDto = FcmMessageDto.createMessage(
+                        firebaseToken,
+                        makeTitle(myPathName, issue.get().getKeyword()),
+                        makeBody(line.getLineName(), startStation.getName(), endStation.getName()),
+                        pathJson
+                );
+                fcmMessages.add(om.writeValueAsString(fcmMessageDto));
+            }
+        }
+
+        return fcmMessages;  // 각 Line에 대해 생성된 FCM 메시지 반환
     }
 
     private String makeBody(String line, String startStationName, String endStationName) {
-        return line + startStationName + " - " + endStationName + " 방면";
+        String newLine = line.replace("수도권", "").trim();
+        return newLine + " " + startStationName + " - " + endStationName + " 방면";
     }
 
     private String makeTitle(String pathName, IssueKeyword issueType) {

@@ -33,10 +33,15 @@ public class NotificationServiceImpl implements NotificationService {
     private final Response response;
     private final NotificationRepository notificationRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
-    private final IssueRepository issueRepository;
-    private final RedisTemplate<String, Object> redisTemplate;  // Inject RedisTemplate
+    private final MyFindRoadService myFindRoadService;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    /**
+     * 알림 설정 변경 메서드
+     * myFindRoadService의 updateRouteNotification메세드를 여기서 호출해서
+     * 하나의 트랜잭션으로 묶기
+     * @param : MyFindRoadNotificationRequest request
+     */
     @Transactional
     public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotificationRequest request) {
         try {
@@ -84,7 +89,15 @@ public class NotificationServiceImpl implements NotificationService {
 
             // redis에 저장
             redisTemplate.opsForHash().put("user_notifications", fieldName, notificationJsonArray);
-            return response.success(savedTimes, "마이 길찾기 알람 저장 성공", HttpStatus.OK);
+
+            // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
+            ResponseEntity<Response.Body> updateNotificationResult = myFindRoadService.updateRouteNotification(request.getMyPathId(), true);
+            if (!updateNotificationResult.getStatusCode().is2xxSuccessful()) {
+                return updateNotificationResult;
+            }
+
+            return response.success(savedTimes, "마이 길찾기 알람 저장 성공 및 알림 설정 변경 완료", HttpStatus.OK);
+
 
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -134,6 +147,11 @@ public class NotificationServiceImpl implements NotificationService {
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
             );
             notificationRepository.deleteByMyFindRoadPath(myFindRoadPath);
+
+            String fieldName = myFindRoadPath.getMember().getId().toString();
+            // redis에 데이터도 삭제
+            redisTemplate.opsForHash().delete("user_notifications", fieldName);
+
             return response.success(null, "마이 길찾기 알람 삭제 성공", HttpStatus.OK);
 
         } catch (EntityNotFoundException e) {
