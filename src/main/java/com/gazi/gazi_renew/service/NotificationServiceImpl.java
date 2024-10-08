@@ -164,13 +164,69 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request) {
         try {
-            deleteNotificationTimes(request.getMyPathId());
-            myFindRoadPathRepository.flush();
-            return saveNotificationTimes(request);
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            // 요청으로 받은 경로에 대한 알림 찾기
+            MyFindRoadPath myPath = myFindRoadPathRepository.findById(request.getMyPathId())
+                    .orElseThrow(() -> new EntityNotFoundException("해당 경로가 존재하지 않습니다."));
 
+            // 알림 시간 업데이트 또는 새 알림 저장
+            List<Notification> notifications = notificationRepository.findByMyFindRoadPathId(myPath.getId());
+            List<Notification> savedTimes = new ArrayList<>();
+            List<Map<String, Object>> notificationJsonList = new ArrayList<>();
+
+            // 요청으로 받은 알림 시간 리스트를 순회
+            for (int i = 0; i < request.getDayTimeRanges().size(); i++) {
+                MyFindRoadNotificationRequest.DayTimeRange timeRange = request.getDayTimeRanges().get(i);
+                Notification notification;
+
+                // 시간 검증 로직 추가
+                LocalTime fromTime = LocalTime.parse(timeRange.getFromTime());
+                LocalTime toTime = LocalTime.parse(timeRange.getToTime());
+                if (fromTime.isAfter(toTime) || fromTime.equals(toTime)) {
+                    throw new IllegalArgumentException("fromTime은 toTime보다 이전이어야 합니다: "
+                            + "fromTime=" + fromTime + ", toTime=" + toTime);
+                }
+
+                // 기존 알림이 있다면 업데이트, 부족하면 새로 생성
+                if (i < notifications.size()) {
+                    notification = notifications.get(i);
+                    notification.updateNotification(timeRange.getDay(), fromTime, toTime);
+                } else {
+                    notification = Notification.builder()
+                            .dayOfWeek(timeRange.getDay())
+                            .fromTime(fromTime)
+                            .toTime(toTime)
+                            .myFindRoadPath(myPath)
+                            .build();
+                }
+
+                // 저장
+                savedTimes.add(notificationRepository.save(notification));
+
+                // Redis에 저장할 JSON 데이터 준비
+                Map<String, Object> notificationData = new HashMap<>();
+                notificationData.put("day", notification.getDayOfWeek());
+                notificationData.put("from_time", notification.getFromTime().toString());
+                notificationData.put("to_time", notification.getToTime().toString());
+                notificationJsonList.add(notificationData);
+            }
+
+            // Redis의 기존 값을 삭제
+            String fieldName = myPath.getMember().getId().toString();
+            redisTemplate.opsForHash().delete("user_notifications", fieldName);
+
+            // 새로운 알림 데이터를 Redis에 저장
+            String notificationJsonArray = convertListToJson(notificationJsonList);
+            redisTemplate.opsForHash().put("user_notifications", fieldName, notificationJsonArray);
+
+            return response.success(savedTimes, "알림 시간이 성공적으로 업데이트 되었습니다.", HttpStatus.OK);
+
+        } catch (EntityNotFoundException e) {
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return response.fail("해당 요일에 대한 알림 설정이 이미 존재합니다", HttpStatus.BAD_GATEWAY);
+        } catch (Exception e) {
+            return response.fail(e.getMessage(), HttpStatus.BAD_GATEWAY);
+        }
     }
 
     @Override
