@@ -17,7 +17,6 @@ public class MyFindRoadNotificationResponse {
     private boolean enabled;
     private Long myFindRoadPathId; // 경로 ID
     private List<NotificationTime> notificationTimes;
-
     public MyFindRoadNotificationResponse(boolean enabled, Long myFindRoadPathId, List<NotificationTime> notificationTimes) {
         this.enabled = enabled;
         this.myFindRoadPathId = myFindRoadPathId;

@@ -41,7 +41,9 @@ public class MemberRequest {
                     .password(passwordEncoder.encode(password))
                     .nickName(nickName)
                     .role(Role.ROLE_USER)
-                    .isAgree(true)
+                    .pushNotificationEnabled(true)
+                    .mySavedRouteNotificationEnabled(true)
+                    .routeDetailNotificationEnabled(true)
                     .build();
         }
     }

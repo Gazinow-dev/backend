@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.service;
 
 
 import com.gazi.gazi_renew.dto.MemberRequest;
+import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.Response.Body;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +48,17 @@ public interface MemberService {
 
     ResponseEntity<Body> checkNickName(String nickName);
 
-    ResponseEntity<Body> setAlert(MemberRequest.AlertAgree alertAgreeRequest);
+    ResponseEntity<Body> updatePushNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
 
-    ResponseEntity<Body> getAlert(String email);
+    ResponseEntity<Body> updateMySavedRouteNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> updateRouteDetailNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> getPushNotificationStatus(String email);
+
+    ResponseEntity<Body> getMySavedRouteNotificationStatus(String email);
+
+    ResponseEntity<Body> getRouteDetailNotificationStatus(String email);
 
     ResponseEntity<Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest);
 }

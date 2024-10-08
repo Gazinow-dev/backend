@@ -152,17 +152,52 @@ public class MemberController extends BaseController{
         }
         return memberService.checkNickName(nickName.getNickName());
     }
-
-    @Operation(summary = "알람 on/off 설정")
-    @PostMapping("/set-alert")
-    public ResponseEntity<Body> setAlert(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors){
-        return memberService.setAlert(alertAgreeDto);
+    @Operation(summary = "푸시 알림 on/off 설정")
+    @PostMapping("/notifications/push")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "푸시 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updatePushNotificationStatus(alertAgreeDto);
     }
 
-    @Operation(summary = "알람 on/off 설정 확인")
-    @PostMapping("/get-alert")
-    public ResponseEntity<Body> getAlert(@RequestBody MemberRequest.GetAlertAgree alertAgreeDto, Errors errors){
-        return memberService.getAlert(alertAgreeDto.getEmail());
+    @Operation(summary = "푸시 알림 on/off 설정 조회")
+    @GetMapping("/notifications/push/status")
+    public ResponseEntity<Body> getPushNotificationStatus(@RequestParam String email) {
+        return memberService.getPushNotificationStatus(email);
+    }
+
+    @Operation(summary = "내가 저장한 경로 알림 on/off 설정")
+    @PostMapping("/notifications/my-saved-route")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 저장한 경로 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updateMySavedRouteNotificationStatus(alertAgreeDto);
+    }
+
+    @Operation(summary = "내가 저장한 경로 알림 on/off 설정 조회")
+    @GetMapping("/notifications/my-saved-route/status")
+    public ResponseEntity<Body> getMySavedRouteNotificationStatus(@RequestParam String email) {
+        return memberService.getMySavedRouteNotificationStatus(email);
+    }
+
+    @Operation(summary = "경로 상세 설정 알림 on/off 설정")
+    @PostMapping("/notifications/route-detail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "경로 상세 설정 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateRouteDetailNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updateRouteDetailNotificationStatus(alertAgreeDto);
+    }
+
+    @Operation(summary = "경로 상세 설정 알림 on/off 설정 조회")
+    @GetMapping("/notifications/route-detail/status")
+    public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
+        return memberService.getRouteDetailNotificationStatus(email);
     }
 
 }

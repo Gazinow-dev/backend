@@ -81,7 +81,6 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "502", description = "해당 요일에 대한 알림 설정이 이미 존재합니다")}
     )
     public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotificationRequest request) {
-        myFindRoadService.updateRouteNotification(request.getMyPathId(), true);
         return notificationService.saveNotificationTimes(request);
     }
     @PostMapping("/disable_notification")
