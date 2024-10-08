@@ -152,6 +152,7 @@ public class MemberController extends BaseController{
         }
         return memberService.checkNickName(nickName.getNickName());
     }
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "푸시 알림 on/off 설정")
     @PostMapping("/notifications/push")
     @ApiResponses(value = {
@@ -161,13 +162,13 @@ public class MemberController extends BaseController{
     public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
         return memberService.updatePushNotificationStatus(alertAgreeDto);
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "푸시 알림 on/off 설정 조회")
     @GetMapping("/notifications/push/status")
     public ResponseEntity<Body> getPushNotificationStatus(@RequestParam String email) {
         return memberService.getPushNotificationStatus(email);
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "내가 저장한 경로 알림 on/off 설정")
     @PostMapping("/notifications/my-saved-route")
     @ApiResponses(value = {
@@ -177,13 +178,13 @@ public class MemberController extends BaseController{
     public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
         return memberService.updateMySavedRouteNotificationStatus(alertAgreeDto);
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "내가 저장한 경로 알림 on/off 설정 조회")
     @GetMapping("/notifications/my-saved-route/status")
     public ResponseEntity<Body> getMySavedRouteNotificationStatus(@RequestParam String email) {
         return memberService.getMySavedRouteNotificationStatus(email);
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "경로 상세 설정 알림 on/off 설정")
     @PostMapping("/notifications/route-detail")
     @ApiResponses(value = {
@@ -193,7 +194,7 @@ public class MemberController extends BaseController{
     public ResponseEntity<Body> updateRouteDetailNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
         return memberService.updateRouteDetailNotificationStatus(alertAgreeDto);
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "경로 상세 설정 알림 on/off 설정 조회")
     @GetMapping("/notifications/route-detail/status")
     public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
