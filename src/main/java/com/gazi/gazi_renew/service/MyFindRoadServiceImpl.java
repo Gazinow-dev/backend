@@ -41,7 +41,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getRoutes() {
         try {
-            Member member = memberRepository.getReferenceByEmail("gazitest@gazinow.com").orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myFindRoadPaths);
             return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);

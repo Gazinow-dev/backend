@@ -70,6 +70,7 @@ public class MyFindRoadController extends BaseController {
             )
     })
     public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id) {
+        notificationService.deleteNotificationTimes(id);
         return myFindRoadService.deleteRoute(id);
     }
     @PostMapping("/enable_notification")
@@ -107,7 +108,7 @@ public class MyFindRoadController extends BaseController {
     @PostMapping("/update_notification")
     @Operation(summary = "알림 상세 설정 수정")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "마이 길찾기 알람 저장 성공"),
+            @ApiResponse(responseCode = "200", description = "알림 시간이 성공적으로 업데이트 되었습니다"),
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다.")}
     )
     public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotificationRequest request) {

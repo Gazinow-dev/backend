@@ -30,4 +30,11 @@ public class Notification extends AuditingFields {
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
     @JsonBackReference
     private MyFindRoadPath myFindRoadPath;
+
+    // 알림 업데이트 메서드
+    public void updateNotification(String dayOfWeek, LocalTime fromTime, LocalTime toTime) {
+        this.dayOfWeek = dayOfWeek;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+    }
 }
