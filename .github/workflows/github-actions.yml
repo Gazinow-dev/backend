@@ -40,8 +40,8 @@ jobs:
           contains(github.ref, 'main') ||
           contains(github.ref, 'develop')
         run: |
-          mkdir ./src/main/resources # resources 폴더 생성
-          cd ./src/main/resources # resources 폴더로 이동
+          if [ ! -d "./src/main/resources" ]; then mkdir -p ./src/main/resources; fi # resources 폴더가 없으면 생성
+          cd ./src/main/resources
           touch ./application-push.yaml 
           echo "${{ secrets.PUSH_YAML }}" > ./application-push.yaml
           touch ./application-mail.yaml 
@@ -78,19 +78,19 @@ jobs:
 
       # docker build & push to production
       - name: Docker build & push to prod
-#        if: contains(github.ref, 'main')
+        #        if: contains(github.ref, 'main')
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/docker-test-prod .
           docker push ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
 
-#      # docker build & push to develop
-#      - name: Docker build & push to dev
-#        if: contains(github.ref, 'develop')
-#        run: |
-#          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-#          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/docker-test-dev .
-#          docker push ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
+      #      # docker build & push to develop
+      #      - name: Docker build & push to dev
+      #        if: contains(github.ref, 'develop')
+      #        run: |
+      #          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      #          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/docker-test-dev .
+      #          docker push ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
 
       ## deploy to production
       - name: Deploy to prod
