@@ -119,7 +119,7 @@ public class FcmServiceImpl implements FcmService {
         MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
         List<Station> stations = issue.get().getStations();
 
-        String pathJson = om.writeValueAsString(routeById);
+        String pathJson = om.writeValueAsString(routeById).replace("\"", "");
 
         // 각 Line에 대해 FCM 메시지 생성
         List<String> fcmMessages = new ArrayList<>();
