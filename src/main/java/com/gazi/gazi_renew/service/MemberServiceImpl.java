@@ -496,6 +496,11 @@ public class MemberServiceImpl implements MemberService {
         if (!alertAgreeRequest.isAlertAgree()) {
             updateMySavedRouteNotificationStatus(alertAgreeRequest);
         }
+        // 푸시알림이 켜지면 아래 알림도 다 켜져야함
+        if (alertAgreeRequest.isAlertAgree()) {
+            updateMySavedRouteNotificationStatus(alertAgreeRequest);
+            updateRouteDetailNotificationStatus(alertAgreeRequest);
+        }
         memberRepository.save(member);
         return response.success("푸시 알림 수신 설정이 저장되었습니다.");
     }
