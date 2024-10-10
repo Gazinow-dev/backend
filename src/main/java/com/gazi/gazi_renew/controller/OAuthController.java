@@ -28,6 +28,7 @@ import java.util.UUID;
 public class OAuthController extends BaseController{
     private final OAuthLoginService oAuthLoginService;
 
+    @Hidden
     @GetMapping("/naver")
     public ResponseEntity<Void> naverCallback(@RequestParam String code, @RequestParam String state) {
         NaverLoginParams naverLoginParams = new NaverLoginParams(code, state);
