@@ -9,6 +9,7 @@ import com.gazi.gazi_renew.dto.Response;
 import com.gazi.gazi_renew.dto.ResponseToken;
 import com.gazi.gazi_renew.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.repository.MemberRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class OAuthLoginService {
 
     private final GoogleApiClient googleApiClient;
     private final NaverApiClient naverApiClient;
-    private final AppleApiClient appleApiClient;
+    private final RedisTemplate redisTemplate;
 
     private final AppleProperties appleProperties;
     private final PasswordEncoder passwordEncoder;
@@ -104,6 +106,9 @@ public class OAuthLoginService {
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
         responseToken.setEmail(member.getEmail());
         responseToken.setNickName(member.getNickName());
+        //redis에 refresh token 저장
+        saveRefreshToken(authentication, responseToken);
+
         return createRedirectResponse(responseToken);
     }
     private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
@@ -148,4 +153,13 @@ public class OAuthLoginService {
         headers.setLocation(redirectUri);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
+
+    private void saveRefreshToken(Authentication authentication, ResponseToken responseToken) {
+        redisTemplate.opsForValue()
+                .set("RT:" + authentication.getName(), responseToken.getRefreshToken(),
+                        responseToken.getRefreshTokenExpirationTime(),
+                        TimeUnit.MILLISECONDS
+                );
+    }
+
 }
