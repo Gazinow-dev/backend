@@ -74,7 +74,7 @@ public class FcmServiceImpl implements FcmService {
         }
 
         // 모든 메시지 전송이 성공하면 성공 응답 반환
-        return response.success("FCM 메시지 전송 성공");
+        return response.success(messages, "FCM 메시지 전송 성공", HttpStatus.OK);
     }
 
     private String getAccessToken() throws IOException {
