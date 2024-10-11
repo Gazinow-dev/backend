@@ -51,7 +51,7 @@ public class FcmServiceImpl implements FcmService {
     @Transactional
     public ResponseEntity<Response.Body> sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
         // FCM 메시지를 리스트로 받음 (각 호선에 대해 개별 메시지 생성)
-        List<String> messages = makeFcmDto(fcmSendDto);
+        List<FcmMessageDto> messages = makeFcmDto(fcmSendDto);
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -61,8 +61,8 @@ public class FcmServiceImpl implements FcmService {
         headers.set("Authorization", "Bearer " + getAccessToken());
 
         // 각 메시지를 순회하며 FCM 전송
-        for (String message : messages) {
-            HttpEntity<String> entity = new HttpEntity<>(message, headers);
+        for (FcmMessageDto message : messages) {
+            HttpEntity<FcmMessageDto> entity = new HttpEntity<>(message, headers);
 
             // FCM 메시지 전송
             ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
@@ -97,7 +97,7 @@ public class FcmServiceImpl implements FcmService {
         return token.getTokenValue();
     }
 
-    private List<String> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
+    private List<FcmMessageDto> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
         Optional<MyFindRoadPath> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
         if(myPath.isEmpty()) {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
@@ -119,10 +119,10 @@ public class FcmServiceImpl implements FcmService {
         MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
         List<Station> stations = issue.get().getStations();
 
-        String pathJson = om.writeValueAsString(routeById).replace("\"", "");
+        String pathJson = om.writeValueAsString(routeById);
 
         // 각 Line에 대해 FCM 메시지 생성
-        List<String> fcmMessages = new ArrayList<>();
+        List<FcmMessageDto> fcmMessages = new ArrayList<>();
         List<Line> lines = issue.get().getLines();
         for (Line line : lines) {
             // 해당 호선에 속하는 역들만 필터링
@@ -141,7 +141,7 @@ public class FcmServiceImpl implements FcmService {
                         makeBody(line.getLineName(), startStation.getName(), endStation.getName()),
                         pathJson
                 );
-                fcmMessages.add(om.writeValueAsString(fcmMessageDto));
+                fcmMessages.add(fcmMessageDto);
             }
         }
 
