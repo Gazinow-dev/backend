@@ -108,17 +108,35 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 lanes.add(lane);
 
                 ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
+                List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
 
                 for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
+
+                    Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
+                    List<Issue> issues = stationEntity.getIssues();
+                    List<Issue> activeIssues = new ArrayList<>();
+                    // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
+                    LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
+
+                    for (Issue issue : issues) {
+                        if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                            activeIssues.add(issue);
+                        }
+                    }
+                    List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
                     MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                             .stationName(myFindRoadStation.getStationName())
                             .index(myFindRoadStation.getIndex())
                             .build();
                     stations.add(station);
-
+                    issueDtoList.addAll(issueSummaryDtos);
                 }
                 subPathResponse.setLanes(lanes);
 
+                // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
+                if(!subPathResponse.getLanes().isEmpty()) {
+                    subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                }
                 subPathResponse.setStations(stations);
             }
             subPaths.add(subPathResponse);
