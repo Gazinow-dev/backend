@@ -46,8 +46,6 @@ jobs:
           echo "${{ secrets.PUSH_YAML }}" > ./application-push.yaml
           touch ./application-mail.yaml 
           echo "${{ secrets.MAIL_YAML }}" > ./application-mail.yaml
-          touch ./application-oauth.yaml 
-          echo "${{ secrets.OAUTH_YAML }}" > ./application-oauth.yaml
         shell: bash
 
       # 환경별 yml 파일 생성(2) - dev
@@ -59,6 +57,8 @@ jobs:
           echo "${{ secrets.YAML_DEV }}" > ./application.yaml
           touch ./application-aws.yaml
           echo "${{ secrets.AWS_YAML_DEV }}" > ./application-aws-dev.yaml
+          touch ./application-oauth.yaml 
+          echo "${{ secrets.OAUTH_YAML_DEV }}" > ./application-oauth-dev.yaml
         shell: bash
 
       # 환경별 yml 파일 생성(3) - prod
@@ -70,6 +70,8 @@ jobs:
           echo "${{ secrets.YAML_DEV }}" > ./application.yaml
           touch ./application-aws.yaml
           echo "${{ secrets.AWS_YAML_PROD }}" > ./application-aws-prod.yaml
+          touch ./application-oauth.yaml 
+          echo "${{ secrets.OAUTH_YAML_PROD }}" > ./application-oauth-prod.yaml
         shell: bash
 
       # gradle build
