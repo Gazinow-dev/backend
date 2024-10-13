@@ -16,7 +16,13 @@
         input#title{
             width: 40%;
         }
-
+        #subwayMapContainer {
+            position: sticky;
+            top: 20px;
+        }
+        #subwayMapImage {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -48,7 +54,7 @@
     <div class="dynamicFields">
         <div th:each="station, stationIndex : *{stations}">
             <label th:for="'line_' + ${stationIndex}">호선 : </label>
-            <select name="stations[__${stationIndex.index}__].line" class="selectedLine" onchange="updateStations(this)" th:field="*{stations[__${stationIndex.index}__].line}">
+            <select name="stations[__${stationIndex.index}__].line" class="selectedLine" onchange="updateStations(this); showSubwayMap(this.value);" th:field="*{stations[__${stationIndex.index}__].line}">
                 <option value="수도권 1호선" selected>수도권 1호선</option>
                 <option value="수도권 2호선">수도권 2호선</option>
                 <option value="수도권 3호선">수도권 3호선</option>
@@ -107,6 +113,10 @@
     <input type="hidden" id="selectedLines" name="lines" th:fild="*{lines}">
     <button type="submit" onclick="collectSelectedLines()">제출</button>
 </form>
+    <div id="subwayMapContainer" style="width: 40%; display: none; padding-left: 20px;">
+        <img id="subwayMapImage" style="width: 100%; height: auto;">
+    </div>
+
 </body>
 <script th:inline="javascript">
     function updateStations(selectedLineElement) {
@@ -221,6 +231,39 @@
         document.getElementById('selectedLines').value = selectedLines.join(','); // 선택된 호선들을 쉼표로 구분하여 문자열로 변환하여 hidden input에 할당
         console.log(document.getElementById('selectedLines').value);
 
+    }
+    function showSubwayMap(line) {
+        var container = document.getElementById("subwayMapContainer");
+        var img = document.getElementById("subwayMapImage");
+
+        // 각 호선에 맞는 이미지 경로 설정
+        var mapImages = {
+            "수도권 1호선": "./1호선.png",
+            "수도권 2호선": "./2호선.png",
+            "수도권 5호선": "./5호선.png",
+            "경의중앙선": "./경의중앙선.png",
+            "수도권 경춘선": "./경춘선.png",
+        };
+
+        if (mapImages[line]) {
+            img.src = mapImages[line];
+            container.style.display = "block";
+        } else {
+            container.style.display = "none";
+        }
+    }
+
+    // 이미지 클릭 시 확대/축소
+    var subwayMapImage = document.getElementById("subwayMapImage");
+    var isZoomed = false;
+    subwayMapImage.onclick = function() {
+        if (isZoomed) {
+            this.style.width = "100%";
+            isZoomed = false;
+        } else {
+            this.style.width = "150%";
+            isZoomed = true;
+        }
     }
 </script>
 
