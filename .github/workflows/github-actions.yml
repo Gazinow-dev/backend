@@ -67,7 +67,7 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application.yaml
-          echo "${{ secrets.YAML_DEV }}" > ./application.yaml
+          echo "${{ secrets.YAML_PROD }}" > ./application.yaml
           touch ./application-aws.yaml
           echo "${{ secrets.AWS_YAML_PROD }}" > ./application-aws-prod.yaml
           touch ./application-oauth.yaml 
