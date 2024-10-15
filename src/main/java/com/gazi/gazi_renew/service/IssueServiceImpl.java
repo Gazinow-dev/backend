@@ -42,8 +42,6 @@ public class IssueServiceImpl implements IssueService {
     private final LineRepository lineRepository;
     private final Response response;
     private final RedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Value("${issue.code}")
     private String secretCode;
@@ -277,29 +275,6 @@ public class IssueServiceImpl implements IssueService {
 
         return issueResponsePage;
     }
-
-
-    // 역코드로 해당역에 이슈가 있는지 파악하는 함수
-    public List<IssueResponse.IssueSummaryDto> getIssueByStationCode(int stationCode) {
-        List<Issue> issues = issueRepository.findByStations_StationCode(stationCode);
-        List<IssueResponse.IssueSummaryDto> issueResponses = (List<IssueResponse.IssueSummaryDto>) issues.stream().map(
-                m -> {
-                    IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueResponse.IssueSummaryDto.builder()
-                            .id(m.getId())
-                            .title(m.getTitle())
-                            .keyword(m.getKeyword());
-
-                    int likeCount = Optional.ofNullable(m.getLikes())
-                            .map(Set::size)
-                            .orElse(0);
-                    builder.likeCount(likeCount);
-                    return builder.build();
-                }
-
-
-        ).collect(Collectors.toList());
-        return issueResponses;
-    }
     public List<Station> getStationList(List<IssueRequest.Station> stations) {
         List<Station> stationResponse = new ArrayList<>();
 
@@ -364,11 +339,6 @@ public class IssueServiceImpl implements IssueService {
 
             System.out.println(issue.getTitle());
         }
-        return issueList;
-    }
-
-    public List<Issue> getIssuesByLine(String lineName){
-        List<Issue> issueList = issueRepository.findALlByLine(lineName);
         return issueList;
     }
     /**

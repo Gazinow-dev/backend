@@ -539,7 +539,9 @@ public class MemberServiceImpl implements MemberService {
 
             // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
             for (MyFindRoadResponse route : routes) {
-                notificationService.deleteNotificationTimes(route.getId());  // MyPathId를 넘겨서 삭제 메서드 호출
+                // MyPathId를 넘겨서 삭제 메서드 호출
+                notificationService.deleteNotificationTimes(route.getId());
+                myFindRoadService.updateRouteNotification(route.getId(), false);
             }
 
         }
