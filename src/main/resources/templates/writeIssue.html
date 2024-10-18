@@ -16,7 +16,13 @@
         input#title{
             width: 40%;
         }
-
+        #subwayMapContainer {
+            position: sticky;
+            top: 20px;
+        }
+        #subwayMapImage {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -45,48 +51,59 @@
                     th:text="${eventType.text}"></option>
         </select>
     </div>
-        <div class="dynamicFields">
-            <div th:each="station, stationIndex : *{stations}">
-                <label th:for="'line_' + ${stationIndex}">호선 : </label>
-                <select name="stations[__${stationIndex.index}__].line" class="selectedLine" onchange="updateStations(this)" th:field="*{stations[__${stationIndex.index}__].line}">
-                    <option value="수도권 1호선" selected>수도권 1호선</option>
-                    <option value="수도권 2호선">수도권 2호선</option>
-                    <option value="수도권 3호선">수도권 3호선</option>
-                    <option value="수도권 4호선">수도권 4호선</option>
-                    <option value="수도권 5호선">수도권 5호선</option>
-                    <option value="수도권 6호선">수도권 6호선</option>
-                    <option value="수도권 7호선">수도권 7호선</option>
-                    <option value="수도권 8호선">수도권 8호선</option>
-                    <option value="수도권 9호선">수도권 9호선</option>
-                    <option value="경의중앙선">경의중앙선</option>
-                    <option value="수도권 경강선">수도권 경강선</option>
-                    <option value="수도권 경춘선">수도권 경춘선</option>
-                    <option value="수도권 공항철도">수도권 공항철도</option>
-                    <option value="수도권 김포골드라인">수도권 김포골드라인</option>
-                    <option value="수도권 서해선(대곡-원시)">수도권 서해선(대곡-원시)</option>
-                    <option value="수도권 수인.분당선">수도권 수인.분당선</option>
-                    <option value="수도권 신림선">수도권 신림선</option>
-                    <option value="수도권 신분당선">수도권 신분당선</option>
-                    <option value="수도권 에버라인">수도권 에버라인</option>
-                    <option value="수도권 우이신설경전철">수도권 우이신설경전철</option>
-                    <option value="수도권 의정부경전철">수도권 의정부경전철</option>
-                    <option value="인천 1호선">인천 1호선</option>
-                    <option value="인천 2호선">인천 2호선</option>
+    <div class="dynamicFields">
+        <div th:each="station, stationIndex : *{stations}">
+            <label th:for="'line_' + ${stationIndex}">호선 : </label>
+            <select name="stations[__${stationIndex.index}__].line"
+                    class="selectedLine"
+                    onchange="updateStations(this);"
+                    th:field="*{stations[__${stationIndex.index}__].line}">
+                <option value="수도권 1호선" selected>수도권 1호선</option>
+                <option value="수도권 2호선">수도권 2호선</option>
+                <option value="수도권 3호선">수도권 3호선</option>
+                <option value="수도권 4호선">수도권 4호선</option>
+                <option value="수도권 5호선">수도권 5호선</option>
+                <option value="수도권 6호선">수도권 6호선</option>
+                <option value="수도권 7호선">수도권 7호선</option>
+                <option value="수도권 8호선">수도권 8호선</option>
+                <option value="수도권 9호선">수도권 9호선</option>
+                <option value="경의중앙선">경의중앙선</option>
+                <option value="수도권 경강선">수도권 경강선</option>
+                <option value="수도권 경춘선">수도권 경춘선</option>
+                <option value="수도권 공항철도">수도권 공항철도</option>
+                <option value="수도권 김포골드라인">수도권 김포골드라인</option>
+                <option value="수도권 서해선(대곡-원시)">수도권 서해선(대곡-원시)</option>
+                <option value="수도권 수인.분당선">수도권 수인.분당선</option>
+                <option value="수도권 신림선">수도권 신림선</option>
+                <option value="수도권 신분당선">수도권 신분당선</option>
+                <option value="수도권 에버라인">수도권 에버라인</option>
+                <option value="수도권 우이신설경전철">수도권 우이신설경전철</option>
+                <option value="수도권 의정부경전철">수도권 의정부경전철</option>
+                <option value="인천 1호선">인천 1호선</option>
+                <option value="인천 2호선">인천 2호선</option>
 
-                </select>
-
-                <label th:for="'startStation_' + ${stationIndex}">출발역 : </label>
-                <select name="stations[__${stationIndex.index}__].startStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].startStationCode}">
-                    <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
-                </select>
-
-                <label th:for="'endStation_' + ${stationIndex}">도착역 : </label>
-                <select name="stations[__${stationIndex.index}__].endStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].endStationCode}">
-                    <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
+            </select>
+            <div class="directionField" style="display:none;">
+                <label th:for="'direction_' + ${stationIndex}">방향 : </label>
+                <select name="stations[__${stationIndex.index}__].direction" class="selectedDirection" th:field="*{stations[__${stationIndex.index}__].direction}">
+                    <option value="Clockwise">내선</option>
+                    <option value="Counterclockwise">외선</option>
+                    <option value="Sinjeong">신정지선</option>
+                    <option value="Seongsu">성수지선</option>
                 </select>
             </div>
-            <button type="button" onclick="addNewLine()">호선 추가</button>
+            <label th:for="'startStation_' + ${stationIndex}">출발역 : </label>
+            <select name="stations[__${stationIndex.index}__].startStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].startStationCode}">
+                <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
+            </select>
+
+            <label th:for="'endStation_' + ${stationIndex}">도착역 : </label>
+            <select name="stations[__${stationIndex.index}__].endStationCode" class="selectedStations" th:field="*{stations[__${stationIndex.index}__].endStationCode}">
+                <!-- 선택된 호선에 따라 동적으로 업데이트될 영역 -->
+            </select>
         </div>
+        <button type="button" onclick="addNewLine()">호선 추가</button>
+    </div>
     <div>
         <label th:for="expireDate"> 시작일자 : </label>
         <input type="datetime-local"  id="startDate" th:field="*{startDate}" >
@@ -99,10 +116,61 @@
     <input type="hidden" id="selectedLines" name="lines" th:fild="*{lines}">
     <button type="submit" onclick="collectSelectedLines()">제출</button>
 </form>
+    <div id="subwayMapContainer" style="width: 40%; display: none; padding-left: 20px;">
+        <img id="subwayMapImage" style="width: 100%; height: auto;">
+    </div>
+
 </body>
 <script th:inline="javascript">
+    function showSubways(line) {
+        console.log("Selected line:", line);
+        var container = document.getElementById("subwayMapContainer");
+        var img = document.getElementById("subwayMapImage");
+
+        // 각 호선에 맞는 이미지 경로 설정
+        var mapImages = {
+            "수도권 1호선": "/images/1호선.png",
+            "수도권 2호선": "/images/2호선.png",
+            "수도권 5호선": "/images/5호선.png",
+            "경의중앙선": "/images/경의중앙선.png",
+            "수도권 경춘선": "/images/경춘선.png",
+        };
+
+        console.log("Image path:", mapImages[line]);
+
+        if (mapImages[line]) {
+            img.src = mapImages[line];
+            container.style.display = "block";
+            console.log("Image should be displayed now");
+        } else {
+            container.style.display = "none";
+            console.log("No image found for this line");
+        }
+    }
+
+    // 이미지 클릭 시 확대/축소
+    var subwayMapImage = document.getElementById("subwayMapImage");
+    var isZoomed = false;
+    subwayMapImage.onclick = function() {
+        if (isZoomed) {
+            this.style.width = "100%";
+            isZoomed = false;
+        } else {
+            this.style.width = "150%";
+            isZoomed = true;
+        }
+    }
     function updateStations(selectedLineElement) {
+        console.log(selectedLineElement.value);
         var selectedLine = selectedLineElement.value;
+        var directionField = selectedLineElement.parentElement.querySelector('.directionField');
+
+        if (selectedLine === '수도권 2호선') {
+            directionField.style.display = 'block';
+        } else {
+            directionField.style.display = 'none';
+        }
+        showSubways(selectedLine);
         if(selectedLine) {
             fetch('/api/v1/stations?line=' + selectedLine)
                 .then(response => response.json())
@@ -112,7 +180,7 @@
                         stationList.innerHTML = ''; // 기존의 역들을 모두 제거
                         data.forEach(station => {
                             var option = document.createElement('option');
-                            option.value = station.stationCode;
+                            option.value = station.issueStationCode;
                             option.textContent = station.name;
                             stationList.appendChild(option);
                         });
@@ -172,13 +240,34 @@
         var addButton = document.querySelector('button');
         addButton.parentElement.insertBefore(container, addButton);
 
+        var directionDiv = document.createElement('div');
+        directionDiv.classList.add('directionField');
+        directionDiv.style.display = 'none';
+
+        var directionLabel = document.createElement('label');
+        directionLabel.textContent = '방향: ';
+        directionDiv.appendChild(directionLabel);
+
+        var directionSelect = document.createElement('select');
+        directionSelect.name = 'stations[' + lineIndex + '].direction';
+        directionSelect.classList.add('selectedDirection');
+        ['Clockwise', 'Counterclockwise', 'Sinjeong', 'Seongsu'].forEach(function (direction) {
+            var option = document.createElement('option');
+            option.value = direction;
+            option.textContent = direction === 'Clockwise' ? '내선' :
+                direction === 'Counterclockwise' ? '외선' :
+                    direction === 'Sinjeong' ? '신정지선' : '성수지선';
+            directionSelect.appendChild(option);
+        });
+        directionDiv.appendChild(directionSelect);
+
+        container.appendChild(directionDiv);
         lineIndex++; // 새로운 역이 추가될 때마다 인덱스를 증가시킵니다.
     }
     // 선택된 호선들을 hidden input에 할당하는 함수
     function collectSelectedLines() {
         var selectedLines = [];
         var selectedLineElements = document.querySelectorAll('.selectedLine');
-        console.log(document.querySelectorAll('.selectedLine'))
         selectedLineElements.forEach(function(element) {
             selectedLines.push(element.value);
         });
@@ -186,7 +275,7 @@
         console.log(document.getElementById('selectedLines').value);
 
     }
+
 </script>
 
 </html>
-

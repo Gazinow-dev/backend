@@ -1,5 +1,5 @@
 package com.gazi.gazi_renew.domain.enums;
 
 public enum OAuthProvider {
-    NAVER, KAKAO, GOOGLE
+    NAVER, KAKAO, APPLE, GOOGLE
 }

@@ -22,24 +22,35 @@ import java.util.Set;
 @Table(name = "MEMBER")
 @Entity
 public class Member extends AuditingFields {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column()
     private String email;
+
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false, unique = true)
     private String nickName;
+
     @Enumerated(EnumType.STRING)
     @Column
     private OAuthProvider provider;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-    @Column(nullable = false)
-    private Boolean isAgree;
+    // 푸시 알림 관련 필드 추가
+    private Boolean pushNotificationEnabled; // 푸시 알림 받기 여부
+
+    private Boolean mySavedRouteNotificationEnabled; // 내가 저장한 경로 알림 여부
+
+    private Boolean routeDetailNotificationEnabled; // 경로 상세 설정 알림 여부
+
+    private String firebaseToken;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -54,14 +65,8 @@ public class Member extends AuditingFields {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Like> likes = new HashSet<>();
 
-    public void addRecentSearch(RecentSearch recentSearch) {
-        recentSearch.setMember(this);
-        recentSearches.add(recentSearch);
-    }
-    public Member update(String nickName, String email, OAuthProvider provider) {
-        this.nickName = nickName;
-        this.email = email;
-        this.provider = provider;
+    public Member saveFcmToken(String firebaseToken) {
+        this.firebaseToken = firebaseToken;
         return this;
     }
 

@@ -42,6 +42,8 @@ public class MemberController extends BaseController{
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<Body> login(@RequestBody @Valid Login loginDto, Errors errors) {
+        System.out.println("login: " + loginDto.getEmail());
+        System.out.println("login: " + loginDto.getFirebaseToken());
         return memberService.login(loginDto);
     }
 
@@ -115,6 +117,17 @@ public class MemberController extends BaseController{
         return memberService.deleteMember(deleteMemberDto);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PostMapping("/fcm-token")
+    @Operation(summary = "FireBase 토큰 저장")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "FireBase 토큰 저장 완료."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> saveFcmToken(@RequestBody MemberRequest.FcmTokenRequest fcmTokenRequest) {
+        return memberService.saveFcmToken(fcmTokenRequest);
+    }
+
     @Operation(summary = "이메일 인증")
     @PostMapping("/email-confirm")
     public ResponseEntity<Body> emailConfirm(@RequestBody @Valid MemberRequest.Email email, Errors errors) throws Exception {
@@ -139,6 +152,53 @@ public class MemberController extends BaseController{
         }
         return memberService.checkNickName(nickName.getNickName());
     }
-
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "푸시 알림 on/off 설정")
+    @PostMapping("/notifications/push")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "푸시 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updatePushNotificationStatus(alertAgreeDto);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "푸시 알림 on/off 설정 조회")
+    @GetMapping("/notifications/push/status")
+    public ResponseEntity<Body> getPushNotificationStatus(@RequestParam String email) {
+        return memberService.getPushNotificationStatus(email);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "내가 저장한 경로 알림 on/off 설정")
+    @PostMapping("/notifications/my-saved-route")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내가 저장한 경로 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updateMySavedRouteNotificationStatus(alertAgreeDto);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "내가 저장한 경로 알림 on/off 설정 조회")
+    @GetMapping("/notifications/my-saved-route/status")
+    public ResponseEntity<Body> getMySavedRouteNotificationStatus(@RequestParam String email) {
+        return memberService.getMySavedRouteNotificationStatus(email);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "경로 상세 설정 알림 on/off 설정")
+    @PostMapping("/notifications/route-detail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "경로 상세 설정 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateRouteDetailNotificationStatus(@RequestBody @Valid MemberRequest.AlertAgree alertAgreeDto, Errors errors) {
+        return memberService.updateRouteDetailNotificationStatus(alertAgreeDto);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "경로 상세 설정 알림 on/off 설정 조회")
+    @GetMapping("/notifications/route-detail/status")
+    public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
+        return memberService.getRouteDetailNotificationStatus(email);
+    }
 
 }

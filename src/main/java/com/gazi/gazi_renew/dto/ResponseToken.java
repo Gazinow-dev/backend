@@ -14,7 +14,7 @@ public class ResponseToken {
     private Long memberId;
     private String nickName;
     private String email;
-    private boolean isFirebaseToken;
+    private String firebaseToken;
     private String accessToken;
     private String refreshToken;
     private Long accessTokenExpirationTime;

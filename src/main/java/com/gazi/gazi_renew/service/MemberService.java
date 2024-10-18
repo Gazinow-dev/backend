@@ -47,4 +47,18 @@ public interface MemberService {
     ResponseEntity<Body> checkEmail(String email);
 
     ResponseEntity<Body> checkNickName(String nickName);
+
+    ResponseEntity<Body> updatePushNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> updateMySavedRouteNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> updateRouteDetailNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest);
+
+    ResponseEntity<Body> getPushNotificationStatus(String email);
+
+    ResponseEntity<Body> getMySavedRouteNotificationStatus(String email);
+
+    ResponseEntity<Body> getRouteDetailNotificationStatus(String email);
+
+    ResponseEntity<Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest);
 }

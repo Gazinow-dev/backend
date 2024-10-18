@@ -41,7 +41,9 @@ public class MemberRequest {
                     .password(passwordEncoder.encode(password))
                     .nickName(nickName)
                     .role(Role.ROLE_USER)
-                    .isAgree(true)
+                    .pushNotificationEnabled(true)
+                    .mySavedRouteNotificationEnabled(true)
+                    .routeDetailNotificationEnabled(true)
                     .build();
         }
     }
@@ -54,6 +56,8 @@ public class MemberRequest {
 
         @NotBlank(message = "Password는 필수 입력 값입니다.")
         private String password;
+
+        private String firebaseToken;
 
         public UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken() {
             return new UsernamePasswordAuthenticationToken(email, password);
@@ -114,5 +118,22 @@ public class MemberRequest {
 
     @Getter
     public static class DeleteMember {
+    }
+
+    @Getter
+    @Setter
+    public static class AlertAgree {
+        private String email;
+        private boolean alertAgree;
+    }
+
+    @Getter
+    public static class GetAlertAgree {
+        private String email;
+    }
+    @Getter
+    public static class FcmTokenRequest {
+        private String email;
+        private String firebaseToken;
     }
 }

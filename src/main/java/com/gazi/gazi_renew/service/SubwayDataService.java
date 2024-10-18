@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,4 +135,39 @@ public class SubwayDataService {
 
 
     }
+//    @Transactional
+//    public void updateIssueStationCodeFromCsv() throws IOException {
+//        // CSV 파일 경로 설정
+//        ClassPathResource csvFile = new ClassPathResource("서울교통공사 노선별 지하철역 정보.csv");
+//
+//        try (CSVReader reader = new CSVReader(new FileReader(csvFile.getFile()))) {
+//            String[] nextLine;
+//            // CSV 파일의 각 라인을 읽어 처리
+//            while ((nextLine = reader.readNext()) != null) {
+//                String stationName = nextLine[1]; // 전철역명
+//                String line = nextLine[3]; // 호선
+//                String externalCode = nextLine[4]; // 외부코드
+//
+//                try {
+//                    int issueStationCode = Integer.parseInt(externalCode);
+//
+//                    // 역 이름과 호선에 맞는 Station 찾기
+//                    Station station = subwayRepository.findByNameAndLine(stationName, line);
+//                    if (station == null) {
+//                        // 문제가 발생한 역 이름과 호선을 출력
+//                        log.error("Station not found: name=" + stationName + ", line=" + line);
+//                    }
+//                    // Station의 issueStationCode 업데이트
+//                    station.update(issueStationCode);
+//                    subwayRepository.save(station);
+//
+//                } catch (NumberFormatException e) {
+//                    System.err.println("Invalid externalCode: " + stationName+line);
+//                }
+//            }
+//        } catch (CsvValidationException e) {
+//            log.error("error: "+e);
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

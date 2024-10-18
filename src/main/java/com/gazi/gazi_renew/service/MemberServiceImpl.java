@@ -3,10 +3,7 @@ package com.gazi.gazi_renew.service;
 import com.gazi.gazi_renew.config.JwtTokenProvider;
 import com.gazi.gazi_renew.config.SecurityUtil;
 import com.gazi.gazi_renew.domain.Member;
-import com.gazi.gazi_renew.dto.MemberRequest;
-import com.gazi.gazi_renew.dto.MemberResponse;
-import com.gazi.gazi_renew.dto.Response;
-import com.gazi.gazi_renew.dto.ResponseToken;
+import com.gazi.gazi_renew.dto.*;
 import com.gazi.gazi_renew.repository.MemberRepository;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
@@ -39,17 +36,20 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final Response response;
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final MyFindRoadService myFindRoadService;
     private final AuthenticationManagerBuilder managerBuilder;
     private final RedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender emailSender;
     private final RedisUtilService redisUtilService;
+    private final NotificationService notificationService;
 
     @Override
     public ResponseEntity<Response.Body> signUp(@Valid MemberRequest.SignUp signUpDto, Errors errors) {
@@ -68,13 +68,13 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
-
+    @Transactional(readOnly = true)
     public void validateEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 가입된 이메일입니다.");
         }
     }
-
+    @Transactional(readOnly = true)
     public void validateNickName(String nickName) {
         if (memberRepository.existsByNickName(nickName)) {
             throw new IllegalStateException("중복된 닉네임입니다.");
@@ -89,6 +89,9 @@ public class MemberServiceImpl implements MemberService {
         // loginDto email, password 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = loginDto.usernamePasswordAuthenticationToken();
         try {
+            // login 시 받은 firebase token 저장
+            member.setFirebaseToken(loginDto.getFirebaseToken());
+            memberRepository.save(member);
             // 실제 검증 (사용자 비밀번호 체크)
             // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
             Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken); // 인증 정보를 기반으로 JWT 토큰 생성
@@ -96,6 +99,7 @@ public class MemberServiceImpl implements MemberService {
             responseToken.setMemberId(member.getId());
             responseToken.setNickName(member.getNickName());
             responseToken.setEmail(member.getEmail());
+            responseToken.setFirebaseToken(member.getFirebaseToken());
 
             redisTemplate.opsForValue()
                     .set("RT:" + authentication.getName(), responseToken.getRefreshToken(),
@@ -110,7 +114,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
 
-    @Transactional
     @Override
     public ResponseEntity<Response.Body> logout(MemberRequest.Logout logoutDto) {
         // Access Token 검증
@@ -224,6 +227,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkPassword(MemberRequest.CheckPassword checkPassword) {
         try {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
@@ -239,6 +243,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> findPassword(MemberRequest.IsUser isUserRequest){
         try{
             String password = "";
@@ -458,6 +463,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkEmail(String email) {
         try {
             validateEmail(email);
@@ -468,6 +474,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkNickName(String nickName) {
         if(memberRepository.existsByNickName(nickName)) {
             return response.fail("중복된 닉네임입니다.", HttpStatus.CONFLICT);
@@ -475,5 +482,103 @@ public class MemberServiceImpl implements MemberService {
             return response.success(nickName,"사용가능한 닉네임입니다.", HttpStatus.OK);
         }
 
+    }
+    /**
+     * 유저 푸시 알림 활성/비활성 메서드
+     * 푸시 알림 꺼지면 내가 저장한 경로 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> updatePushNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setPushNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            updateMySavedRouteNotificationStatus(alertAgreeRequest);
+        }
+        // 푸시알림이 켜지면 아래 알림도 다 켜져야함
+        if (alertAgreeRequest.isAlertAgree()) {
+            updateMySavedRouteNotificationStatus(alertAgreeRequest);
+            updateRouteDetailNotificationStatus(alertAgreeRequest);
+        }
+        memberRepository.save(member);
+        return response.success("푸시 알림 수신 설정이 저장되었습니다.");
+    }
+    /**
+     * 내가 저장한 경로 알림 활성/비활성 메서드
+     * 내가 저장한 경로 꺼지면 경로별 상세 설정 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> updateMySavedRouteNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setMySavedRouteNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            updateRouteDetailNotificationStatus(alertAgreeRequest);
+        }
+        memberRepository.save(member);
+        return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
+    }
+    /**
+     * 경로별 상세 설정 알림 활성/비활성 메서드
+     * 경로별 상세 설정 알림 꺼지면 나의 상세 경로 알림들 모두 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> updateRouteDetailNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
+        Member member = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.setRouteDetailNotificationEnabled(alertAgreeRequest.isAlertAgree());
+        if (!alertAgreeRequest.isAlertAgree()) {
+            // myFindRoadService에서 경로 데이터를 가져옴
+            ResponseEntity<Response.Body> response = myFindRoadService.getRoutes();
+
+            // Response.Body에서 데이터를 추출
+            List<MyFindRoadResponse> routes = (List<MyFindRoadResponse>) response.getBody().getData();
+
+            // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
+            for (MyFindRoadResponse route : routes) {
+                // MyPathId를 넘겨서 삭제 메서드 호출
+                notificationService.deleteNotificationTimes(route.getId());
+                myFindRoadService.updateRouteNotification(route.getId(), false);
+            }
+
+        }
+        memberRepository.save(member);
+        return response.success("경로 상세 설정 알림 수신 설정이 저장되었습니다.");
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getPushNotificationStatus(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getPushNotificationEnabled());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getMySavedRouteNotificationStatus(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getMySavedRouteNotificationEnabled());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getRouteDetailNotificationStatus(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(member.getEmail(), member.getRouteDetailNotificationEnabled());
+        return response.success(memberResponse, "", HttpStatus.OK);
+    }
+    /**
+     * 소셜로그인시 푸시알림을 위해 토큰 저장할 메서드
+     * @param : MemberRequest.FcmTokenRequest fcmTokenRequest
+     * @return Response.Body
+     */
+    @Override
+    public ResponseEntity<Response.Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest) {
+        Member member = memberRepository.findByEmail(fcmTokenRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member.saveFcmToken(fcmTokenRequest.getFirebaseToken());
+        memberRepository.save(member);
+        return response.success("FireBase 토큰 저장 완료.");
     }
 }

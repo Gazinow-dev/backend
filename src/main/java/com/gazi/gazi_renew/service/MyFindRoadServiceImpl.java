@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,120 +43,119 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         try {
             Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPath> myFindRoadPaths = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
-            List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
-            for (MyFindRoadPath myFindRoadPath : myFindRoadPaths) {
-
-                //서브패스를 찾는다.
-                List<MyFindRoadSubPath> myFindRoadSubPaths = myFindRoadSubPathRepository.findAllByMyFindRoadPath(myFindRoadPath);
-                ArrayList<SubPath> subPaths = new ArrayList<>();
-                // subpathID로 lane과 station을 찾는다.
-                for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
-                    SubPath subPathResponse = SubPath.builder()
-                            .way(subPath.getWay())
-                            .door(subPath.getDoor())
-                            .trafficType(subPath.getTrafficType())
-                            .stationCount(subPath.getStationCount())
-                            .sectionTime(subPath.getSectionTime())
-                            .distance(subPath.getDistance())
-                            .build();
-
-                    if(subPath.getTrafficType() == 1) {
-                        MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
-                        List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
-
-                        // response로 가공
-                        String lineName =  myFindRoadLane.getName();
-                        // line entity
-                        Line line = lineRepository.findByLineName(lineName).orElseThrow(
-                                () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
-                        );
-                        ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
-                        boolean isDirect = false;
-                        if(lineName.contains("(급행)")) {
-                            isDirect = true;
-                        }
-                        MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
-                                .name(myFindRoadLane.getName())
-                                .startName(myFindRoadLane.getStartName())
-                                .endName(myFindRoadLane.getEndName())
-                                .stationCode(myFindRoadLane.getStationCode())
-                                .direct(isDirect)
-                                .build();
-                        lanes.add(lane);
-
-                        List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
-                        ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
-
-                        for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
-                            Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
-                            List<Issue> issues = stationEntity.getIssues();
-                            List<Issue> activeIssues = new ArrayList<>();
-                            // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
-                            LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-
-                            for (Issue issue : issues) {
-                                if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
-                                    activeIssues.add(issue);
-                                }
-                            }
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
-                            MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
-                                    .stationName(myFindRoadStation.getStationName())
-                                    .index(myFindRoadStation.getIndex())
-                                    .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues))
-                                    .build();
-                            stations.add(station);
-
-                            issueDtoList.addAll(issueSummaryDtos);
-                        }
-                        subPathResponse.setLanes(lanes);
-
-                        // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
-                        if(!subPathResponse.getLanes().isEmpty()) {
-                            subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
-                        }
-                        subPathResponse.setStations(stations);
-                    }
-                    subPaths.add(subPathResponse);
-                }
-
-                MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
-                        .id(myFindRoadPath.getId())
-                        .roadName(myFindRoadPath.getName())
-                        .lastEndStation(myFindRoadPath.getLastEndStation())
-                        .totalTime(myFindRoadPath.getTotalTime())
-                        .subPaths(subPaths)
-                        .build();
-                myFindRoadResponses.add(myFindRoadResponse);
-            }
+            List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myFindRoadPaths);
             return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
         }
 
     }
 
     @Override
-    public ResponseEntity<Response.Body> getRoute(Long id) {
+    @Transactional(readOnly = true)
+    public ResponseEntity<Response.Body> getRoutesByMember(Long memberId) {
         try {
-            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            MyFindRoadPath myFindRoadPath = myFindRoadPathRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당하는 길찾기가 존재하지 않습니다."));
+            List<MyFindRoadPath> myfindRoadPathList = myFindRoadPathRepository.findByMemberId(memberId);
+            List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myfindRoadPathList);
 
+            return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
 
-            MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
-                    .roadName(myFindRoadPath.getName())
-                    .transitStations(subwayDataService.getTransitStation(myFindRoadPath))
-                    //todo: issue는 추후에
+    }
+
+    @Transactional(readOnly = true)
+    public MyFindRoadResponse getRouteById(Long id) {
+        MyFindRoadPath myFindRoadPath = myFindRoadPathRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("id로 마이길찾기 데이터 정보를 찾을 수 없습니다."));
+
+        //서브패스를 찾는다.
+        List<MyFindRoadSubPath> myFindRoadSubPaths = myFindRoadSubPathRepository.findAllByMyFindRoadPath(myFindRoadPath);
+        ArrayList<SubPath> subPaths = new ArrayList<>();
+        // subpathID로 lane과 station을 찾는다.
+        for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
+            SubPath subPathResponse = SubPath.builder()
+                    .way(subPath.getWay())
+                    .door(subPath.getDoor())
+                    .trafficType(subPath.getTrafficType())
+                    .stationCount(subPath.getStationCount())
+                    .sectionTime(subPath.getSectionTime())
+                    .distance(subPath.getDistance())
                     .build();
 
-            return response.success("개별조회");
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            if(subPath.getTrafficType() == 1) {
+                MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+                List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
+
+                // response로 가공
+                String lineName =  myFindRoadLane.getName();
+                // line entity
+                Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                        () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
+                );
+                ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
+                boolean isDirect = false;
+                if(lineName.contains("(급행)")) {
+                    isDirect = true;
+                }
+                MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
+                        .name(myFindRoadLane.getName())
+                        .startName(myFindRoadLane.getStartName())
+                        .endName(myFindRoadLane.getEndName())
+                        .stationCode(myFindRoadLane.getStationCode())
+                        .direct(isDirect)
+                        .build();
+                lanes.add(lane);
+
+                ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
+                List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
+
+                for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
+
+                    Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
+                    List<Issue> issues = stationEntity.getIssues();
+                    List<Issue> activeIssues = new ArrayList<>();
+                    // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
+                    LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
+
+                    for (Issue issue : issues) {
+                        if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                            activeIssues.add(issue);
+                        }
+                    }
+                    List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
+                    MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
+                            .stationName(myFindRoadStation.getStationName())
+                            .index(myFindRoadStation.getIndex())
+                            .build();
+                    stations.add(station);
+                    issueDtoList.addAll(issueSummaryDtos);
+                }
+                subPathResponse.setLanes(lanes);
+
+                // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
+                if(!subPathResponse.getLanes().isEmpty()) {
+                    subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                }
+                subPathResponse.setStations(stations);
+            }
+            subPaths.add(subPathResponse);
         }
 
+        MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
+                .id(myFindRoadPath.getId())
+                .roadName(myFindRoadPath.getName())
+                .lastEndStation(myFindRoadPath.getLastEndStation())
+                .notification(myFindRoadPath.getNotification())
+                .totalTime(myFindRoadPath.getTotalTime())
+                .subPaths(subPaths)
+                .build();
+
+        return myFindRoadResponse;
     }
 
-    @Override
+
+        @Override
     public ResponseEntity<Response.Body> addRoute(MyFindRoadRequest request) {
         log.info("길저장 서비스 로직 진입");
         try {
@@ -168,6 +168,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     .firstStartStation(request.getFirstStartStation())
                     .lastEndStation(request.getLastEndStation())
                     .stationTransitCount(request.getStationTransitCount())
+                    .notification(false)
                     .build();
 
             if (myFindRoadPathRepository.existsByNameAndMember(request.getRoadName(), member)) {
@@ -236,5 +237,109 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         } catch (Exception e) {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+    private List<MyFindRoadResponse> getMyFindRoadResponses(List<MyFindRoadPath> myFindRoadPaths) {
+        List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
+        for (MyFindRoadPath myFindRoadPath : myFindRoadPaths) {
+
+            //서브패스를 찾는다.
+            List<MyFindRoadSubPath> myFindRoadSubPaths = myFindRoadSubPathRepository.findAllByMyFindRoadPath(myFindRoadPath);
+            ArrayList<SubPath> subPaths = new ArrayList<>();
+            // subpathID로 lane과 station을 찾는다.
+            for(MyFindRoadSubPath subPath : myFindRoadSubPaths){
+                SubPath subPathResponse = SubPath.builder()
+                        .way(subPath.getWay())
+                        .door(subPath.getDoor())
+                        .trafficType(subPath.getTrafficType())
+                        .stationCount(subPath.getStationCount())
+                        .sectionTime(subPath.getSectionTime())
+                        .distance(subPath.getDistance())
+                        .build();
+
+                if(subPath.getTrafficType() == 1) {
+                    MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+                    List<MyFindRoadStation> myFindRoadStations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(subPath);
+
+                    // response로 가공
+                    String lineName =  myFindRoadLane.getName();
+                    // line entity
+                    Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                            () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
+                    );
+                    ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
+                    boolean isDirect = false;
+                    if(lineName.contains("(급행)")) {
+                        isDirect = true;
+                    }
+                    MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
+                            .name(myFindRoadLane.getName())
+                            .startName(myFindRoadLane.getStartName())
+                            .endName(myFindRoadLane.getEndName())
+                            .stationCode(myFindRoadLane.getStationCode())
+                            .direct(isDirect)
+                            .build();
+                    lanes.add(lane);
+
+                    List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
+                    ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
+
+                    for (MyFindRoadStation myFindRoadStation : myFindRoadStations) {
+                        Station stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStation.getStationName(),lineName);
+                        List<Issue> issues = stationEntity.getIssues();
+                        List<Issue> activeIssues = new ArrayList<>();
+                        // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
+                        LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
+
+                        for (Issue issue : issues) {
+                            if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                                activeIssues.add(issue);
+                            }
+                        }
+                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
+                        MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
+                                .stationName(myFindRoadStation.getStationName())
+                                .index(myFindRoadStation.getIndex())
+                                .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues))
+                                .build();
+                        stations.add(station);
+
+                        issueDtoList.addAll(issueSummaryDtos);
+                    }
+                    subPathResponse.setLanes(lanes);
+
+                    // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
+                    if(!subPathResponse.getLanes().isEmpty()) {
+                        subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                    }
+                    subPathResponse.setStations(stations);
+                }
+                subPaths.add(subPathResponse);
+            }
+
+            MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
+                    .id(myFindRoadPath.getId())
+                    .roadName(myFindRoadPath.getName())
+                    .lastEndStation(myFindRoadPath.getLastEndStation())
+                    .notification(myFindRoadPath.getNotification())
+                    .totalTime(myFindRoadPath.getTotalTime())
+                    .subPaths(subPaths)
+                    .build();
+            myFindRoadResponses.add(myFindRoadResponse);
+        }
+        return myFindRoadResponses;
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Response.Body> updateRouteNotification(Long id, Boolean enabled) {
+        try {
+            MyFindRoadPath myPath = myFindRoadPathRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+            myPath.setNotification(enabled);
+            myFindRoadPathRepository.save(myPath);
+        } catch (EntityNotFoundException e) {
+            return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        return response.success("알림 설정(notification "+ enabled + ") 변경 완료");
     }
 }
