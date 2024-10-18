@@ -55,9 +55,9 @@ jobs:
           cd ./src/main/resources
           touch ./application.yaml
           echo "${{ secrets.YAML_DEV }}" > ./application.yaml
-          touch ./application-aws.yaml
+          touch ./application-aws-dev.yaml
           echo "${{ secrets.AWS_YAML_DEV }}" > ./application-aws-dev.yaml
-          touch ./application-oauth.yaml 
+          touch ./application-oauth-dev.yaml 
           echo "${{ secrets.OAUTH_YAML_DEV }}" > ./application-oauth-dev.yaml
         shell: bash
 
@@ -68,9 +68,9 @@ jobs:
           cd ./src/main/resources
           touch ./application.yaml
           echo "${{ secrets.YAML_PROD }}" > ./application.yaml
-          touch ./application-aws.yaml
+          touch ./application-aws-prod.yaml
           echo "${{ secrets.AWS_YAML_PROD }}" > ./application-aws-prod.yaml
-          touch ./application-oauth.yaml 
+          touch ./application-oauth-prod.yaml 
           echo "${{ secrets.OAUTH_YAML_PROD }}" > ./application-oauth-prod.yaml
         shell: bash
 
