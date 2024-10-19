@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.threeten.bp.Duration;
 
 import java.security.Key;
 import java.time.Duration;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = Duration.ofMinutes(90).toMillis(); // 만료시간 90분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = Duration.ofMillis(10).toMillis(); // 만료시간 90분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = Duration.ofDays(30).toMillis(); // 만료시간 한달(30일)
 
     private final Key key;
