@@ -41,6 +41,7 @@ jobs:
           contains(github.ref, 'develop')
         run: |
           if [ ! -d "./src/main/resources" ]; then mkdir -p ./src/main/resources; fi # resources 폴더가 없으면 생성
+          if [ ! -d "./src/main/resources/firebase" ]; then mkdir -p ./src/main/resources/firebase; fi # firebase 폴더가 없으면 생성
           cd ./src/main/resources
           touch ./application-push.yaml 
           echo "${{ secrets.PUSH_YAML }}" > ./application-push.yaml
