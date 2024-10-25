@@ -46,7 +46,7 @@ jobs:
           echo "${{ secrets.PUSH_YAML }}" > ./application-push.yaml
           touch ./application-mail.yaml 
           echo "${{ secrets.MAIL_YAML }}" > ./application-mail.yaml
-          touch ./application-mail.yaml 
+          touch ./firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json 
           echo "${{ secrets.FIREBASE_JSON }}" > ./firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json
         shell: bash
 
