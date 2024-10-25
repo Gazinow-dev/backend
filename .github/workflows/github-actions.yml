@@ -43,12 +43,9 @@ jobs:
           if [ ! -d "./src/main/resources" ]; then mkdir -p ./src/main/resources; fi # resources 폴더가 없으면 생성
           if [ ! -d "./src/main/resources/firebase" ]; then mkdir -p ./src/main/resources/firebase; fi # firebase 폴더가 없으면 생성
           cd ./src/main/resources
-          touch ./application-push.yaml 
           echo "${{ secrets.PUSH_YAML }}" > ./application-push.yaml
-          touch ./application-mail.yaml 
           echo "${{ secrets.MAIL_YAML }}" > ./application-mail.yaml
-          touch ./firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json 
-          echo "${{ secrets.FIREBASE_JSON }}" > ./firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json
+          echo "${{ secrets.FIREBASE_JSON }}" | base64 -d > ./firebase/gazi-81f38-firebase-adminsdk-g89dw-44998f3667.json
         shell: bash
 
       # 환경별 yml 파일 생성(2) - dev
