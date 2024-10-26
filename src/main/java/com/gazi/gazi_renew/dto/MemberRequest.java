@@ -82,10 +82,12 @@ public class MemberRequest {
     public static class Reissue {
         private String accessToken;
         private String refreshToken;
+        private String firebaseToken;
 
-        public Reissue(String accessToken, String refreshToken) {
+        public Reissue(String accessToken, String refreshToken,String firebaseToken) {
             this.accessToken = accessToken;
             this.refreshToken = refreshToken;
+            this.firebaseToken = firebaseToken;
         }
     }
 

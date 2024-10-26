@@ -186,7 +186,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(
                 () -> new EntityNotFoundException("회원을 찾을 수 없습니다.")
         );
-
+        member.setFirebaseToken(reissueDto.getFirebaseToken());
         // 새로운 토큰 생성
         ResponseToken tokenInfo = jwtTokenProvider.generateToken(authentication);
         tokenInfo.setMemberId(member.getId());
