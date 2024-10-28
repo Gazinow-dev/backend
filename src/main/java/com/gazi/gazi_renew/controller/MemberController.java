@@ -55,7 +55,6 @@ public class MemberController extends BaseController{
     }
 
     // 자동 로그인
-    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "토큰 재발급(자동 로그인)")
     @PostMapping("/reissue")
     public ResponseEntity<Body> reissue(@RequestBody Reissue reissueDto) {
