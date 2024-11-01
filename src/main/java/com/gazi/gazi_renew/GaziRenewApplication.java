@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew;
 
-import com.gazi.gazi_renew.service.SubwayDataService;
+import com.gazi.gazi_renew.station.service.SubwayDataService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

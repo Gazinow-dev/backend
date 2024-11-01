@@ -1,0 +1,23 @@
+package com.gazi.gazi_renew.issue.controller.port;
+
+import com.gazi.gazi_renew.issue.domain.IssueRequest;
+import com.gazi.gazi_renew.common.controller.response.Response;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+
+public interface IssueService {
+    // 웹 크롤링
+
+    // 이슈 저장
+    ResponseEntity<Response.Body> addIssue(IssueRequest dto);
+    // 이슈 조회
+    ResponseEntity<Response.Body> getIssue(Long id);
+    // 이슈 전체조회
+    ResponseEntity<Response.Body> getIssues(Pageable pageable);
+    // 이슈 필터조회
+    ResponseEntity<Response.Body> getLineByIssues(String line,Pageable pageable);
+
+    ResponseEntity<Response.Body> updateIssueContent(IssueRequest.updateContentDto dto);
+    //인기 이슈 조회
+    ResponseEntity<Response.Body> getPopularIssues();
+}
