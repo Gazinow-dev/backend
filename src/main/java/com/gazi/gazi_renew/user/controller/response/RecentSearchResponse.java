@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.user.controller.response;
 
-import com.gazi.gazi_renew.user.infrastructure.RecentSearch;
+import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
 import lombok.*;
 
 @Getter
@@ -14,11 +14,11 @@ public class RecentSearchResponse {
     private String stationName;
     private String stationLine;
 
-    public static RecentSearchResponse getDto(RecentSearch recentSearch){
+    public static RecentSearchResponse getDto(RecentSearchEntity recentSearchEntity){
         return RecentSearchResponse.builder()
-                .id(recentSearch.getId())
-                .stationName(recentSearch.getStationName())
-                .stationLine(recentSearch.getStationLine())
+                .id(recentSearchEntity.getId())
+                .stationName(recentSearchEntity.getStationName())
+                .stationLine(recentSearchEntity.getStationLine())
                 .build();
     }
 }

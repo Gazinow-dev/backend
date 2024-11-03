@@ -1,9 +1,9 @@
 package com.gazi.gazi_renew.station.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadSubPath;
-import com.gazi.gazi_renew.station.infrastructure.Station;
+import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
@@ -33,11 +33,11 @@ public class SubwayDataService {
     public void saveStationsFromJsonFile() throws IOException, InterruptedException {
         ClassPathResource resource = new ClassPathResource("station_coordinate.json");
         ObjectMapper objectMapper = new ObjectMapper();
-        Station[] stations = objectMapper.readValue(resource.getFile(), Station[].class);
+        StationEntity[] stationEntities = objectMapper.readValue(resource.getFile(), StationEntity[].class);
         int i = 0;
-        for (Station station : stations) {
-            if(!subwayRepository.existsByStationCode(station.getStationCode())){
-                subwayRepository.save(station);
+        for (StationEntity stationEntity : stationEntities) {
+            if(!subwayRepository.existsByStationCode(stationEntity.getStationCode())){
+                subwayRepository.save(stationEntity);
             }
             i ++;
             if( i%200 == 0){
@@ -53,8 +53,8 @@ public class SubwayDataService {
     }
 
     public ResponseEntity<Response.Body> getSubwayInfo(String subwayName) {
-        List<Station> stations = subwayRepository.findByNameStartingWith(subwayName);
-        List<SubwayDataResponse.SubwayInfo> subwayInfos = stations.stream()
+        List<StationEntity> stationEntities = subwayRepository.findByNameStartingWith(subwayName);
+        List<SubwayDataResponse.SubwayInfo> subwayInfos = stationEntities.stream()
                 .map(
                         station -> {
                             SubwayDataResponse.SubwayInfo subwayInfo = SubwayDataResponse.SubwayInfo.builder()
@@ -69,7 +69,7 @@ public class SubwayDataService {
     }
 
     //환승역 추출 서비스
-    public List<MyFindRoadResponse.transitStation> getTransitStation(MyFindRoadPath path) {
+    public List<MyFindRoadResponse.transitStation> getTransitStation(MyFindRoadPathEntity path) {
 
         List<MyFindRoadResponse.transitStation> transitStations = new ArrayList<>();
         String lastLine = "";
@@ -100,31 +100,31 @@ public class SubwayDataService {
     }
 
     @Transactional(readOnly = true)
-    public Station getStationByNameAndLine(String name, String line){
+    public StationEntity getStationByNameAndLine(String name, String line){
         try{
             System.out.println(line);
             if(line.equals("수도권 9호선(급행)")){
                 line = "수도권 9호선";
             }
 
-            List<Station> stations = subwayRepository.findByNameContainingAndLine(name,line);
+            List<StationEntity> stationEntities = subwayRepository.findByNameContainingAndLine(name,line);
 
-            Station stationResponse = stations.get(0);
+            StationEntity stationEntityResponse = stationEntities.get(0);
             int k = 0;
             // 필터링
-            if(!stations.isEmpty() && stations.size() >=2){
+            if(!stationEntities.isEmpty() && stationEntities.size() >=2){
 
-                for(Station station : stations){
-                    int stationLength = station.getName().length(); // 찾은 entity 역글자수
+                for(StationEntity stationEntity : stationEntities){
+                    int stationLength = stationEntity.getName().length(); // 찾은 entity 역글자수
                     int result = stationLength - name.length();
 
                     if(k > result){
-                        stationResponse = station;
+                        stationEntityResponse = stationEntity;
                         k = result;
                     }
                 }
             }
-            return stationResponse;
+            return stationEntityResponse;
         }catch (EntityNotFoundException e){
             log.error(e.getMessage());
             return null;

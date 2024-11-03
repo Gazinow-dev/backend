@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.oauth.service;
 
 import com.gazi.gazi_renew.common.config.AppleProperties;
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.user.domain.enums.Role;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
@@ -99,31 +99,31 @@ public class OAuthLoginService {
     }
     public ResponseEntity<Void> login(OAuthLoginParams params) {
         OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
-        Member member = findOrCreateMember(oAuthInfoResponse);
+        MemberEntity memberEntity = findOrCreateMember(oAuthInfoResponse);
 
         Collection<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(memberEntity.getEmail(), null, authorities);
 
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
-        responseToken.setEmail(member.getEmail());
-        responseToken.setNickName(member.getNickName());
+        responseToken.setEmail(memberEntity.getEmail());
+        responseToken.setNickName(memberEntity.getNickName());
         //redis에 refresh token 저장
         saveRefreshToken(authentication, responseToken);
 
         return createRedirectResponse(responseToken);
     }
-    private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
+    private MemberEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
         return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
-    private Member newMember(OAuthInfoResponse oAuthInfoResponse) {
+    private MemberEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
         String email = oAuthInfoResponse.getEmail();
         String nickname = oAuthInfoResponse.getNickname();
         // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
         if (nickname == null || nickname.isEmpty()) {
             nickname = email.substring(0, email.indexOf("@"));
         }
-        Member member = Member.builder()
+        MemberEntity memberEntity = MemberEntity.builder()
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
                 .routeDetailNotificationEnabled(true)
@@ -134,11 +134,11 @@ public class OAuthLoginService {
                 .provider(oAuthInfoResponse.getOAuthProvider())
                 .build();
 
-        memberService.validateEmail(member.getEmail());
-        memberService.validateNickName(member.getNickName());
-        memberRepository.save(member);
+        memberService.validateEmail(memberEntity.getEmail());
+        memberService.validateNickName(memberEntity.getNickName());
+        memberRepository.save(memberEntity);
 
-        return member;
+        return memberEntity;
     }
     // URI 생성과 리다이렉트 응답을 담당하는 메서드
     private ResponseEntity<Void> createRedirectResponse(ResponseToken responseToken) {

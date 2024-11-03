@@ -1,8 +1,8 @@
 package com.gazi.gazi_renew.user.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
-import com.gazi.gazi_renew.issue.infrastructure.Like;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.issue.infrastructure.LikeEntity;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.user.domain.enums.Role;
 import jakarta.persistence.*;
@@ -24,7 +24,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Table(name = "MEMBER")
 @Entity
-public class Member extends AuditingFields {
+public class MemberEntity extends AuditingFields {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -60,21 +60,21 @@ public class Member extends AuditingFields {
     private LocalDateTime createdAt; // 생성일시
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<RecentSearch> recentSearches = new LinkedList<>();
+    private List<RecentSearchEntity> recentSearchEntities = new LinkedList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<MyFindRoadPath> myFindRoadPaths = new LinkedList<>();
+    private List<MyFindRoadPathEntity> myFindRoadPathEntities = new LinkedList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Like> likes = new HashSet<>();
+    private Set<LikeEntity> likeEntities = new HashSet<>();
 
-    public Member saveFcmToken(String firebaseToken) {
+    public MemberEntity saveFcmToken(String firebaseToken) {
         this.firebaseToken = firebaseToken;
         return this;
     }
 
     @Builder
-    public Member(String email, String nickname, OAuthProvider provider) {
+    public MemberEntity(String email, String nickname, OAuthProvider provider) {
         this.email = email;
         this.nickName = nickname;
         this.provider = provider;

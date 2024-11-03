@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.user.service;
 
 
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,8 +26,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다."));
     }
 
-    private UserDetails createUserDetails(Member member) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getRole().toString());
-        return new User(String.valueOf(member.getEmail()), member.getPassword(), Collections.singleton(grantedAuthority));
+    private UserDetails createUserDetails(MemberEntity memberEntity) {
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(memberEntity.getRole().toString());
+        return new User(String.valueOf(memberEntity.getEmail()), memberEntity.getPassword(), Collections.singleton(grantedAuthority));
     }
 }

@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.notification.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.gazi.gazi_renew.common.domain.AuditingFields;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalTime;
@@ -31,7 +31,7 @@ public class Notification extends AuditingFields {
     @ManyToOne
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
     @JsonBackReference
-    private MyFindRoadPath myFindRoadPath;
+    private MyFindRoadPathEntity myFindRoadPathEntity;
 
     // 알림 업데이트 메서드
     public void updateNotification(String dayOfWeek, LocalTime fromTime, LocalTime toTime) {

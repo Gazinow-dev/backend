@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.user.domain;
 
 
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.user.domain.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -35,8 +35,8 @@ public class MemberRequest {
         @NotBlank
         private String nickName;
 
-        public Member toMember(PasswordEncoder passwordEncoder) {
-            return Member.builder()
+        public MemberEntity toMember(PasswordEncoder passwordEncoder) {
+            return MemberEntity.builder()
                     .email(email)
                     .password(passwordEncoder.encode(password))
                     .nickName(nickName)

@@ -1,23 +1,31 @@
 package com.gazi.gazi_renew.issue.controller.port;
 
-import com.gazi.gazi_renew.issue.domain.IssueRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.issue.domain.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.IssueUpdate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Map;
 
 public interface IssueService {
     // 웹 크롤링
 
     // 이슈 저장
-    ResponseEntity<Response.Body> addIssue(IssueRequest dto);
+    boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
     // 이슈 조회
-    ResponseEntity<Response.Body> getIssue(Long id);
+    IssueDetail getIssue(Long id);
     // 이슈 전체조회
-    ResponseEntity<Response.Body> getIssues(Pageable pageable);
+    Page<Issue> getIssues(Pageable pageable);
     // 이슈 필터조회
-    ResponseEntity<Response.Body> getLineByIssues(String line,Pageable pageable);
+    Page<Issue> getLineByIssues(String line,Pageable pageable);
 
-    ResponseEntity<Response.Body> updateIssueContent(IssueRequest.updateContentDto dto);
+    void updateIssueContent(IssueUpdate issueUpdate);
     //인기 이슈 조회
-    ResponseEntity<Response.Body> getPopularIssues();
+    List<Issue> getPopularIssues();
 }

@@ -1,14 +1,13 @@
 package com.gazi.gazi_renew.station.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gazi.gazi_renew.issue.infrastructure.Issue;
+import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -17,7 +16,7 @@ import java.util.List;
         @Index(name = "name", columnList = "name")
 })
 @Entity
-public class Station {
+public class StationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -30,10 +29,7 @@ public class Station {
     private Integer issueStationCode;
     @JsonIgnore // issues 필드를 JSON 시리얼라이제이션에서 무시
     @ManyToMany(mappedBy = "stations" ,fetch = FetchType.LAZY)
-    private List<Issue> issues;
+    private List<IssueEntity> issueEntities;
 
-    public Station update(Integer issueStationCode) {
-        this.issueStationCode = issueStationCode;
-        return this;
-    }
+
 }

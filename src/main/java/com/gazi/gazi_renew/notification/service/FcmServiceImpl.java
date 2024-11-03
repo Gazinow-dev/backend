@@ -8,15 +8,15 @@ import com.gazi.gazi_renew.notification.domain.FcmMessageDto;
 import com.gazi.gazi_renew.notification.domain.FcmSendDto;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.infrastructure.Issue;
-import com.gazi.gazi_renew.issue.infrastructure.IssueRepository;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
+import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
-import com.gazi.gazi_renew.station.infrastructure.Line;
-import com.gazi.gazi_renew.station.infrastructure.Station;
+import com.gazi.gazi_renew.station.infrastructure.LineEntity;
+import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.persistence.EntityNotFoundException;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class FcmServiceImpl implements FcmService {
     private final Response response;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
-    private final IssueRepository issueRepository;
+    private final IssueJpaRepository issueJpaRepository;
     private final MemberRepository memberRepository;
     private final MyFindRoadService myFindRoadService;
 
@@ -104,12 +104,12 @@ public class FcmServiceImpl implements FcmService {
     }
 
     private List<FcmMessageDto> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
-        Optional<MyFindRoadPath> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
+        Optional<MyFindRoadPathEntity> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
         if(myPath.isEmpty()) {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
         }
 
-        Optional<Member> member = memberRepository.findById(myPath.get().getMember().getId());
+        Optional<MemberEntity> member = memberRepository.findById(myPath.get().getMemberEntity().getId());
         if(member.isEmpty()) {
             throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
         }
@@ -117,34 +117,34 @@ public class FcmServiceImpl implements FcmService {
         String firebaseToken = member.get().getFirebaseToken();
 
 
-        Optional<Issue> issue = issueRepository.findById(fcmSendDto.getIssueId());
+        Optional<IssueEntity> issue = issueJpaRepository.findById(fcmSendDto.getIssueId());
         if(issue.isEmpty()) {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
         MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
-        List<Station> stations = issue.get().getStations();
+        List<StationEntity> stationEntities = issue.get().getStationEntities();
 
         String pathJson = om.writeValueAsString(routeById);
 
         // 각 Line에 대해 FCM 메시지 생성
         List<FcmMessageDto> fcmMessages = new ArrayList<>();
-        List<Line> lines = issue.get().getLines();
-        for (Line line : lines) {
+        List<LineEntity> lineEntities = issue.get().getLineEntities();
+        for (LineEntity lineEntity : lineEntities) {
             // 해당 호선에 속하는 역들만 필터링
-            List<Station> stationsForLine = stations.stream()
-                    .filter(station -> station.getLine().equals(line.getLineName()))
+            List<StationEntity> stationsForLine = stationEntities.stream()
+                    .filter(station -> station.getLine().equals(lineEntity.getLineName()))
                     .collect(Collectors.toList());
 
             // 필터링한 역들 중 첫 번째 역과 마지막 역 가져오기
             if (!stationsForLine.isEmpty()) {
-                Station startStation = stationsForLine.get(0);
-                Station endStation = stationsForLine.get(stationsForLine.size() - 1);
+                StationEntity startStationEntity = stationsForLine.get(0);
+                StationEntity endStationEntity = stationsForLine.get(stationsForLine.size() - 1);
 
                 FcmMessageDto fcmMessageDto = FcmMessageDto.createMessage(
                         firebaseToken,
                         makeTitle(myPathName, issue.get().getKeyword()),
-                        makeBody(line.getLineName(), startStation.getName(), endStation.getName()),
+                        makeBody(lineEntity.getLineName(), startStationEntity.getName(), endStationEntity.getName()),
                         pathJson
                 );
                 fcmMessages.add(fcmMessageDto);

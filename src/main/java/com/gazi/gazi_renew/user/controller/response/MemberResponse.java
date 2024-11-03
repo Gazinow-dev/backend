@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.user.controller.response;
 
 
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -20,9 +20,9 @@ public class MemberResponse {
         @NotBlank
         private String nickName;
 
-        public SignUp(Member member) {
-            this.email = member.getEmail();
-            this.nickName = member.getNickName();
+        public SignUp(MemberEntity memberEntity) {
+            this.email = memberEntity.getEmail();
+            this.nickName = memberEntity.getNickName();
         }
 
     }

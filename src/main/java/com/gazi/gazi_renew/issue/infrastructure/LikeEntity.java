@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,18 +10,17 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "like_table")
 @Entity
-public class Like {
+public class LikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id")
-    private Issue issue;
+    private IssueEntity issueEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private Member member;
-
+    private MemberEntity memberEntity;
 }
 

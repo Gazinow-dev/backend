@@ -2,33 +2,34 @@ package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
-import com.gazi.gazi_renew.issue.infrastructure.Issue;
-import com.gazi.gazi_renew.station.infrastructure.Line;
+import com.gazi.gazi_renew.common.exception.custom.DuplicateIssueException;
+import com.gazi.gazi_renew.common.exception.custom.UnauthorizedException;
+import com.gazi.gazi_renew.issue.domain.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.IssueUpdate;
+import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
+import com.gazi.gazi_renew.issue.service.port.IssueRepository;
+import com.gazi.gazi_renew.issue.service.port.LikeRepository;
+import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
-import com.gazi.gazi_renew.issue.infrastructure.IssueRepository;
-import com.gazi.gazi_renew.issue.infrastructure.LikeRepository;
+import com.gazi.gazi_renew.issue.infrastructure.jpa.LikeJpaRepository;
+import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
+import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.station.infrastructure.SubwayRepository;
-import com.gazi.gazi_renew.user.infrastructure.Member;
-import com.gazi.gazi_renew.station.infrastructure.Station;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
-import com.gazi.gazi_renew.issue.domain.IssueRequest;
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
-import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,319 +43,180 @@ public class IssueServiceImpl implements IssueService {
     private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
-    private final Response response;
     private final RedisTemplate redisTemplate;
 
     @Value("${issue.code}")
     private String secretCode;
     private static final int minStationNo = 201;
     private static final int maxStationNo = 243;
-
+    private static final int likeCount = 5;
 
     @Override
     @Transactional
-    public ResponseEntity<Response.Body> addIssue(IssueRequest dto) {
+    public boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException {
+        Issue issue = Issue.from(issueCreate);
 
-        try {
-            if (!dto.getSecretCode().equals(secretCode)) {
-                return response.fail("인증코드가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
-            }
-
-            if(issueRepository.existsByCrawlingNo(dto.getCrawlingNo())){
-                return response.fail("이미 해당 데이터가 존재합니다.", HttpStatus.BAD_REQUEST);
-            }
-            List<Station> stationList = getStationList(dto.getStations());
-            List<Line> lineList = getLineList(dto.getLines());
-            Issue issue = Issue.builder()
-                    .crawlingNo(dto.getCrawlingNo())
-                    .startDate(dto.getStartDate().withSecond(0).withNano(0))
-                    .expireDate(dto.getExpireDate().withSecond(0).withNano(0))
-                    .title(dto.getTitle())
-                    .content(dto.getContent())
-                    .stations(stationList)
-                    .keyword(dto.getKeyword())
-                    .lines(lineList)
-                    .latestNo(dto.getLatestNo())
-                    .build();
-
-            issueRepository.save(issue);
-            // Redis에 이슈 추가
-            addIssueToRedis(issue);
-
-            // station에도 추가되어야한다.
-            for (Station station : stationList) {
-                List<Issue> issues = station.getIssues();
-                issues.add(issue);
-                station.setIssues(issues);
-                subwayRepository.save(station);
-            }
-
-            // line에도 추가
-            for (Line line : lineList) {
-                List<Issue> issues = line.getIssues();
-                issues.add(issue);
-                line.setIssues(issues);
-                lineRepository.save(line);
-            }
-            return response.success();
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        if (!issue.getSecretCode().equals(secretCode)) {
+            throw new UnauthorizedException("인증코드가 일치하지 않습니다.");
         }
+
+        if (issueRepository.existsByCrawlingNo(issue.getCrawlingNo())) {
+            throw new DuplicateIssueException("이미 해당 데이터가 존재합니다.");
+        }
+
+        List<Station> stationEntityList = getStationList(issue.getIssueStations());
+        List<Line> lineList = getLineList(issue.getLines());
+        issueRepository.save(issue);
+
+        // Redis에 이슈 추가
+        addIssueToRedis(issue);
+
+        // station에 추가
+        for (Station station : stationEntityList) {
+            List<Issue> issueList = station.getIssueList();
+            issueList.add(issue);
+            station.addIssue(issueList);
+            subwayRepository.save(station);
+        }
+
+        // line에 추가
+        for (Line line : lineList) {
+            List<Issue> issueList = line.getIssueList();
+            issueList.add(issue);
+            line.addIssue(issueList);
+            lineRepository.save(line);
+        }
+        return true;
     }
+    /**
+     * redis에 issue 저장
+     * @param Issue issue
+     */
     public void addIssueToRedis(Issue issue) throws JsonProcessingException {
-        String issueId = issue.getId().toString();
-        IssueRedisDto issueDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
+        IssueRedisDto issueRedisDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
-        redisTemplate.opsForHash().put("issues", issueId, issueDto);
+
+        redisTemplate.opsForHash().put("issues", issue.getId().toString() , issueRedisDto);
     }
+    /**
+     * 이슈 세부사항 조회
+     * 해당 메서드에서만 IssueDetail 사용(isLike포함)
+     * @param id
+     * @return IssueDetail
+     */
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getIssue(Long id) {
-        try {
-            Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+    public IssueDetail getIssue(Long id) {
+        //TOdo member 도메인으로 변경
+        Optional<MemberEntity> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
-            Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
-            boolean isLike = false;
-            if(member.isPresent()){
-                isLike = likeRepository.existsByIssueAndMember(issue,member.get());
-            }else{
-                isLike = false;
-            }
-            IssueResponse issueResponse = IssueResponse.builder()
-                    .id(issue.getId())
-                    .title(issue.getTitle())
-                    .content(issue.getContent())
-                    .isLike(isLike)
-                    .keyword(issue.getKeyword())
-                    .lines(
-                            issue.getLines().stream()
-                                    .map(Line::getLineName)
-                                    .collect(Collectors.toList())
-                    )
-                    .stationDtos(IssueResponse.getStations(issue.getStations()))
-                    .startDate(issue.getStartDate())
-                    .expireDate(issue.getExpireDate())
-                    .agoTime(getTime(issue.getCreatedAt()))
-                    .build();
-            int likeCount = Optional.ofNullable(issue.getLikes())
-                    .map(Set::size)
-                    .orElse(0);
-            issueResponse.setLikeCount(likeCount);
-            return response.success(issueResponse, "이슈 조회 성공", HttpStatus.OK);
-        }catch (EntityNotFoundException e){
-            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
-        }
+        Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
+        //TOdo : like 도메인으로 변경
+        boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue, member.get());
+        return new IssueDetail(issue, isLike);
     }
+    /**
+     * 이슈 전체 조회
+     * @param  pageable
+     * @return Page<Issue>
+     */
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getIssues(Pageable pageable) {
-        try{
-            Page<Issue> issuePage = issueRepository.findAll(pageable);
-            Page<IssueResponse> issueResponsePage = getPostDtoPage(issuePage);
-
-            return response.success(issueResponsePage, "이슈 전체 조회 성공", HttpStatus.OK);
-        } catch (Exception e){
-            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
-        }
-
+    public Page<Issue> getIssues(Pageable pageable) {
+        Page<Issue> issuePage = issueRepository.findAll(pageable);
+        return issuePage;
     }
-
+    /**
+     * 호선별 이슈 조회
+     * @param : String line, Pageable pageable
+     * @return Page<Issue>
+     */
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getLineByIssues(String line, Pageable pageable) {
-        try {
-            Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
-                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
-            );
+    public Page<Issue> getLineByIssues(String line, Pageable pageable) {
+        //TOdo : line 도메인으로 변경
+        Line line = lineRepository.findByLineName(line).orElseThrow(
+                () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
+        );
 
-            int start = (int)pageable.getOffset();
-            int end = (start + pageable.getPageSize()) > lineEntity.getIssues().size()? lineEntity.getIssues().size() : (start + pageable.getPageSize());
-            List<Issue> sortedList = lineEntity.getIssues().stream()
-                    .sorted(Comparator.comparing(Issue::getStartDate).reversed()) // startDate를 기준으로 내림차순 정렬
-                    .collect(Collectors.toList());
-            sortedList = sortedList.subList(start, end);
-            Page<Issue> sortedIssues = new PageImpl<>(sortedList, pageable, sortedList.size());
-            Page<IssueResponse> issueResponsePage = getPostDtoPage(sortedIssues);
+        int start = (int)pageable.getOffset();
+        int end = (start + pageable.getPageSize()) > line.getIssueList().size()? line.getIssueList().size() : (start + pageable.getPageSize());
+        List<Issue> sortedList = line.getIssueList().stream()
+                .sorted(Comparator.comparing(Issue::getStartDate).reversed()) // startDate를 기준으로 내림차순 정렬
+                .collect(Collectors.toList());
+        sortedList = sortedList.subList(start, end);
 
-            return response.success(issueResponsePage, "line" + "이슈 조회 성공", HttpStatus.OK);
-
-        } catch (EntityNotFoundException e){
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e){
-            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
+        Page<Issue> sortedIssues = new PageImpl<>(sortedList, pageable, sortedList.size());
+        return sortedIssues;
     }
-
+    /**
+     * 좋아요 숫자가 5개 이상인 이슈 조회
+     * @param
+     * @return IssueResponse
+     */
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getPopularIssues() {
-        int likeCount = 5;
-        try{
-            //            Page<Issue> issuePage = issueRepository.findTopIssuesByLikesCount(likeCount, pageable);
-            List<Issue> issueList = issueRepository.findTopIssuesByLikesCount(likeCount, PageRequest.of(0, 4));
-            List<IssueResponse> issueResponseList = issueList.stream().map(
-                    m -> {
-                        IssueResponse.IssueResponseBuilder builder = IssueResponse.builder()
-                                .id(m.getId())
-                                .title(m.getTitle())
-                                .content(m.getContent())
-                                .keyword(m.getKeyword())
-                                .stationDtos(IssueResponse.getStations(m.getStations()))
-                                .lines(
-                                        m.getLines().stream()
-                                                .map(Line::getLineName)
-                                                .collect(Collectors.toList())
-                                )
-                                .startDate(m.getStartDate())
-                                .expireDate(m.getExpireDate())
-                                .agoTime(getTime(m.getCreatedAt()));
-
-                        int likeCountDto = Optional.ofNullable(m.getLikes())
-                                .map(Set::size)
-                                .orElse(0);
-
-                        builder.likeCount(likeCountDto);
-
-                        return builder.build();
-                    }
-            ).collect(Collectors.toList());
-            return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);
-        }catch (Exception e){
-            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @Override
-    @Transactional
-    public ResponseEntity<Response.Body> updateIssueContent(IssueRequest.updateContentDto dto){
-        try {
-            System.out.println(dto.getId());
-            Issue issue = issueRepository.findById(dto.getId()).orElseThrow(
-                    () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
-            );
-
-            issue.setContent(dto.getContent());
-            issueRepository.save(issue);
-            return response.success(" 내용 수정 성공");
-        }catch (EntityNotFoundException e){
-            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-
-
-    }
-    public Page<IssueResponse> getPostDtoPage(Page<Issue> issuePage) {
-
-        Page<IssueResponse> issueResponsePage = issuePage.map(m -> {
-            IssueResponse.IssueResponseBuilder builder = IssueResponse.builder()
-                    .id(m.getId())
-                    .title(m.getTitle())
-                    .content(m.getContent())
-                    .keyword(m.getKeyword())
-                    .stationDtos(IssueResponse.getStations(m.getStations()))
-                    .lines(
-                            m.getLines().stream()
-                                    .map(Line::getLineName)
-                                    .collect(Collectors.toList())
-                    )
-                    .startDate(m.getStartDate())
-                    .expireDate(m.getExpireDate())
-                    .agoTime(getTime(m.getCreatedAt()));
-
-            int likeCount = Optional.ofNullable(m.getLikes())
-                    .map(Set::size)
-                    .orElse(0);
-
-            builder.likeCount(likeCount);
-
-            return builder.build();
-        });
-
-        return issueResponsePage;
-    }
-    public List<Station> getStationList(List<IssueRequest.Station> stations) {
-        List<Station> stationResponse = new ArrayList<>();
-
-        // 입력된 모든 역 정보를 순회하며 각 역을 처리
-        for (IssueRequest.Station station : stations) {
-            // 2호선인 경우와 아닌 경우 분기 처리
-            if (station.getLine().equals("수도권 2호선")) {
-                List<Station> stationList = handleLineTwo(station, station.getStartStationCode(), station.getEndStationCode());
-                stationResponse.addAll(stationList);
-            } else {
-                int startStationCode = Math.min(station.getStartStationCode(), station.getEndStationCode());
-                int endStationCode = Math.max(station.getStartStationCode(), station.getEndStationCode());
-
-                List<Station> stationList = findStationsForOtherLines(startStationCode, endStationCode);
-                stationResponse.addAll(stationList);
-            }
-        }
-        return stationResponse;
-    }
-
-    public List<Line> getLineList(List<String> lines){
-        List<Line> lineResponse = new ArrayList<>();
-        for(String line : lines){
-            Line lineEntity = lineRepository.findByLineName(line).orElseThrow(
-                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
-            );
-            lineResponse.add(lineEntity);
-        }
-        return lineResponse;
-    }
-    // 시간 구하기 로직
-    public static String getTime(LocalDateTime startTime) {
-        System.out.println(startTime);
-
-        LocalDateTime nowDate = LocalDateTime.now();
-        Duration duration = Duration.between(startTime, nowDate);
-        Long time = duration.getSeconds();
-        String formatTime;
-
-        if (time > 60 && time <= 3600) {
-            // 분
-            time = time / 60;
-            formatTime = time + "분 전";
-        } else if (time > 3600 && time <= 86400) {
-            time = time / (60 * 60);
-            formatTime = time + "시간 전";
-        } else if (time > 86400) {
-            time = time / 86400;
-            formatTime = time + "일 전";
-        } else {
-            formatTime = time + "초 전";
-        }
-
-        return formatTime;
-    }
-
-    // 만료된 이슈를 제외하고 가지고 오는 함수
-    public  List<Issue> getActiveIssues(Line line){
-        List<Issue> issueList = issueRepository.findActiveIssuesForLine(line);
-        for(Issue issue : issueList){
-            issue.getId();
-
-            System.out.println(issue.getTitle());
-        }
+    public List<Issue> getPopularIssues() {
+        List<Issue> issueList = issueRepository.findTopIssuesByLikesCount(likeCount, PageRequest.of(0, 4));
         return issueList;
     }
     /**
+     * issue 내용 update
+     * @param : IssueUpdate issueUpdate
+     * @return void
+     */
+    @Override
+    @Transactional
+    public void updateIssueContent(IssueUpdate issueUpdate){
+        Issue issue = issueRepository.findById(issueUpdate.getId()).orElseThrow(
+                () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
+        );
+        issue.update(issueUpdate);
+        issueRepository.save(issue);
+    }
+    private List<Station> getStationList(List<Issue.IssueStation> issueStations) {
+        List<Station> stationEntityResponse = new ArrayList<>();
+
+        // 입력된 모든 역 정보를 순회하며 각 역을 처리
+        for (Issue.IssueStation issueStation : issueStations) {
+            // 2호선인 경우와 아닌 경우 분기 처리
+            if (issueStation.getLine().equals("수도권 2호선")) {
+                List<Station> stationEntityList = handleLineTwo(issueStation, issueStation.getStartStationCode(), issueStation.getEndStationCode());
+                stationEntityResponse.addAll(stationEntityList);
+            } else {
+                int startStationCode = Math.min(issueStation.getStartStationCode(), issueStation.getEndStationCode());
+                int endStationCode = Math.max(issueStation.getStartStationCode(), issueStation.getEndStationCode());
+
+                List<StationEntity> stationEntityList = findStationsForOtherLines(startStationCode, endStationCode);
+                stationEntityResponse.addAll(stationEntityList);
+            }
+        }
+        return stationEntityResponse;
+    }
+
+    public List<Line> getLineList(List<String> lines){
+        List<Line> lineEntityResponse = new ArrayList<>();
+        for(String lineName : lines){
+            Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
+            );
+            lineEntityResponse.add(line);
+        }
+        return lineEntityResponse;
+    }
+
+    /**
      * 2호선의 경우, 시계방향과 반시계방향에 따라 다르게 처리
-     * @param station IssueRequest의 역 정보
+     * @param issueStation IssueRequest의 역 정보
      * @param startStationCode 출발역 코드
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleLineTwo(IssueRequest.Station station, int startStationCode, int endStationCode) {
-        if (station.getDirection() == SubwayDirection.Clockwise) {
+    private List<Station> handleLineTwo(Issue.IssueStation issueStation, int startStationCode, int endStationCode) {
+        if (issueStation.getDirection() == SubwayDirection.Clockwise) {
             // 2호선 내선 처리
             return handleClockwiseDirection(startStationCode, endStationCode);
-        } else if (station.getDirection() == SubwayDirection.Counterclockwise) {
+        } else if (issueStation.getDirection() == SubwayDirection.Counterclockwise) {
             // 2호선 외선 처리
             return handleCounterClockwiseDirection(startStationCode, endStationCode);
         }
@@ -392,7 +254,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
+    private List<StationEntity> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
         // 반시계일때, 구간이 시작역이 끝역코드보다 커야 연속
         if (startStationCode > endStationCode) {
             return subwayRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
@@ -414,7 +276,7 @@ public class IssueServiceImpl implements IssueService {
         List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
 
         // 두 구간의 결과를 합침
-        leftList.addAll(rightList);
+        leftList.addAl l(rightList);
         return leftList;
     }
 

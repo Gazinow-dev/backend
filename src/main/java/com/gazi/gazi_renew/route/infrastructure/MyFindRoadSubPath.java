@@ -24,9 +24,9 @@ public class MyFindRoadSubPath {
     private String way;
     @ManyToOne
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
-    private MyFindRoadPath myFindRoadPath;
+    private MyFindRoadPathEntity myFindRoadPathEntity;
     @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<MyFindRoadLane> lanes = new ArrayList<>();
+    private List<MyFindRoadLaneEntity> lanes = new ArrayList<>();
     @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<MyFindRoadStation> stations = new ArrayList<>();
+    private List<MyFindRoadStationEntity> stations = new ArrayList<>();
 }

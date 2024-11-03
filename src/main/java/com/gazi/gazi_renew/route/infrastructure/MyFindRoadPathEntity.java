@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.route.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gazi.gazi_renew.notification.infrastructure.Notification;
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_road_path")
 @Entity
-public class MyFindRoadPath {
+public class MyFindRoadPathEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,7 +31,7 @@ public class MyFindRoadPath {
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    private MemberEntity memberEntity;
     private String name;
     private Boolean notification;
 

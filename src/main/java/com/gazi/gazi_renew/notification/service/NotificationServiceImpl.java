@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.notification.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.notification.infrastructure.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoadNotificationRequest;
@@ -44,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotificationRequest request) {
         try {
             List<Notification> savedTimes = new ArrayList<>();
-            MyFindRoadPath myPath = myFindRoadPathRepository.findById(request.getMyPathId()).orElseThrow(
+            MyFindRoadPathEntity myPath = myFindRoadPathRepository.findById(request.getMyPathId()).orElseThrow(
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
             );
             List<Map<String, Object>> notificationJsonList = new ArrayList<>();
@@ -66,7 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .dayOfWeek(day)
                         .fromTime(fromTime)
                         .toTime(toTime)
-                        .myFindRoadPath(myPath) // 해당하는 경로 설정
+                        .myFindRoadPathEntity(myPath) // 해당하는 경로 설정
                         .build();
 
                 // 생성된 Notification 객체 저장
@@ -80,7 +80,7 @@ public class NotificationServiceImpl implements NotificationService {
                 notificationJsonList.add(notificationData);
             }
 
-            String fieldName = myPath.getMember().getId().toString();
+            String fieldName = myPath.getMemberEntity().getId().toString();
 
             String notificationJsonArray = convertListToJson(notificationJsonList);
             System.out.println(notificationJsonArray);
@@ -115,10 +115,10 @@ public class NotificationServiceImpl implements NotificationService {
             List<Notification> notifications = notificationRepository.findByMyFindRoadPathId(myPathId);
             MyFindRoadNotificationResponse myFindRoadNotificationResponse = new MyFindRoadNotificationResponse();
             myFindRoadNotificationResponse.setMyFindRoadPathId(myPathId);
-            MyFindRoadPath myFindRoadPath = myFindRoadPathRepository.findById(myPathId).orElseThrow(
+            MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathRepository.findById(myPathId).orElseThrow(
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
             );
-            myFindRoadNotificationResponse.setEnabled(myFindRoadPath.getNotification());
+            myFindRoadNotificationResponse.setEnabled(myFindRoadPathEntity.getNotification());
             if (myFindRoadNotificationResponse.isEnabled()) {
                 List<MyFindRoadNotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
                 for (Notification notification : notifications) {
@@ -141,12 +141,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public ResponseEntity<Response.Body> deleteNotificationTimes(Long myPathId) {
         try {
-            MyFindRoadPath myFindRoadPath = myFindRoadPathRepository.findById(myPathId).orElseThrow(
+            MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathRepository.findById(myPathId).orElseThrow(
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
             );
-            notificationRepository.deleteByMyFindRoadPath(myFindRoadPath);
+            notificationRepository.deleteByMyFindRoadPath(myFindRoadPathEntity);
 
-            String fieldName = myFindRoadPath.getMember().getId().toString();
+            String fieldName = myFindRoadPathEntity.getMemberEntity().getId().toString();
             // redis에 데이터도 삭제
             redisTemplate.opsForHash().delete("user_notifications", fieldName);
 
@@ -163,7 +163,7 @@ public class NotificationServiceImpl implements NotificationService {
     public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request) {
         try {
             // 요청으로 받은 경로에 대한 알림 찾기
-            MyFindRoadPath myPath = myFindRoadPathRepository.findById(request.getMyPathId())
+            MyFindRoadPathEntity myPath = myFindRoadPathRepository.findById(request.getMyPathId())
                     .orElseThrow(() -> new EntityNotFoundException("해당 경로가 존재하지 않습니다."));
 
             // 알림 시간 업데이트 또는 새 알림 저장
@@ -193,7 +193,7 @@ public class NotificationServiceImpl implements NotificationService {
                             .dayOfWeek(timeRange.getDay())
                             .fromTime(fromTime)
                             .toTime(toTime)
-                            .myFindRoadPath(myPath)
+                            .myFindRoadPathEntity(myPath)
                             .build();
                 }
 
@@ -209,7 +209,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
 
             // Redis의 기존 값을 삭제
-            String fieldName = myPath.getMember().getId().toString();
+            String fieldName = myPath.getMemberEntity().getId().toString();
             redisTemplate.opsForHash().delete("user_notifications", fieldName);
 
             // 새로운 알림 데이터를 Redis에 저장
@@ -232,7 +232,7 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
-            Long myPathId = notification.getMyFindRoadPath().getId();
+            Long myPathId = notification.getMyFindRoadPathEntity().getId();
             return response.success(myPathId, "알림 경로 ID 조회 성공", HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);

@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.user.domain;
 
-import com.gazi.gazi_renew.user.infrastructure.Member;
-import com.gazi.gazi_renew.user.infrastructure.RecentSearch;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
 import lombok.Getter;
 
 @Getter
@@ -9,11 +9,11 @@ public class RecentSearchRequest {
     String stationName;
     String stationLine;
 
-    public RecentSearch toRecentSearch(Member member){
-        return RecentSearch.builder()
+    public RecentSearchEntity toRecentSearch(MemberEntity memberEntity){
+        return RecentSearchEntity.builder()
                 .stationName(stationName)
                 .stationLine(stationLine)
-                .member(member)
+                .memberEntity(memberEntity)
                 .build();
     }
 }

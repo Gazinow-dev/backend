@@ -2,8 +2,8 @@ package com.gazi.gazi_renew.user.service;
 
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.user.controller.port.RecentSearchService;
-import com.gazi.gazi_renew.user.infrastructure.Member;
-import com.gazi.gazi_renew.user.infrastructure.RecentSearch;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
 import com.gazi.gazi_renew.user.domain.RecentSearchRequest;
 import com.gazi.gazi_renew.user.controller.response.RecentSearchResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
@@ -31,20 +31,20 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     private final Response response;
 
 
-    public Member isUser() {
-        Member member = memberRepository.findByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(
+    public MemberEntity isUser() {
+        MemberEntity memberEntity = memberRepository.findByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(
                 () -> new EntityNotFoundException("해당 회원이 존재하지 않습니다.")
         );
-        return member;
+        return memberEntity;
     }
 
     @Override
     public ResponseEntity<Response.Body> recentGet() {
         try {
-            Member member = isUser();
+            MemberEntity memberEntity = isUser();
             // 최근 수정일자로 정렬
-            List<RecentSearch> recentSearchList = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(member);
-            List<RecentSearchResponse> recentSearchResponseList = recentSearchList.stream().map(recentSearch -> {
+            List<RecentSearchEntity> recentSearchEntityList = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(memberEntity);
+            List<RecentSearchResponse> recentSearchResponseList = recentSearchEntityList.stream().map(recentSearch -> {
                 RecentSearchResponse dto = RecentSearchResponse.getDto(recentSearch);
                 return dto;
             }).collect(Collectors.toList());
@@ -62,19 +62,19 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     @Override
     public ResponseEntity<Response.Body> recentAdd(RecentSearchRequest dto) {
         try {
-            Member member = isUser();
-            RecentSearch recentSearch;
+            MemberEntity memberEntity = isUser();
+            RecentSearchEntity recentSearchEntity;
 
-            Optional<RecentSearch> recentSearchOptional = recentSearchRepository.findByMemberAndStationLineAndStationName(member, dto.getStationLine(),dto.getStationName());
+            Optional<RecentSearchEntity> recentSearchOptional = recentSearchRepository.findByMemberAndStationLineAndStationName(memberEntity, dto.getStationLine(),dto.getStationName());
             if(recentSearchOptional.isPresent()){
-                recentSearch = recentSearchOptional.get();
-                recentSearch.setModifiedAt(LocalDateTime.now());
+                recentSearchEntity = recentSearchOptional.get();
+                recentSearchEntity.setModifiedAt(LocalDateTime.now());
             }else{
-                recentSearch = dto.toRecentSearch(member);
+                recentSearchEntity = dto.toRecentSearch(memberEntity);
             }
-            validateMaxSize(member);
-            recentSearchRepository.save(recentSearch);
-            RecentSearchResponse recentSearchResponse = RecentSearchResponse.getDto(recentSearch);
+            validateMaxSize(memberEntity);
+            recentSearchRepository.save(recentSearchEntity);
+            RecentSearchResponse recentSearchResponse = RecentSearchResponse.getDto(recentSearchEntity);
             return response.success(recentSearchResponse,"최근검색 추가 성공",HttpStatus.CREATED);
         }
         catch (EntityNotFoundException e){
@@ -89,13 +89,13 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     @Override
     public ResponseEntity<Response.Body> recentDelete(Long recentSearchID) {
         try {
-            Member member = isUser();
+            MemberEntity memberEntity = isUser();
             // 삭제하려고 하는 최근검색 리스트가 본인것이 맞는지 재확인
-            RecentSearch recentSearch = recentSearchRepository.findByIdAndMember(recentSearchID, member).orElseThrow(
+            RecentSearchEntity recentSearchEntity = recentSearchRepository.findByIdAndMember(recentSearchID, memberEntity).orElseThrow(
                     () -> new EntityNotFoundException("최근 검색결과를 찾을 수 없거나 본인이 검색한 결과가 아닙니다.")
             );
 
-            recentSearchRepository.delete(recentSearch);
+            recentSearchRepository.delete(recentSearchEntity);
             return response.success("검색결과가 삭제되었습니다.");
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -103,13 +103,13 @@ public class RecentSearchServiceImpl implements RecentSearchService {
 
     }
 
-    public void validateMaxSize(Member member) {
-        List<RecentSearch> recentSearches = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(member);
+    public void validateMaxSize(MemberEntity memberEntity) {
+        List<RecentSearchEntity> recentSearchEntities = recentSearchRepository.findAllByMemberOrderByModifiedAtDesc(memberEntity);
 
-        if (recentSearches.size() >= 10) {
-            RecentSearch recentSearch = recentSearches.get(0);
-            recentSearchRepository.delete(recentSearch);
-            log.info("검색결과가 10개 이상이 되어 " + member.getNickName() + " 의 가장 오래된 검색값" + recentSearch.getStationName() + "을 삭제하였습니다.");
+        if (recentSearchEntities.size() >= 10) {
+            RecentSearchEntity recentSearchEntity = recentSearchEntities.get(0);
+            recentSearchRepository.delete(recentSearchEntity);
+            log.info("검색결과가 10개 이상이 되어 " + memberEntity.getNickName() + " 의 가장 오래된 검색값" + recentSearchEntity.getStationName() + "을 삭제하였습니다.");
         }
 
     }

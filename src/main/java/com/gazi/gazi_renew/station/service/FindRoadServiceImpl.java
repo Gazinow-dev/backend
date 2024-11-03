@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
-import com.gazi.gazi_renew.issue.infrastructure.Issue;
+import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import com.gazi.gazi_renew.issue.service.IssueServiceImpl;
 import com.gazi.gazi_renew.station.controller.port.FindRoadService;
+import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPath;
+import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.station.domain.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
-import com.gazi.gazi_renew.station.infrastructure.Line;
-import com.gazi.gazi_renew.station.infrastructure.Station;
+import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
-import com.gazi.gazi_renew.user.infrastructure.Member;
+import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -110,7 +110,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     @Transactional
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
 
-        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<MemberEntity> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
         SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
@@ -143,7 +143,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
                 if(member.isPresent()) {
-                    Optional<List<MyFindRoadPath>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
+                    Optional<List<MyFindRoadPathEntity>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
                             pathNode.path("info").path("firstStartStation").asText(),
                             pathNode.path("info").path("lastEndStation").asText(),
                             member.get(),
@@ -153,8 +153,8 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                     if (myFindRoadPath.get().size() > 0) {
                         path.setMyPath(true);
-                        for (MyFindRoadPath myFindRoadPath1 : myFindRoadPath.get()) {
-                            myPathId.add(myFindRoadPath1.getId());
+                        for (MyFindRoadPathEntity myFindRoadPathEntity1 : myFindRoadPath.get()) {
+                            myPathId.add(myFindRoadPathEntity1.getId());
                         }
                         path.setMyPathId(myPathId);
                     } else {
@@ -209,7 +209,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             if(lineName.equals("수도권 9호선(급행)")){
                                 lineName = "수도권 9호선";
                             }
-                            Line line = lineRepository.findByLineName(lineName).orElseThrow(
+                            LineEntity lineEntity = lineRepository.findByLineName(lineName).orElseThrow(
                                     () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
                             );
 
@@ -220,22 +220,22 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                             System.out.println(stationNode.path("stationName").asText());
                             //staion 찾고 이슈 리스트 받기
-                            Station stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
-                            List<Issue> issues = stationEntity.getIssues();
-                            List<Issue> activeIssues = new ArrayList<>();
+                            StationEntity stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
+                            List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
+                            List<IssueEntity> activeIssueEntities = new ArrayList<>();
                             // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
                             LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
 
-                            for (Issue issue : issues) {
+                            for (IssueEntity issueEntity : issueEntities) {
                                 // 만약 현재시간 시작시간 이전이고 만료시간이 현재시간 이후이면
-                                if (currentDateTime.isAfter(issue.getStartDate()) && currentDateTime.isBefore(issue.getExpireDate())) {
-                                    activeIssues.add(issue);
+                                if (currentDateTime.isAfter(issueEntity.getStartDate()) && currentDateTime.isBefore(issueEntity.getExpireDate())) {
+                                    activeIssueEntities.add(issueEntity);
                                 }
                             }
 
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues);
+                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities);
                             issueDtoList.addAll(issueSummaryDto);
-                            station.setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssues));
+                            station.setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities));
                             stations.add(station);
                         }
                         if(!subPath.getLanes().isEmpty()){
