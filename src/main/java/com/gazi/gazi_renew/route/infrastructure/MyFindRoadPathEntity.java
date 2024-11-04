@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.route.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gazi.gazi_renew.notification.infrastructure.Notification;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

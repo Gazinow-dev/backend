@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -110,7 +111,7 @@ public class IssueResponse {
     }
     public static IssueResponse from(Issue issue) {
         List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
-                StationDto.builder()
+                return StationDto.builder()
                     .line(issueStation.getLine())
                     .stationName(issueStation.getStationName())
                     .build();
@@ -150,28 +151,35 @@ public class IssueResponse {
                 .build();
     }
     public static Page<IssueResponse> fromIssueDetailPage(Page<Issue> issuePage) {
-        return issuePage.map(issue -> {
-            List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
-                StationDto.builder()
-                        .line(issueStation.getLine())
-                        .stationName(issueStation.getStationName())
-                        .build();
-            }).collect(Collectors.toList());
+        Page<IssueResponse> issueResponsePage = new PageImpl<>(
+                issuePage.stream().map(issue -> {
 
-            IssueResponse.builder()
-                    .id(issue.getId())
-                    .title(issue.getTitle())
-                    .content(issue.getContent())
-                    .keyword(issue.getKeyword())
-                    .stationDtos(stationDtoList)
-                    .isLike(issue.get)
-                    .lines(issue.getLines())
-                    .startDate(issue.getStartDate())
-                    .expireDate(issue.getExpireDate())
-                    .agoTime(getTime(issue.getStartDate()));
-                    .build();
+                    List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
+                        return StationDto.builder()
+                                .line(issueStation.getLine())
+                                .stationName(issueStation.getStationName())
+                                .build();
+                    }).collect(Collectors.toList());
 
-        });
+                    return IssueResponse.builder()
+                            .id(issue.getId())
+                            .title(issue.getTitle())
+                            .content(issue.getContent())
+                            .keyword(issue.getKeyword())
+                            .stationDtos(stationDtoList)
+                            .lines(issue.getLines())
+                            .startDate(issue.getStartDate())
+                            .expireDate(issue.getExpireDate())
+                            .agoTime(getTime(issue.getStartDate()))
+                            .build();
+
+                }).collect(Collectors.toList()),
+                issuePage.getPageable(),
+                issuePage.getTotalElements()
+        );
+
+        return issueResponsePage;
+
     }
 
 }

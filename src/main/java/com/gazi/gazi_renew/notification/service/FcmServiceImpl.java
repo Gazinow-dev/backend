@@ -14,9 +14,9 @@ import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,7 +43,7 @@ public class FcmServiceImpl implements FcmService {
     private final Response response;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueJpaRepository issueJpaRepository;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final MyFindRoadService myFindRoadService;
 
     @Value("${push.properties.firebase-create-scoped}")
@@ -109,7 +109,7 @@ public class FcmServiceImpl implements FcmService {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
         }
 
-        Optional<MemberEntity> member = memberRepository.findById(myPath.get().getMemberEntity().getId());
+        Optional<MemberEntity> member = memberJpaRepository.findById(myPath.get().getMemberEntity().getId());
         if(member.isEmpty()) {
             throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
         }

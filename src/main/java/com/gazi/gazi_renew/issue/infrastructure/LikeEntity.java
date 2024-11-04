@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -14,8 +14,8 @@ import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.station.service.SubwayDataService;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ import java.util.List;
 public class MyFindRoadServiceImpl implements MyFindRoadService {
 
     private final Response response;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
@@ -48,7 +48,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getRoutes() {
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             List<MyFindRoadPathEntity> myFindRoadPathEntities = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(memberEntity);
             List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myFindRoadPathEntities);
             return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
@@ -166,7 +166,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     public ResponseEntity<Response.Body> addRoute(MyFindRoadRequest request) {
         log.info("길저장 서비스 로직 진입");
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
             MyFindRoadPathEntity myFindRoadPathEntity = MyFindRoadPathEntity.builder()
                     .memberEntity(memberEntity)
@@ -231,7 +231,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public ResponseEntity<Response.Body> deleteRoute(Long id) {
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
                     -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             if (myFindRoadPathRepository.existsById(id)) {
                 myFindRoadPathRepository.deleteById(id);

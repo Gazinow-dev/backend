@@ -12,7 +12,6 @@ import java.util.List;
 
 @Getter
 public class IssueCreate {
-    private final Long id;
     private final String title;
     private final String content;
     private final LocalDateTime startDate;
@@ -24,8 +23,7 @@ public class IssueCreate {
     private final List<Station> stations;
     private final int latestNo;
     @Builder
-    public IssueCreate(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<String> lines, List<Station> stations, int latestNo) {
-        this.id = id;
+    public IssueCreate(String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<String> lines, List<Station> stations, int latestNo) {
         this.title = title;
         this.content = content;
         this.startDate = startDate;

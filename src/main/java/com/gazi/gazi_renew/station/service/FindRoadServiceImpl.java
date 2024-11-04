@@ -15,9 +15,9 @@ import com.gazi.gazi_renew.station.domain.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -44,7 +44,7 @@ public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;
     private final SubwayDataService subwayDataService;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueServiceImpl issueService;
     private final LineRepository lineRepository;
@@ -110,7 +110,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     @Transactional
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
 
-        Optional<MemberEntity> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<MemberEntity> member = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
         SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());

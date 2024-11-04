@@ -1,10 +1,10 @@
-package com.gazi.gazi_renew.user.controller;
+package com.gazi.gazi_renew.member.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
-import com.gazi.gazi_renew.user.domain.RecentSearchRequest;
-import com.gazi.gazi_renew.user.controller.response.RecentSearchResponse;
+import com.gazi.gazi_renew.member.domain.RecentSearch;
+import com.gazi.gazi_renew.member.controller.response.RecentSearchResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.user.controller.port.RecentSearchService;
+import com.gazi.gazi_renew.member.controller.port.RecentSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -44,7 +44,7 @@ public class RecentSearchController extends BaseController {
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = RecentSearchResponse.class)))})
     @PostMapping("/add")
-    public ResponseEntity<Response.Body> signup(@RequestBody RecentSearchRequest dto) {
+    public ResponseEntity<Response.Body> signup(@RequestBody RecentSearch dto) {
         return recentSearchService.recentAdd(dto);
     }
 

@@ -2,14 +2,13 @@ package com.gazi.gazi_renew.oauth.service;
 
 import com.gazi.gazi_renew.common.config.AppleProperties;
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.user.domain.enums.Role;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
-import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.oauth.domain.OAuthLoginParams;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
-import com.gazi.gazi_renew.user.controller.port.MemberService;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.controller.port.MemberService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class OAuthLoginService {
 
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RequestOAuthInfoService requestOAuthInfoService;
 
@@ -112,7 +111,7 @@ public class OAuthLoginService {
         return createRedirectResponse(responseToken);
     }
     private MemberEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
-        return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
+        return memberJpaRepository.findByEmail(oAuthInfoResponse.getEmail())
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
     private MemberEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
@@ -135,7 +134,7 @@ public class OAuthLoginService {
 
         memberService.validateEmail(memberEntity.getEmail());
         memberService.validateNickName(memberEntity.getNickName());
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
 
         return memberEntity;
     }

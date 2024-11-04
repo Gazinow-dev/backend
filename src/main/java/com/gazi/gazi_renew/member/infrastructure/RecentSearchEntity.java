@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.user.infrastructure;
+package com.gazi.gazi_renew.member.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import jakarta.persistence.*;

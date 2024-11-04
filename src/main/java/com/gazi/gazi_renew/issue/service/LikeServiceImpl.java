@@ -4,12 +4,12 @@ import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import com.gazi.gazi_renew.issue.infrastructure.LikeEntity;
 import com.gazi.gazi_renew.issue.controller.port.LikeService;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.LikeJpaRepository;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +24,13 @@ public class LikeServiceImpl implements LikeService {
 
     private final IssueJpaRepository issueJpaRepository;
     private final LikeJpaRepository likeJpaRepository;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final Response response;
     @Override
-    public ResponseEntity<Response.Body> likeIssue(Like dto) {
+    public ResponseEntity<Response.Body> likeIssue(Like like) {
         try{
-            IssueEntity issueEntity = issueJpaRepository.findById(dto.getIssueId()).orElseThrow( () -> new EntityNotFoundException("선택한 id가 없습니다."));
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            IssueEntity issueEntity = issueJpaRepository.findById(like.getIssueId()).orElseThrow( () -> new EntityNotFoundException("선택한 id가 없습니다."));
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
             if(!likeJpaRepository.existsByIssueAndMember(issueEntity, memberEntity)){
                 LikeEntity likeEntity = LikeEntity.builder()
@@ -54,7 +54,7 @@ public class LikeServiceImpl implements LikeService {
     public ResponseEntity<Response.Body> deleteLikeIssue(Like dto) {
         try{
             IssueEntity issueEntity = issueJpaRepository.findById(dto.getIssueId()).orElseThrow( () -> new EntityNotFoundException("선택한 id가 없습니다."));
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
             //이슈와 맴버를 찾는 로직추가
             LikeEntity likeEntity = likeJpaRepository.findByIssueAndMember(issueEntity, memberEntity).orElseThrow(

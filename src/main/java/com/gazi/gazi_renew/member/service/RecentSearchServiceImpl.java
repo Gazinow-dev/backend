@@ -1,14 +1,14 @@
-package com.gazi.gazi_renew.user.service;
+package com.gazi.gazi_renew.member.service;
 
 import com.gazi.gazi_renew.common.config.SecurityUtil;
-import com.gazi.gazi_renew.user.controller.port.RecentSearchService;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
-import com.gazi.gazi_renew.user.domain.RecentSearchRequest;
-import com.gazi.gazi_renew.user.controller.response.RecentSearchResponse;
+import com.gazi.gazi_renew.member.controller.port.RecentSearchService;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.RecentSearchEntity;
+import com.gazi.gazi_renew.member.domain.RecentSearch;
+import com.gazi.gazi_renew.member.controller.response.RecentSearchResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
-import com.gazi.gazi_renew.user.infrastructure.RecentSearchRepository;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.RecentSearchRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 @Service
 public class RecentSearchServiceImpl implements RecentSearchService {
 
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final RecentSearchRepository recentSearchRepository;
     private final Response response;
 
 
     public MemberEntity isUser() {
-        MemberEntity memberEntity = memberRepository.findByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(
                 () -> new EntityNotFoundException("해당 회원이 존재하지 않습니다.")
         );
         return memberEntity;
@@ -60,7 +60,7 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> recentAdd(RecentSearchRequest dto) {
+    public ResponseEntity<Response.Body> recentAdd(RecentSearch dto) {
         try {
             MemberEntity memberEntity = isUser();
             RecentSearchEntity recentSearchEntity;

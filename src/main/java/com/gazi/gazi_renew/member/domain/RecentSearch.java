@@ -1,11 +1,11 @@
-package com.gazi.gazi_renew.user.domain;
+package com.gazi.gazi_renew.member.domain;
 
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.RecentSearchEntity;
 import lombok.Getter;
 
 @Getter
-public class RecentSearchRequest {
+public class RecentSearch {
     String stationName;
     String stationLine;
 

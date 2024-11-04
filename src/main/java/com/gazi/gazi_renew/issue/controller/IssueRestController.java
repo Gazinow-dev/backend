@@ -31,7 +31,7 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get")
     public ResponseEntity<Response.Body> getIssue(@RequestParam(name="id") Long id){
         IssueDetail issue = issueService.getIssue(id);
-        response.success(IssueResponse.fromIssueDetail(issue), "이슈 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromIssueDetail(issue), "이슈 조회 성공", HttpStatus.OK);
     }
 
     @GetMapping("/get_all")

@@ -1,6 +1,6 @@
-package com.gazi.gazi_renew.user.controller.response;
+package com.gazi.gazi_renew.member.controller.response;
 
-import com.gazi.gazi_renew.user.infrastructure.RecentSearchEntity;
+import com.gazi.gazi_renew.member.infrastructure.RecentSearchEntity;
 import lombok.*;
 
 @Getter

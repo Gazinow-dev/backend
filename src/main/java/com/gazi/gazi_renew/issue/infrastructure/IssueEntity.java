@@ -75,6 +75,12 @@ public class IssueEntity extends AuditingFields {
     }
 
     public Issue toModel(){
+        List<Issue.IssueStation> issueStations = stationEntities.stream().map(stationEntity -> Issue.IssueStation.builder()
+                .stationName(stationEntity.getName())
+                .line(stationEntity.getLine())
+                .build()
+        ).collect(Collectors.toList());
+
         return Issue.builder()
                 .id(id)
                 .title(title)
@@ -84,7 +90,7 @@ public class IssueEntity extends AuditingFields {
                 .crawlingNo(crawlingNo)
                 .keyword(keyword)
                 .lines(lineEntities.stream().map(LineEntity::getLineName).collect(Collectors.toList()))
-                .stations(stationEntities.toModel())
+                .issueStations(issueStations)
                 .latestNo(latestNo)
                 .likeCount(likeEntities.size())
                 .build();

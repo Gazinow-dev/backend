@@ -1,10 +1,10 @@
-package com.gazi.gazi_renew.user.infrastructure;
+package com.gazi.gazi_renew.member.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.infrastructure.LikeEntity;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
-import com.gazi.gazi_renew.user.domain.enums.Role;
+import com.gazi.gazi_renew.member.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

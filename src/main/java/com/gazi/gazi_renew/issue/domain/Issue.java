@@ -63,7 +63,6 @@ public class Issue {
                 .collect(Collectors.toList());
 
         return Issue.builder()
-                .id(issueCreate.getId())
                 .title(issueCreate.getTitle())
                 .content(issueCreate.getContent())
                 .startDate(issueCreate.getStartDate())

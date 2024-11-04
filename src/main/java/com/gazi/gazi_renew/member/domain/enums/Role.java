@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.user.domain.enums;
+package com.gazi.gazi_renew.member.domain.enums;
 
 import lombok.Getter;
 

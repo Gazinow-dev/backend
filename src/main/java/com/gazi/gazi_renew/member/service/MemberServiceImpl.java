@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.user.service;
+package com.gazi.gazi_renew.member.service;
 
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
@@ -8,11 +8,12 @@ import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.common.service.RedisUtilService;
-import com.gazi.gazi_renew.user.domain.MemberRequest;
-import com.gazi.gazi_renew.user.controller.response.MemberResponse;
-import com.gazi.gazi_renew.user.controller.port.MemberService;
-import com.gazi.gazi_renew.user.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.user.infrastructure.MemberRepository;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.controller.response.MemberResponse;
+import com.gazi.gazi_renew.member.controller.port.MemberService;
+import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -47,8 +48,7 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 public class MemberServiceImpl implements MemberService {
 
-    private final Response response;
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberJpaRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     private final MyFindRoadService myFindRoadService;
@@ -60,38 +60,35 @@ public class MemberServiceImpl implements MemberService {
     private final NotificationService notificationService;
 
     @Override
-    public ResponseEntity<Response.Body> signUp(@Valid MemberRequest.SignUp signUpDto, Errors errors) {
-        MemberEntity memberEntity = signUpDto.toMember(passwordEncoder);
-        try {
-            if (errors.hasErrors()) {
-                return validateHandling(errors);
-            }
-            validateEmail(memberEntity.getEmail());
-            validateNickName(memberEntity.getNickName());
-            memberRepository.save(memberEntity);
-            MemberResponse.SignUp requestDto = new MemberResponse.SignUp(memberEntity);
-            return response.success(requestDto, "회원가입이 완료되었습니다.", HttpStatus.CREATED);
-        } catch (Exception e) {
-            return response.fail(null, e.getMessage(), HttpStatus.BAD_REQUEST);
+    public Member signUp(@Valid MemberCreate memberCreate, Errors errors) {
+        Member member = Member.from(memberCreate, passwordEncoder);
+        if (errors.hasErrors()) {
+            return validateHandling(errors);
         }
+        validateEmail(member.getEmail());
+        validateNickName(member.getNickName());
 
+        memberJpaRepository.save(member);
+        return member;
+//        MemberResponse.SignUp requestDto = new MemberResponse.SignUp(member);
+//            return response.success(requestDto, "회원가입이 완료되었습니다.", HttpStatus.CREATED);
     }
     @Transactional(readOnly = true)
     public void validateEmail(String email) {
-        if (memberRepository.existsByEmail(email)) {
+        if (memberJpaRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 가입된 이메일입니다.");
         }
     }
     @Transactional(readOnly = true)
     public void validateNickName(String nickName) {
-        if (memberRepository.existsByNickName(nickName)) {
+        if (memberJpaRepository.existsByNickName(nickName)) {
             throw new IllegalStateException("중복된 닉네임입니다.");
         }
     }
 
     @Override
-    public ResponseEntity<Response.Body> login(@Valid MemberRequest.Login loginDto) {
-        MemberEntity memberEntity = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(
+    public ResponseEntity<Response.Body> login(@Valid Member.Login loginDto) {
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(loginDto.getEmail()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 회원의 아이디입니다.")
         );
         // loginDto email, password 기반으로 Authentication 객체 생성
@@ -99,7 +96,7 @@ public class MemberServiceImpl implements MemberService {
         try {
             // login 시 받은 firebase token 저장
             memberEntity.setFirebaseToken(loginDto.getFirebaseToken());
-            memberRepository.save(memberEntity);
+            memberJpaRepository.save(memberEntity);
             // 실제 검증 (사용자 비밀번호 체크)
             // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
             Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken); // 인증 정보를 기반으로 JWT 토큰 생성
@@ -123,7 +120,7 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public ResponseEntity<Response.Body> logout(MemberRequest.Logout logoutDto) {
+    public ResponseEntity<Response.Body> logout(Member.Logout logoutDto) {
         // Access Token 검증
         if (!jwtTokenProvider.validateToken(logoutDto.getAccessToken())) {
             return response.fail("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
@@ -150,16 +147,16 @@ public class MemberServiceImpl implements MemberService {
                 .set(logoutDto.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
 
         // firebaseToken 삭제
-        MemberEntity memberEntity = memberRepository.findByEmail(authentication.getName()).orElseThrow(
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(authentication.getName()).orElseThrow(
                 () -> new EntityNotFoundException("회원을 찾을 수 없습니다.")
         );
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
 
         return response.success("로그아웃 되었습니다.");
     }
 
     @Override
-    public ResponseEntity<Response.Body> reissue(MemberRequest.Reissue reissueDto) {
+    public ResponseEntity<Response.Body> reissue(Member.Reissue reissueDto) {
         // Refresh Token 검증
         if (!jwtTokenProvider.validateToken(reissueDto.getRefreshToken())) {
             return response.fail("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
@@ -191,7 +188,7 @@ public class MemberServiceImpl implements MemberService {
             return response.fail("Refresh Token 정보가 일치하지 않습니다.", HttpStatus.NOT_FOUND);
         }
 
-        MemberEntity memberEntity = memberRepository.findByEmail(authentication.getName()).orElseThrow(
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(authentication.getName()).orElseThrow(
                 () -> new EntityNotFoundException("회원을 찾을 수 없습니다.")
         );
         memberEntity.setFirebaseToken(reissueDto.getFirebaseToken());
@@ -214,14 +211,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> changeNickName(@Valid MemberRequest.NickName nickNameDto, Errors errors) {
+    public ResponseEntity<Response.Body> changeNickName(@Valid Member.NickName nickNameDto, Errors errors) {
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            if (memberRepository.existsByNickName(nickNameDto.getNickName())) {
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            if (memberJpaRepository.existsByNickName(nickNameDto.getNickName())) {
                 throw new IllegalStateException("중복된 닉네임입니다.");
             } else {
                 memberEntity.setNickName(nickNameDto.getNickName());
-                memberRepository.save(memberEntity);
+                memberJpaRepository.save(memberEntity);
                 MemberResponse.NickName nickName = new MemberResponse.NickName();
                 nickName.setNickName(memberEntity.getNickName());
                 return response.success(nickName, "닉네임 변경 완료",HttpStatus.OK);
@@ -236,9 +233,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> checkPassword(MemberRequest.CheckPassword checkPassword) {
+    public ResponseEntity<Response.Body> checkPassword(Member.CheckPassword checkPassword) {
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
             if (passwordEncoder.matches(checkPassword.getCheckPassword(), memberEntity.getPassword())) {
                 return response.success("비밀번호가 일치합니다.");
             } else {
@@ -252,20 +249,20 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> findPassword(MemberRequest.IsUser isUserRequest){
+    public ResponseEntity<Response.Body> findPassword(Member.IsUser isUserRequest){
         try{
             String password = "";
 
             MemberResponse.isUser isUser = new MemberResponse.isUser();
 
-            Optional<MemberEntity> member =memberRepository.findByEmailAndNickName(isUserRequest.getEmail(),isUserRequest.getNickname());
+            Optional<MemberEntity> member = memberJpaRepository.findByEmailAndNickName(isUserRequest.getEmail(),isUserRequest.getNickname());
             if(member.isPresent()) {
                 isUser.setIsUser(true);
                 // 비밀번호 발급
                 password = getTempPassword();
                 // 비밀번호 수정
                 member.get().setPassword(passwordEncoder.encode(password));
-                memberRepository.save(member.get());
+                memberJpaRepository.save(member.get());
                 // 이메일로 임시비밀번호 전송
                 MimeMessage message = createMessageToPassword(isUserRequest.getEmail(), password);
                 try{//예외처리
@@ -309,16 +306,16 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public ResponseEntity<Response.Body> changePassword(@Valid MemberRequest.Password passwordDto, Errors errors) {
+    public ResponseEntity<Response.Body> changePassword(@Valid Member.Password passwordDto, Errors errors) {
         try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            MemberRequest.CheckPassword checkPassword = new MemberRequest.CheckPassword();
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            Member.CheckPassword checkPassword = new Member.CheckPassword();
             checkPassword.setCheckPassword(passwordDto.getCurPassword());
 
             if (checkPassword(checkPassword).getStatusCode().equals(HttpStatus.OK)) {
                 if (passwordDto.getChangePassword().equals(passwordDto.getConfirmPassword())) {
                     memberEntity.setPassword(passwordEncoder.encode(passwordDto.getChangePassword()));
-                    memberRepository.save(memberEntity);
+                    memberJpaRepository.save(memberEntity);
                     return response.success("비밀번호 변경을 완료했습니다.");
                 } else {
                     return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
@@ -332,11 +329,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> deleteMember(MemberRequest.DeleteMember deleteMemberDto) {
+    public ResponseEntity<Response.Body> deleteMember(Member.DeleteMember deleteMemberDto) {
         try{
             String email = SecurityUtil.getCurrentUserEmail();
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            memberRepository.delete(memberEntity);
+            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            memberJpaRepository.delete(memberEntity);
 
             // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
             if (redisTemplate.opsForValue().get("AT:" + email) != null) {
@@ -484,7 +481,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> checkNickName(String nickName) {
-        if(memberRepository.existsByNickName(nickName)) {
+        if(memberJpaRepository.existsByNickName(nickName)) {
             return response.fail("중복된 닉네임입니다.", HttpStatus.CONFLICT);
         } else{
             return response.success(nickName,"사용가능한 닉네임입니다.", HttpStatus.OK);
@@ -498,8 +495,8 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public ResponseEntity<Response.Body> updatePushNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    public ResponseEntity<Response.Body> updatePushNotificationStatus(Member.AlertAgree alertAgreeRequest) {
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         memberEntity.setPushNotificationEnabled(alertAgreeRequest.isAlertAgree());
         if (!alertAgreeRequest.isAlertAgree()) {
             updateMySavedRouteNotificationStatus(alertAgreeRequest);
@@ -509,7 +506,7 @@ public class MemberServiceImpl implements MemberService {
             updateMySavedRouteNotificationStatus(alertAgreeRequest);
             updateRouteDetailNotificationStatus(alertAgreeRequest);
         }
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
         return response.success("푸시 알림 수신 설정이 저장되었습니다.");
     }
     /**
@@ -519,13 +516,13 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public ResponseEntity<Response.Body> updateMySavedRouteNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    public ResponseEntity<Response.Body> updateMySavedRouteNotificationStatus(Member.AlertAgree alertAgreeRequest) {
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         memberEntity.setMySavedRouteNotificationEnabled(alertAgreeRequest.isAlertAgree());
         if (!alertAgreeRequest.isAlertAgree()) {
             updateRouteDetailNotificationStatus(alertAgreeRequest);
         }
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
         return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
     }
     /**
@@ -535,8 +532,8 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public ResponseEntity<Response.Body> updateRouteDetailNotificationStatus(MemberRequest.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    public ResponseEntity<Response.Body> updateRouteDetailNotificationStatus(Member.AlertAgree alertAgreeRequest) {
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         memberEntity.setRouteDetailNotificationEnabled(alertAgreeRequest.isAlertAgree());
         if (!alertAgreeRequest.isAlertAgree()) {
             // myFindRoadService에서 경로 데이터를 가져옴
@@ -553,27 +550,27 @@ public class MemberServiceImpl implements MemberService {
             }
 
         }
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
         return response.success("경로 상세 설정 알림 수신 설정이 저장되었습니다.");
     }
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getPushNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getPushNotificationEnabled());
         return response.success(memberResponse, "", HttpStatus.OK);
     }
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getMySavedRouteNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getMySavedRouteNotificationEnabled());
         return response.success(memberResponse, "", HttpStatus.OK);
     }
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<Response.Body> getRouteDetailNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getRouteDetailNotificationEnabled());
         return response.success(memberResponse, "", HttpStatus.OK);
     }
@@ -583,10 +580,10 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public ResponseEntity<Response.Body> saveFcmToken(MemberRequest.FcmTokenRequest fcmTokenRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(fcmTokenRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    public ResponseEntity<Response.Body> saveFcmToken(Member.FcmTokenRequest fcmTokenRequest) {
+        MemberEntity memberEntity = memberJpaRepository.findByEmail(fcmTokenRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         memberEntity.saveFcmToken(fcmTokenRequest.getFirebaseToken());
-        memberRepository.save(memberEntity);
+        memberJpaRepository.save(memberEntity);
         return response.success("FireBase 토큰 저장 완료.");
     }
 }
