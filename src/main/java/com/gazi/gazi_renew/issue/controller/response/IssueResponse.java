@@ -3,8 +3,6 @@ package com.gazi.gazi_renew.issue.controller.response;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
-import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,8 +32,13 @@ public class IssueResponse {
     private final List<StationDto> stationDtos;
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class StationDto {
-        private String line;
-        private String stationName;
+        private final String line;
+        private final String stationName;
+        @Builder
+        public StationDto(String line, String stationName) {
+            this.line = line;
+            this.stationName = stationName;
+        }
     }
 
     // 이슈 요약
@@ -51,19 +54,15 @@ public class IssueResponse {
         private String agoTime; // 몇분전, 몇시간전...
 
 
-        public static List<IssueSummaryDto> getIssueSummaryDto(List<IssueEntity> issueEntities){
-            List<IssueResponse.IssueSummaryDto> issueSummaryDto = issueEntities.stream().map(
+        public static List<IssueSummaryDto> getIssueSummaryDto(List<Issue> issueList){
+            List<IssueResponse.IssueSummaryDto> issueSummaryDto = issueList.stream().map(
                     m ->{
-                        IssueResponse.IssueSummaryDto.IssueSummaryDtoBuilder builder = IssueSummaryDto.builder()
+                        return IssueSummaryDto.builder()
                                 .id(m.getId())
                                 .title(m.getTitle())
-                                .keyword(m.getKeyword());
-
-                        int likeCount = Optional.ofNullable(m.getLikeEntities())
-                                .map(Set::size)
-                                .orElse(0);
-                        builder.likeCount(likeCount);
-                        return builder.build();
+                                .likeCount(m.getLikeCount())
+                                .keyword(m.getKeyword())
+                                .build();
                     }
             ).collect(Collectors.toList());
             return issueSummaryDto;
@@ -109,21 +108,14 @@ public class IssueResponse {
 
         return formatTime;
     }
-    public static StationDto getStation(StationEntity stationEntity){
-        StationDto stationDto = new StationDto();
-        stationDto.line = stationEntity.getLine();
-        stationDto.stationName = stationEntity.getName();
-        return stationDto;
-    }
-
-    public static List<StationDto> getStations(List<StationEntity> stationEntities){
-        System.out.println("역 개수 : " + stationEntities.size());
-        List<StationDto> stationDtos = stationEntities.stream()
-                .map(station -> getStation(station))
-                .collect(Collectors.toList());
-        return stationDtos;
-    }
     public static IssueResponse from(Issue issue) {
+        List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
+                StationDto.builder()
+                    .line(issueStation.getLine())
+                    .stationName(issueStation.getStationName())
+                    .build();
+        }).collect(Collectors.toList());
+
         return IssueResponse.builder()
                 .id(issue.getId())
                 .title(issue.getTitle())
@@ -133,10 +125,17 @@ public class IssueResponse {
                 .likeCount(issue.getLikeCount())
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
-                .stationDtos(getStations(issue.getIssueStations().stream().map(::from)))
+                .stationDtos(stationDtoList)
                 .build();
     }
     public static IssueResponse fromIssueDetail(IssueDetail issueDetail) {
+        List<StationDto> stationDtoList = issueDetail.getIssue().getIssueStations().stream().map(issueStation -> {
+            return StationDto.builder()
+                    .line(issueStation.getLine())
+                    .stationName(issueStation.getStationName())
+                    .build();
+        }).collect(Collectors.toList());
+
         return IssueResponse.builder()
                 .id(issueDetail.getIssue().getId())
                 .title(issueDetail.getIssue().getTitle())
@@ -147,18 +146,25 @@ public class IssueResponse {
                 .likeCount(issueDetail.getIssue().getLikeCount())
                 .startDate(issueDetail.getIssue().getStartDate())
                 .expireDate(issueDetail.getIssue().getExpireDate())
-                .stationDtos(getStations(issueDetail.getIssue().getIssueStations().stream().map(::from)))
+                .stationDtos(stationDtoList)
                 .build();
     }
-    public static Page<IssueResponse> fromIssuePage(Page<Issue> issuePage) {
+    public static Page<IssueResponse> fromIssueDetailPage(Page<Issue> issuePage) {
         return issuePage.map(issue -> {
+            List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
+                StationDto.builder()
+                        .line(issueStation.getLine())
+                        .stationName(issueStation.getStationName())
+                        .build();
+            }).collect(Collectors.toList());
+
             IssueResponse.builder()
                     .id(issue.getId())
                     .title(issue.getTitle())
                     .content(issue.getContent())
                     .keyword(issue.getKeyword())
-                    .stationDtos(getStations(issue.getStationEntities()))
-                    .isLike(issue.isLike())
+                    .stationDtos(stationDtoList)
+                    .isLike(issue.get)
                     .lines(issue.getLines())
                     .startDate(issue.getStartDate())
                     .expireDate(issue.getExpireDate())

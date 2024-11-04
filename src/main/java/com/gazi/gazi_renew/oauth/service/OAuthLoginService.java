@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class OAuthLoginService {
-    private final Response response;
 
     private final MemberService memberService;
     private final MemberRepository memberRepository;

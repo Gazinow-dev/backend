@@ -54,17 +54,16 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional
     public boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException {
-        Issue issue = Issue.from(issueCreate);
-
-        if (!issue.getSecretCode().equals(secretCode)) {
+        if (!issueCreate.getSecretCode().equals(secretCode)) {
             throw new UnauthorizedException("인증코드가 일치하지 않습니다.");
         }
 
-        if (issueRepository.existsByCrawlingNo(issue.getCrawlingNo())) {
+        if (issueRepository.existsByCrawlingNo(issueCreate.getCrawlingNo())) {
             throw new DuplicateIssueException("이미 해당 데이터가 존재합니다.");
         }
 
-        List<Station> stationEntityList = getStationList(issue.getIssueStations());
+        List<Station> stationList = getStationList(issueCreate.getStations());
+        Issue issue = Issue.from(issueCreate, stationList);
         List<Line> lineList = getLineList(issue.getLines());
         issueRepository.save(issue);
 
@@ -72,7 +71,7 @@ public class IssueServiceImpl implements IssueService {
         addIssueToRedis(issue);
 
         // station에 추가
-        for (Station station : stationEntityList) {
+        for (Station station : stationList) {
             List<Issue> issueList = station.getIssueList();
             issueList.add(issue);
             station.addIssue(issueList);
@@ -174,11 +173,11 @@ public class IssueServiceImpl implements IssueService {
         issue.update(issueUpdate);
         issueRepository.save(issue);
     }
-    private List<Station> getStationList(List<Issue.IssueStation> issueStations) {
+    private List<Station> getStationList(List<IssueCreate.Station> issueStations) {
         List<Station> stationEntityResponse = new ArrayList<>();
 
         // 입력된 모든 역 정보를 순회하며 각 역을 처리
-        for (Issue.IssueStation issueStation : issueStations) {
+        for (IssueCreate.Station issueStation : issueStations) {
             // 2호선인 경우와 아닌 경우 분기 처리
             if (issueStation.getLine().equals("수도권 2호선")) {
                 List<Station> stationEntityList = handleLineTwo(issueStation, issueStation.getStartStationCode(), issueStation.getEndStationCode());
@@ -276,7 +275,7 @@ public class IssueServiceImpl implements IssueService {
         List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
 
         // 두 구간의 결과를 합침
-        leftList.addAl l(rightList);
+        leftList.addAll(rightList);
         return leftList;
     }
 

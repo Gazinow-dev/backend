@@ -1,8 +1,8 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.Station;
-import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -49,20 +49,17 @@ public class Issue {
                 .crawlingNo(this.crawlingNo)
                 .keyword(this.keyword)
                 .lines(this.lines)
-                .stations(this.issueStations)
+                .issueStations(this.issueStations)
                 .latestNo(this.latestNo)
                 .likeCount(this.likeCount)
                 .build();
     }
 
-    public static Issue from(IssueCreate issueCreate) {
-        List<IssueStation> issueStationList = issueCreate.getStations().stream()
+    public static Issue from(IssueCreate issueCreate, List<Station> stationList) {
+        List<IssueStation> issueStationList = stationList.stream()
                 .map(station -> new IssueStation(
                         station.getLine(),
-                        station.getStartStationCode(),
-                        station.getEndStationCode(),
-                        station.getKeyword(),
-                        station.getDirection()))
+                        station.getName()))
                 .collect(Collectors.toList());
 
         return Issue.builder()
@@ -80,13 +77,14 @@ public class Issue {
                 .build();
     }
     @Getter
-    @RequiredArgsConstructor
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class IssueStation {
         private final String line;
-        private final int startStationCode;
-        private final int endStationCode;
-        private final IssueKeyword keyword;
-        private final SubwayDirection direction;
-
+        private final String stationName;
+        @Builder
+        public IssueStation(String line, String stationName) {
+            this.line = line;
+            this.stationName = stationName;
+        }
     }
 }

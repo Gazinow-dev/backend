@@ -7,7 +7,6 @@ import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.IssueUpdate;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,14 +37,14 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get_all")
     public ResponseEntity<Response.Body> getIssues(@Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable){
         Page<Issue> issuePage = issueService.getIssues(pageable);
-        return response.success(IssueResponse.fromIssuePage(issuePage), "이슈 전체 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromIssueDetailPage(issuePage), "이슈 전체 조회 성공", HttpStatus.OK);
     }
 
     @GetMapping("/get_line")
     public ResponseEntity<Response.Body> getLineByIssues(@RequestParam(name="line") String line,
                                                          @Parameter(hidden = true) @PageableDefault(page = 0, size = 15, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable){
         Page<Issue> sortedIssues = issueService.getLineByIssues(line, pageable);
-        return response.success(IssueResponse.fromIssuePage(sortedIssues), "line" + "이슈 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromIssueDetailPage(sortedIssues), "line" + "이슈 조회 성공", HttpStatus.OK);
     }
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue() {

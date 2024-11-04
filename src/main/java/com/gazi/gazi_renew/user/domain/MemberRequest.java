@@ -130,10 +130,6 @@ public class MemberRequest {
     }
 
     @Getter
-    public static class GetAlertAgree {
-        private String email;
-    }
-    @Getter
     public static class FcmTokenRequest {
         private String email;
         private String firebaseToken;
