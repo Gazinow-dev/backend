@@ -7,7 +7,7 @@ import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.oauth.domain.OAuthLoginParams;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;

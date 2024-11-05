@@ -1,10 +1,10 @@
 package com.gazi.gazi_renew.member.controller.port;
 
 
+import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.common.controller.response.Response.Body;
-import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
-import com.gazi.gazi_renew.member.domain.dto.MemberLogin;
+import com.gazi.gazi_renew.member.domain.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,19 +19,19 @@ public interface MemberService {
     void validateNickName(String nickName);
 
         // 로그인
-    Member login(MemberLogin loginDto);
+    ResponseToken login(MemberLogin loginDto);
 
     // 로그아웃
-    ResponseEntity<Body> logout(Member.Logout logoutDto);
+    Member logout(MemberLogout memberLogout);
 
     // 자동 로그인
-    ResponseEntity<Body> reissue(Member.Reissue reissueDto);
+    ResponseToken reissue(MemberReissue memberReissue);
 
     // 닉네임 수정
-    ResponseEntity<Body> changeNickName(@Valid Member.NickName nickNameDto, Errors errors);
+    Member changeNickName(@Valid MemberNicknameValidation memberNicknameValidation, Errors errors);
 
     // 비밀번호 확인
-    ResponseEntity<Body> checkPassword(Member.CheckPassword checkPassword);
+    boolean checkPassword(MemberCheckPassword checkPassword);
 
     ResponseEntity<Body> findPassword(Member.IsUser isUserRequest);
 
@@ -40,9 +40,7 @@ public interface MemberService {
     // 회원 탈퇴
     ResponseEntity<Body> deleteMember(Member.DeleteMember deleteMemberDto);
     /* 회원가입 시, 유효성 체크 */
-    @Transactional(readOnly = true)
-    ResponseEntity<Body>
-    validateHandling(Errors errors);
+    ResponseEntity<Body> validateHandling(Errors errors);
 
     ResponseEntity<Body> sendSimpleMessage(String email) throws Exception;
 

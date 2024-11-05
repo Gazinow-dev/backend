@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.common.exception.custom.DuplicateIssueException;
 import com.gazi.gazi_renew.common.exception.custom.UnauthorizedException;
 import com.gazi.gazi_renew.issue.domain.IssueCreate;
@@ -19,7 +20,7 @@ import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,11 +54,11 @@ public class IssueServiceImpl implements IssueService {
     @Transactional
     public boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException {
         if (!issueCreate.getSecretCode().equals(secretCode)) {
-            throw new UnauthorizedException("인증코드가 일치하지 않습니다.");
+            throw ErrorCode.throwInvalidVerificationCode();
         }
 
         if (issueRepository.existsByCrawlingNo(issueCreate.getCrawlingNo())) {
-            throw new DuplicateIssueException("이미 해당 데이터가 존재합니다.");
+            throw ErrorCode.throwDuplicateIssueException();
         }
 
         List<Station> stationList = getStationList(issueCreate.getStations());
@@ -87,7 +88,7 @@ public class IssueServiceImpl implements IssueService {
     }
     /**
      * redis에 issue 저장
-     * @param Issue issue
+     * @param : Issue issue
      */
     public void addIssueToRedis(Issue issue) throws JsonProcessingException {
         IssueRedisDto issueRedisDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),

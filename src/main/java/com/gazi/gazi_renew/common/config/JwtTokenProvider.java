@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.common.config;
 
 import com.gazi.gazi_renew.common.domain.ResponseToken;
+import com.gazi.gazi_renew.member.domain.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -65,6 +66,46 @@ public class JwtTokenProvider {
                 .compact();
 
         return ResponseToken.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .accessTokenExpirationTime(accessTokenExpiresIn.getTime())
+                .refreshTokenExpirationTime(refreshTokenExpiresIn.getTime())
+                .build();
+    }
+    public ResponseToken generateMemberAndToken(Authentication authentication, Member member) {
+        // 권한 가져오기
+        String authorities = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        Date now = new Date();
+
+        // AccessToken 생성
+        Date accessTokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME);
+
+
+        String accessToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim(AUTHORITIES_KEY, authorities)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        // RefreshToken 생성
+        Date refreshTokenExpiresIn = new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME);
+
+        String refreshToken = Jwts.builder()
+                .setExpiration(refreshTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        return ResponseToken.builder()
+                .memberId(member.getId())
+                .nickName(member.getNickName())
+                .email(member.getEmail())
+                .firebaseToken(member.getFirebaseToken())
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

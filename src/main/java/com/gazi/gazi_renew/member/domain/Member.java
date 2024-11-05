@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.member.domain;
 
+import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
 import com.gazi.gazi_renew.member.domain.dto.MemberLogin;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
@@ -43,7 +44,7 @@ public class Member {
     public static Member from(MemberCreate memberCreate, PasswordEncoder passwordEncoder) {
         return Member.builder()
                 .email(memberCreate.getEmail())
-                .password(passwordEncoder.encode(password))
+                .password(passwordEncoder.encode(memberCreate.getPassword()))
                 .nickName(memberCreate.getNickName())
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
@@ -51,5 +52,33 @@ public class Member {
                 .routeDetailNotificationEnabled(true)
                 .firebaseToken(memberCreate.getFirebasetoken())
                 .build();
+    }
+    public Member saveFireBaseToken(String firebaseToken) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(firebaseToken)
+                .build();
+    }
+
+    public Member changeNickname(String nickname) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(nickname)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public boolean isMatchesPassword(PasswordEncoder passwordEncoder, MemberCheckPassword checkPassword, Member member) {
+        return passwordEncoder.matches(checkPassword.getCheckPassword(), member.getPassword());
     }
 }

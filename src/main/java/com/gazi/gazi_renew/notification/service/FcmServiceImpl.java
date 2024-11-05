@@ -14,7 +14,7 @@ import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.google.auth.oauth2.AccessToken;

@@ -15,7 +15,7 @@ import com.gazi.gazi_renew.station.domain.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.EntityNotFoundException;

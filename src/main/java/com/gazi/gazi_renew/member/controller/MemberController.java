@@ -2,6 +2,8 @@ package com.gazi.gazi_renew.member.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.common.domain.ResponseToken;
+import com.gazi.gazi_renew.member.controller.response.MemberNicknameResponse;
 import com.gazi.gazi_renew.member.controller.response.MemberResponse;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.common.controller.response.Response.Body;
@@ -35,28 +37,31 @@ public class MemberController extends BaseController {
         }
         Member member = memberService.signUp(memberCreate, errors);
         // 로그인 까지 진행
-        memberService.login(memberCreate.toMemberLogin());
-        return response.success(MemberResponse.from(member), "회원가입이 완료되었습니다", HttpStatus.OK);
+        ResponseToken responseToken = memberService.login(memberCreate.toMemberLogin());
+        return response.success(responseToken, "회원가입이 완료되었습니다", HttpStatus.CREATED);
     }
 
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<Body> login(@RequestBody @Valid MemberLogin memberLogin, Errors errors) {
-        return memberService.login(memberLogin);
+        ResponseToken responseToken = memberService.login(memberLogin);
+        return response.success(responseToken, "로그인에 성공했습니다.", HttpStatus.OK);
     }
 
     // 로그아웃
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/logout")
     public ResponseEntity<Body> logout(@RequestBody MemberLogout memberLogout) {
-        return memberService.logout(memberLogout);
+        memberService.logout(memberLogout);
+        return response.success("로그아웃 되었습니다.");
     }
 
     // 자동 로그인
     @Operation(summary = "토큰 재발급(자동 로그인)")
     @PostMapping("/reissue")
     public ResponseEntity<Body> reissue(@RequestBody MemberReissue memberReissue) {
-        return memberService.reissue(memberReissue);
+        ResponseToken responseToken = memberService.reissue(memberReissue);
+        return response.success(responseToken, "Token 정보가 갱신되었습니다.", HttpStatus.OK);
     }
 
     // 닉네임 수정
@@ -66,13 +71,14 @@ public class MemberController extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "닉네임이 가지(으)로 변경되었습니다."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. "),
-            @ApiResponse(responseCode = "409", description = "종복된 닉네임입니다. ")
+            @ApiResponse(responseCode = "409", description = "중복된 닉네임입니다. ")
     })
     public ResponseEntity<Body> changeNickName(@RequestBody @Valid MemberNicknameValidation memberNicknameValidation, Errors errors) {
         if (errors.hasErrors()) {
             return memberService.validateHandling(errors);
         }
-        return memberService.changeNickName(memberNicknameValidation, errors);
+        Member member = memberService.changeNickName(memberNicknameValidation, errors);
+        return response.success(MemberNicknameResponse.from(member), "닉네임 변경 완료",HttpStatus.OK);
     }
     // 비밀번호 변경
     @SecurityRequirement(name = "Bearer Authentication")
@@ -100,7 +106,12 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> checkPassword(@RequestBody MemberCheckPassword memberCheckPassword){
-        return memberService.checkPassword(memberCheckPassword);
+        boolean state = memberService.checkPassword(memberCheckPassword);
+        if (state) {
+            return response.success("비밀번호가 일치합니다.");
+        } else {
+            return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
     }
     // 회원 탈퇴
     @SecurityRequirement(name = "Bearer Authentication")

@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.member.service;
 
 
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

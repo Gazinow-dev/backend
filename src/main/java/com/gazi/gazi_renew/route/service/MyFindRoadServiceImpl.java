@@ -15,7 +15,7 @@ import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.station.service.SubwayDataService;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

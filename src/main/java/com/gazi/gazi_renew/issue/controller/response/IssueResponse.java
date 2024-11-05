@@ -1,12 +1,10 @@
 package com.gazi.gazi_renew.issue.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -17,7 +15,6 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class IssueResponse {
 
     private final Long id;
@@ -31,7 +28,6 @@ public class IssueResponse {
     private final LocalDateTime startDate;
     private final LocalDateTime expireDate;
     private final List<StationDto> stationDtos;
-    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class StationDto {
         private final String line;
         private final String stationName;
@@ -43,10 +39,8 @@ public class IssueResponse {
     }
 
     // 이슈 요약
-    @Setter
     @Getter
     @Builder
-    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class IssueSummaryDto{
         private Long id;
         private String title;

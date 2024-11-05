@@ -5,22 +5,33 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Builder
 @Getter
-@Setter
-@AllArgsConstructor
 public class ResponseToken {
-    private String grantType;
-    private Long memberId;
-    private String nickName;
-    private String email;
-    private String firebaseToken;
-    private String accessToken;
-    private String refreshToken;
-    private Long accessTokenExpirationTime;
-    private Long refreshTokenExpirationTime;
-    private boolean notificationByKeyword;
-    private boolean notificationByRepost;
-    private boolean notificationByLike;
-
+    private final String grantType;
+    private final Long memberId;
+    private final String nickName;
+    private final String email;
+    private final String firebaseToken;
+    private final String accessToken;
+    private final String refreshToken;
+    private final Long accessTokenExpirationTime;
+    private final Long refreshTokenExpirationTime;
+    private final boolean notificationByKeyword;
+    private final boolean notificationByRepost;
+    private final boolean notificationByLike;
+    @Builder
+    public ResponseToken(String grantType, Long memberId, String nickName, String email, String firebaseToken, String accessToken, String refreshToken, Long accessTokenExpirationTime, Long refreshTokenExpirationTime, boolean notificationByKeyword, boolean notificationByRepost, boolean notificationByLike) {
+        this.grantType = grantType;
+        this.memberId = memberId;
+        this.nickName = nickName;
+        this.email = email;
+        this.firebaseToken = firebaseToken;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.accessTokenExpirationTime = accessTokenExpirationTime;
+        this.refreshTokenExpirationTime = refreshTokenExpirationTime;
+        this.notificationByKeyword = notificationByKeyword;
+        this.notificationByRepost = notificationByRepost;
+        this.notificationByLike = notificationByLike;
+    }
 }

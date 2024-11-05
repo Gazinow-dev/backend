@@ -9,7 +9,7 @@ import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.LikeJpaRepository;
-import com.gazi.gazi_renew.member.infrastructure.MemberJpaRepository;
+import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
