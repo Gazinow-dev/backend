@@ -3,8 +3,8 @@ package com.gazi.gazi_renew.member.controller;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
+import com.gazi.gazi_renew.member.controller.response.MemberAlertAgreeResponse;
 import com.gazi.gazi_renew.member.controller.response.MemberNicknameResponse;
-import com.gazi.gazi_renew.member.controller.response.MemberResponse;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.common.controller.response.Response.Body;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
@@ -20,20 +20,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/member")
 @RestController
 public class MemberController extends BaseController {
     private final MemberService memberService;
-    private final Response response
+    private final Response response;
 
     // 회원가입
     @Operation(summary = "회원가입", description = "회원가입")
     @PostMapping("signup")
     public ResponseEntity<Body> signup(@RequestBody @Valid MemberCreate memberCreate, Errors errors) {
         if (errors.hasErrors()) {
-            return memberService.validateHandling(errors);
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
         }
         Member member = memberService.signUp(memberCreate, errors);
         // 로그인 까지 진행
@@ -75,7 +78,8 @@ public class MemberController extends BaseController {
     })
     public ResponseEntity<Body> changeNickName(@RequestBody @Valid MemberNicknameValidation memberNicknameValidation, Errors errors) {
         if (errors.hasErrors()) {
-            return memberService.validateHandling(errors);
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
         }
         Member member = memberService.changeNickName(memberNicknameValidation, errors);
         return response.success(MemberNicknameResponse.from(member), "닉네임 변경 완료",HttpStatus.OK);
@@ -92,9 +96,11 @@ public class MemberController extends BaseController {
     })
     public ResponseEntity<Body> changePassword(@RequestBody @Valid MemberChangePassword memberChangePassword, Errors errors){
         if (errors.hasErrors()) {
-            return memberService.validateHandling(errors);
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
         }
-        return memberService.changePassword(memberChangePassword, errors);
+        memberService.changePassword(memberChangePassword, errors);
+        return response.success("비밀번호 변경을 완료했습니다.");
     }
     // 비밀번호 확인
     @SecurityRequirement(name = "Bearer Authentication")
@@ -121,8 +127,9 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "200", description = "회원 탈퇴 완료."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
-    public ResponseEntity<Body> deleteMember(@RequestBody Member.DeleteMember deleteMemberDto){
-        return memberService.deleteMember(deleteMemberDto);
+    public ResponseEntity<Body> deleteMember(@RequestBody MemberDelete memberDelete){
+        memberService.deleteMember(memberDelete);
+        return response.success("회원 탈퇴 완료.");
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
@@ -133,32 +140,43 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> saveFcmToken(@RequestBody MemberFcmToken memberFcmToken) {
-        return memberService.saveFcmToken(memberFcmToken);
+        memberService.saveFcmToken(memberFcmToken);
+        return response.success("FireBase 토큰 저장 완료.");
     }
 
     @Operation(summary = "이메일 인증")
     @PostMapping("/email-confirm")
     public ResponseEntity<Body> emailConfirm(@RequestBody @Valid MemberEmailValidation memberEmailValidation, Errors errors) throws Exception {
-
         if (errors.hasErrors()) {
-            return memberService.validateHandling(errors);
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
         }
-        return memberService.sendSimpleMessage(memberEmailValidation.getEmail());
+        String keyValue = memberService.sendSimpleMessage(memberEmailValidation.getEmail());
+        return response.success(keyValue,"인증번호를 발송하였습니다.", HttpStatus.OK);
+
     }
 
     @Operation(summary = "비밀번호 찾기")
     @PostMapping("/find-password")
     public ResponseEntity<Body> findPassword(IsMember isMember, Errors errors){
-        return memberService.findPassword(isMember);
+        String password = memberService.findPassword(isMember);
+        return response.success("임시비밀번호 발급: " +password);
     }
 
     @Operation(summary = "닉네임 중복검사")
     @PostMapping("/check-nickname")
     public ResponseEntity<Body> checkNickName(@RequestBody @Valid MemberNicknameValidation memberNicknameValidation, Errors errors) throws Exception {
         if (errors.hasErrors()) {
-            return memberService.validateHandling(errors);
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
         }
-        return memberService.checkNickName(memberNicknameValidation.getNickname());
+        boolean checked = memberService.checkNickName(memberNicknameValidation.getNickname());
+        if (checked) {
+            return response.success(memberNicknameValidation.getNickname(),"사용가능한 닉네임입니다.", HttpStatus.OK);
+        }
+        else{
+            return response.fail("중복된 닉네임입니다.", HttpStatus.CONFLICT);
+        }
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "푸시 알림 on/off 설정")
@@ -168,13 +186,15 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) {
-        return memberService.updatePushNotificationStatus(memberAlertAgree);
+        memberService.updatePushNotificationStatus(memberAlertAgree);
+        return response.success("푸시 알림 수신 설정이 저장되었습니다.");
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "푸시 알림 on/off 설정 조회")
     @GetMapping("/notifications/push/status")
     public ResponseEntity<Body> getPushNotificationStatus(@RequestParam String email) {
-        return memberService.getPushNotificationStatus(email);
+        Member member = memberService.getPushNotificationStatus(email);
+        return response.success(MemberAlertAgreeResponse.pushAlertAgreeFrom(member), "", HttpStatus.OK);
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "내가 저장한 경로 알림 on/off 설정")
@@ -184,13 +204,15 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) {
-        return memberService.updateMySavedRouteNotificationStatus(memberAlertAgree);
+        memberService.updateMySavedRouteNotificationStatus(memberAlertAgree);
+        return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "내가 저장한 경로 알림 on/off 설정 조회")
     @GetMapping("/notifications/my-saved-route/status")
     public ResponseEntity<Body> getMySavedRouteNotificationStatus(@RequestParam String email) {
-        return memberService.getMySavedRouteNotificationStatus(email);
+        Member member = memberService.getMySavedRouteNotificationStatus(email);
+        return response.success(MemberAlertAgreeResponse.mySavedRouteAlertAgreeFrom(member), "", HttpStatus.OK);
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "경로 상세 설정 알림 on/off 설정")
@@ -200,13 +222,15 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> updateRouteDetailNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) {
-        return memberService.updateRouteDetailNotificationStatus(memberAlertAgree);
+        memberService.updateRouteDetailNotificationStatus(memberAlertAgree);
+        return response.success("경로 상세 설정 알림 수신 설정이 저장되었습니다.");
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "경로 상세 설정 알림 on/off 설정 조회")
     @GetMapping("/notifications/route-detail/status")
     public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
-        return memberService.getRouteDetailNotificationStatus(email);
+        Member member = memberService.getRouteDetailNotificationStatus(email);
+        return response.success(MemberAlertAgreeResponse.routeDetailAlertAgreeFrom(member), "", HttpStatus.OK);
     }
 
 }

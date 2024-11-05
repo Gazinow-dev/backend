@@ -10,4 +10,10 @@ public class MemberCheckPassword {
     public MemberCheckPassword(String checkPassword) {
         this.checkPassword = checkPassword;
     }
+
+    public static MemberCheckPassword fromMemberChangePassword(MemberChangePassword memberChangePassword) {
+        return MemberCheckPassword.builder()
+                .checkPassword(memberChangePassword.getCurPassword())
+                .build();
+    }
 }

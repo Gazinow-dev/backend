@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Errors;
 
+import java.util.Map;
+
 
 public interface MemberService {
     // 회원가입
@@ -33,32 +35,32 @@ public interface MemberService {
     // 비밀번호 확인
     boolean checkPassword(MemberCheckPassword checkPassword);
 
-    ResponseEntity<Body> findPassword(Member.IsUser isUserRequest);
+    String findPassword(IsMember isMember);
 
     // 비밀번호 변경
-    ResponseEntity<Body> changePassword(@Valid Member.Password passwordDto, Errors errors);
+    Member changePassword(@Valid MemberChangePassword memberChangePassword, Errors errors);
     // 회원 탈퇴
-    ResponseEntity<Body> deleteMember(Member.DeleteMember deleteMemberDto);
+    Member deleteMember(MemberDelete memberDelete);
     /* 회원가입 시, 유효성 체크 */
-    ResponseEntity<Body> validateHandling(Errors errors);
+    Map<String, String> validateHandling(Errors errors);
 
-    ResponseEntity<Body> sendSimpleMessage(String email) throws Exception;
+    String sendSimpleMessage(String email) throws Exception;
 
-    ResponseEntity<Body> checkEmail(String email);
+    boolean checkEmail(String email);
 
-    ResponseEntity<Body> checkNickName(String nickName);
+    boolean checkNickName(String nickName);
 
-    ResponseEntity<Body> updatePushNotificationStatus(Member.AlertAgree alertAgreeRequest);
+    Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgreee);
 
-    ResponseEntity<Body> updateMySavedRouteNotificationStatus(Member.AlertAgree alertAgreeRequest);
+    Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree);
 
-    ResponseEntity<Body> updateRouteDetailNotificationStatus(Member.AlertAgree alertAgreeRequest);
+    Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree);
 
-    ResponseEntity<Body> getPushNotificationStatus(String email);
+    Member getPushNotificationStatus(String email);
 
-    ResponseEntity<Body> getMySavedRouteNotificationStatus(String email);
+    Member getMySavedRouteNotificationStatus(String email);
 
-    ResponseEntity<Body> getRouteDetailNotificationStatus(String email);
+    Member getRouteDetailNotificationStatus(String email);
 
-    ResponseEntity<Body> saveFcmToken(Member.FcmTokenRequest fcmTokenRequest);
+    Member saveFcmToken(MemberFcmToken memberFcmToken);
 }

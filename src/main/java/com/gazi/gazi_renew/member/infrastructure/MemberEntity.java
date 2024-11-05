@@ -2,6 +2,8 @@ package com.gazi.gazi_renew.member.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.infrastructure.LikeEntity;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.domain.RecentSearch;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.member.domain.enums.Role;
@@ -11,10 +13,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Getter
@@ -68,16 +68,50 @@ public class MemberEntity extends AuditingFields {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LikeEntity> likeEntities = new HashSet<>();
 
-    public MemberEntity saveFcmToken(String firebaseToken) {
-        this.firebaseToken = firebaseToken;
-        return this;
-    }
-
     @Builder
     public MemberEntity(String email, String nickname, OAuthProvider provider) {
         this.email = email;
         this.nickName = nickname;
         this.provider = provider;
+    }
+    public static MemberEntity from(Member member) {
+        MemberEntity memberEntity = new MemberEntity();
+        memberEntity.id= member.getId();
+        memberEntity.email = member.getEmail();
+        memberEntity.password = member.getEmail();
+        memberEntity.nickName = member.getNickName();
+        memberEntity.provider = member.getProvider();
+        memberEntity.role = member.getRole();
+        memberEntity.pushNotificationEnabled = member.getPushNotificationEnabled();
+        memberEntity.mySavedRouteNotificationEnabled = member.getMySavedRouteNotificationEnabled();
+        memberEntity.routeDetailNotificationEnabled = member.getRouteDetailNotificationEnabled();
+        memberEntity.firebaseToken = member.getFirebaseToken();
+        memberEntity.createdAt = member.getCreatedAt();
+        memberEntity.recentSearchEntities = member.getRecentSearchList().stream().map(RecentSearchEntity::from);
+        return memberEntity;
+    }
+
+    public Member toModel() {
+        List<RecentSearch> recentSearchList = Optional.ofNullable(recentSearchEntities)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(RecentSearchEntity::toModel)
+                .collect(Collectors.toList());
+
+        return Member.builder()
+                .id(id)
+                .email(email)
+                .password(password)
+                .nickName(nickName)
+                .provider(provider)
+                .role(role)
+                .pushNotificationEnabled(pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
+                .firebaseToken(firebaseToken)
+                .createdAt(createdAt)
+                .recentSearchList(recentSearchList)
+                .build();
     }
 
 }

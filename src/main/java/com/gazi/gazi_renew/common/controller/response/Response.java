@@ -138,16 +138,4 @@ public class Response {
     public ResponseEntity<Body> fail(String msg, HttpStatus status) {
         return fail(Collections.emptyList(), msg, status);
     }
-
-    public ResponseEntity<Body> invalidFields(LinkedList<LinkedHashMap<String, String>> errors) {
-        Body body = Body.builder()
-                .state(HttpStatus.BAD_REQUEST.value())
-                .data(Collections.emptyList())
-                .result("fail")
-                .message("")
-                .error(errors)
-                .build();
-        return ResponseEntity.ok(body);
-    }
-
 }

@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.member.domain;
 
 import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
-import com.gazi.gazi_renew.member.domain.dto.MemberLogin;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import lombok.Builder;
@@ -65,7 +64,7 @@ public class Member {
                 .firebaseToken(firebaseToken)
                 .build();
     }
-
+    // 닉네임 변경
     public Member changeNickname(String nickname) {
         return Member.builder()
                 .email(this.email)
@@ -78,7 +77,93 @@ public class Member {
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
+    public Member changePassword(PasswordEncoder passwordEncoder, String tempPassword) {
+        return Member.builder()
+                .email(this.email)
+                .password(passwordEncoder.encode(tempPassword))
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public Member updatePushNotificationEnabled(boolean alertAgree) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(alertAgree)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public Member updateMySavedRouteNotificationEnabled(boolean alertAgree) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(alertAgree)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public Member updateRouteDetailNotificationEnabled(boolean alertAgree) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(alertAgree)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+
+    public Member saveFcmToken(String firebaseToken) {
+        return Member.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .firebaseToken(firebaseToken)
+                .build();
+    }
+    //비밀번호 일치 여부
     public boolean isMatchesPassword(PasswordEncoder passwordEncoder, MemberCheckPassword checkPassword, Member member) {
         return passwordEncoder.matches(checkPassword.getCheckPassword(), member.getPassword());
+    }
+
+    //랜덤함수로 임시비밀번호 구문 만들기
+    public String getTempPassword(){
+        char[] charSet = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+        char[] specialSet = new char[] {'!', '#', '$', '%', '&','~'};
+
+
+        String newPassword = "";
+
+        // 문자 배열 길이의 값을 랜덤으로 10개를 뽑아 구문을 작성함
+        int idx = 0;
+        for (int i = 0; i < 8; i++) {
+            idx = (int) (charSet.length * Math.random());
+            newPassword += charSet[idx];
+        }
+
+        for (int i = 0; i < 2 ; i++) {
+            idx = (int) (specialSet.length * Math.random());
+            newPassword += specialSet[idx];
+        }
+        return newPassword;
     }
 }

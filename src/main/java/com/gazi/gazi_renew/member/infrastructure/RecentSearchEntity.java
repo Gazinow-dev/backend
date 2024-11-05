@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
+import com.gazi.gazi_renew.member.domain.RecentSearch;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -35,4 +36,11 @@ public class RecentSearchEntity extends AuditingFields {
     @JoinColumn(name = "member_id", nullable = false)
     private MemberEntity memberEntity;
 
+    public RecentSearch toModel() {
+        return RecentSearch.builder()
+                .stationName(stationName)
+                .stationLine(stationLine)
+                .build();
+
+    }
 }

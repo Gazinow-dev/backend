@@ -12,9 +12,7 @@ import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.common.service.RedisUtilService;
 import com.gazi.gazi_renew.member.domain.Member;
-import com.gazi.gazi_renew.member.controller.response.MemberResponse;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -23,7 +21,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -185,113 +182,70 @@ public class MemberServiceImpl implements MemberService {
     }
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> findPassword(Member.IsUser isUserRequest){
+    public String findPassword(IsMember isMember){
         try{
-            String password = "";
+            Member member = memberRepository.findByEmailAndNickName(isMember.getEmail(), isMember.getNickname())
+                    .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            // 비밀번호 발급
+            String tempPassword = member.getTempPassword();
 
-            MemberResponse.isUser isUser = new MemberResponse.isUser();
-
-            Optional<MemberEntity> member = memberRepository.findByEmailAndNickName(isUserRequest.getEmail(),isUserRequest.getNickname());
-            if(member.isPresent()) {
-                isUser.setIsUser(true);
-                // 비밀번호 발급
-                password = getTempPassword();
-                // 비밀번호 수정
-                member.get().setPassword(passwordEncoder.encode(password));
-                memberRepository.save(member.get());
-                // 이메일로 임시비밀번호 전송
-                MimeMessage message = createMessageToPassword(isUserRequest.getEmail(), password);
-                try{//예외처리
-                    emailSender.send(message);
-                }catch(MailException es){
-                    es.printStackTrace();
-                    throw new IllegalArgumentException();
-                }
+            member = member.changePassword(passwordEncoder, tempPassword);
+            memberRepository.save(member);
+            // 이메일로 임시비밀번호 전송
+            MimeMessage message = createMessageToPassword(isMember.getEmail(), tempPassword);
+            try{
+                emailSender.send(message);
+            }catch(MailException es){
+                es.printStackTrace();
+                throw new IllegalArgumentException();
             }
-            return response.success("임시비밀번호 발급: " +password);
-        }catch (Exception e){
-            return response.fail(e.getMessage(),HttpStatus.NOT_FOUND);
+            return tempPassword;
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
-
-
-    //랜덤함수로 임시비밀번호 구문 만들기
-    public String getTempPassword(){
-        char[] charSet = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-
-        char[] specialSet = new char[] {'!', '#', '$', '%', '&','~'};
-
-
-        String str = "";
-
-        // 문자 배열 길이의 값을 랜덤으로 10개를 뽑아 구문을 작성함
-        int idx = 0;
-        for (int i = 0; i < 8; i++) {
-            idx = (int) (charSet.length * Math.random());
-            str += charSet[idx];
-        }
-
-        for (int i = 0; i < 2 ; i++) {
-            idx = (int) (specialSet.length * Math.random());
-            str += specialSet[idx];
-        }
-        return str;
-    }
-
-
 
     @Override
-    public ResponseEntity<Response.Body> changePassword(@Valid Member.Password passwordDto, Errors errors) {
-        try {
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            Member.CheckPassword checkPassword = new Member.CheckPassword();
-            checkPassword.setCheckPassword(passwordDto.getCurPassword());
+    public Member changePassword(@Valid MemberChangePassword memberChangePassword, Errors errors) {
+        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        MemberCheckPassword memberCheckPassword = MemberCheckPassword.fromMemberChangePassword(memberChangePassword);
 
-            if (checkPassword(checkPassword).getStatusCode().equals(HttpStatus.OK)) {
-                if (passwordDto.getChangePassword().equals(passwordDto.getConfirmPassword())) {
-                    memberEntity.setPassword(passwordEncoder.encode(passwordDto.getChangePassword()));
-                    memberRepository.save(memberEntity);
-                    return response.success("비밀번호 변경을 완료했습니다.");
-                } else {
-                    return response.fail("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
-                }
+        if (checkPassword(memberCheckPassword)) {
+            if (memberChangePassword.getChangePassword().equals(memberChangePassword.getConfirmPassword())) {
+                member.changePassword(passwordEncoder, memberChangePassword.getChangePassword());
+                return memberRepository.save(member);
             } else {
-                return response.fail("현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+                throw ErrorCode.throwInvalidPassword();
             }
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } else {
+            throw ErrorCode.throwInvalidCurPassword();
         }
     }
 
     @Override
-    public ResponseEntity<Response.Body> deleteMember(Member.DeleteMember deleteMemberDto) {
-        try{
-            String email = SecurityUtil.getCurrentUserEmail();
-            MemberEntity memberEntity = memberRepository.getReferenceByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            memberRepository.delete(memberEntity);
-
-            // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
-            if (redisTemplate.opsForValue().get("AT:" + email) != null) {
-                // Refresh Token 삭제
-                redisTemplate.delete("AT:" + email);
-            }
-            // Redis 에서 해당 Member email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
-            if (redisTemplate.opsForValue().get("RT:" + email) != null) {
-                // Refresh Token 삭제
-                redisTemplate.delete("RT:" + email);
-            }
-            return response.success("회원 탈퇴 완료.");
-
-        }catch (Exception e){
-            return response.fail(e.getMessage(),HttpStatus.BAD_REQUEST);
+    public Member deleteMember(MemberDelete memberDelete) {
+        String email = SecurityUtil.getCurrentUserEmail();
+        Member member = memberRepository.getReferenceByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        memberRepository.delete(member);
+        // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+        if (redisUtilService.getData("AT:" + email) != null) {
+            // Refresh Token 삭제
+            redisUtilService.deleteToken("AT:" + email);
         }
+        // Redis 에서 해당 Member email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+        if (redisUtilService.getData("RT:" + email) != null) {
+            // Refresh Token 삭제
+            redisUtilService.deleteToken("RT:" + email);
+        }
+        return member;
     }
 
     /* 회원가입 시, 유효성 체크 */
     @Transactional(readOnly = true)
     @Override
-    public ResponseEntity<Response.Body> validateHandling(Errors errors) {
+    public Map<String, String> validateHandling(Errors errors) {
         Map<String, String> validatorResult = new HashMap<>();
 
         // 유효성 검사에 실패한 필드 목록을 받음
@@ -299,7 +253,124 @@ public class MemberServiceImpl implements MemberService {
             String validKeyName = String.format("valid_%s", error.getField());
             validatorResult.put(validKeyName, error.getDefaultMessage());
         }
-        return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);
+        return validatorResult;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public boolean checkEmail(String email) {
+        try {
+            validateEmail(email);
+            return true;
+        } catch (IllegalStateException e) {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean checkNickName(String nickName) {
+        if (!memberRepository.existsByNickName(nickName)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /**
+     * 유저 푸시 알림 활성/비활성 메서드
+     * 푸시 알림 꺼지면 내가 저장한 경로 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgree) {
+        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        member.updatePushNotificationEnabled(memberAlertAgree.isAlertAgree());
+        if (!memberAlertAgree.isAlertAgree()) {
+            member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
+        }
+        // 푸시알림이 켜지면 아래 알림도 다 켜져야함
+        if (memberAlertAgree.isAlertAgree()) {
+            member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
+            member.updateRouteDetailNotificationEnabled(memberAlertAgree.isAlertAgree());
+        }
+        return memberRepository.save(member);
+    }
+    /**
+     * 내가 저장한 경로 알림 활성/비활성 메서드
+     * 내가 저장한 경로 꺼지면 경로별 상세 설정 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree) {
+        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        boolean alertAgree = memberAlertAgree.isAlertAgree();
+
+        member.updateMySavedRouteNotificationEnabled(alertAgree);
+        if (!memberAlertAgree.isAlertAgree()) {
+            member.updateRouteDetailNotificationEnabled(alertAgree);
+        }
+        return memberRepository.save(member);
+    }
+    /**
+     * 경로별 상세 설정 알림 활성/비활성 메서드
+     * 경로별 상세 설정 알림 꺼지면 나의 상세 경로 알림들 모두 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree) {
+        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        boolean alertAgree = memberAlertAgree.isAlertAgree();
+
+        member.updateRouteDetailNotificationEnabled(alertAgree);
+        if (!memberAlertAgree.isAlertAgree()) {
+            // myFindRoadService에서 경로 데이터를 가져옴
+            ResponseEntity<Response.Body> response = myFindRoadService.getRoutes();
+
+            // Response.Body에서 데이터를 추출
+            List<MyFindRoadResponse> routes = (List<MyFindRoadResponse>) response.getBody().getData();
+
+            // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
+            for (MyFindRoadResponse route : routes) {
+                // MyPathId를 넘겨서 삭제 메서드 호출
+                notificationService.deleteNotificationTimes(route.getId());
+                myFindRoadService.updateRouteNotification(route.getId(), false);
+            }
+
+        }
+        return memberRepository.save(member);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Member getPushNotificationStatus(String email) {
+         return memberRepository.findByEmail(email)
+                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Member getMySavedRouteNotificationStatus(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Member getRouteDetailNotificationStatus(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    }
+    /**
+     * 소셜로그인시 푸시알림을 위해 토큰 저장할 메서드
+     * @param : MemberRequest.FcmTokenRequest fcmTokenRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member saveFcmToken(MemberFcmToken memberFcmToken) {
+        Member member = memberRepository.findByEmail(memberFcmToken.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        member = member.saveFcmToken(memberFcmToken.getFirebaseToken());
+        return memberRepository.save(member);
     }
 
     private MimeMessage createMessageToPassword(String to, String password)throws Exception{
@@ -366,7 +437,6 @@ public class MemberServiceImpl implements MemberService {
 
         return message;
     }
-
     public static String createKey() {
         StringBuffer key = new StringBuffer();
         Random rnd = new Random();
@@ -378,10 +448,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public ResponseEntity<Response.Body> sendSimpleMessage(String to) throws Exception {
-        Response.Body chekEmailBody = checkEmail(to).getBody();
-        if(chekEmailBody.getResult().equals("fail")){
-            return response.fail(chekEmailBody.getMessage(), HttpStatus.CONFLICT);
+    public String sendSimpleMessage(String to) throws Exception {
+        boolean checked = checkEmail(to);
+        if(!checked){
+            throw ErrorCode.throwDuplicateEmailException();
         }
         String keyValue = createKey();
         MimeMessage message = createMessage(to,keyValue);
@@ -391,135 +461,13 @@ public class MemberServiceImpl implements MemberService {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
-
         if(redisUtilService.getData(to) == null){
             //유효시간 5분
-            redisUtilService.setDataExpire(to,keyValue,60*5L);
+            redisUtilService.setDataExpire(to, keyValue, 60 * 5L);
         }else{
             redisTemplate.delete(to);
             redisUtilService.setDataExpire(to,keyValue,60*5L);
         }
-
-        return response.success(keyValue,"인증번호를 발송하였습니다.", HttpStatus.OK);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> checkEmail(String email) {
-        try {
-            validateEmail(email);
-            return response.success("회원가입이 가능한 이메일입니다.");
-        } catch (IllegalStateException e) {
-            return response.fail("이미 가입된 이메일입니다.", HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> checkNickName(String nickName) {
-        if(memberRepository.existsByNickName(nickName)) {
-            return response.fail("중복된 닉네임입니다.", HttpStatus.CONFLICT);
-        } else{
-            return response.success(nickName,"사용가능한 닉네임입니다.", HttpStatus.OK);
-        }
-
-    }
-    /**
-     * 유저 푸시 알림 활성/비활성 메서드
-     * 푸시 알림 꺼지면 내가 저장한 경로 알림 비활성화
-     * @param : MemberRequest.AlertAgree alertAgreeRequest
-     * @return Response.Body
-     */
-    @Override
-    public ResponseEntity<Response.Body> updatePushNotificationStatus(Member.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        memberEntity.setPushNotificationEnabled(alertAgreeRequest.isAlertAgree());
-        if (!alertAgreeRequest.isAlertAgree()) {
-            updateMySavedRouteNotificationStatus(alertAgreeRequest);
-        }
-        // 푸시알림이 켜지면 아래 알림도 다 켜져야함
-        if (alertAgreeRequest.isAlertAgree()) {
-            updateMySavedRouteNotificationStatus(alertAgreeRequest);
-            updateRouteDetailNotificationStatus(alertAgreeRequest);
-        }
-        memberRepository.save(memberEntity);
-        return response.success("푸시 알림 수신 설정이 저장되었습니다.");
-    }
-    /**
-     * 내가 저장한 경로 알림 활성/비활성 메서드
-     * 내가 저장한 경로 꺼지면 경로별 상세 설정 알림 비활성화
-     * @param : MemberRequest.AlertAgree alertAgreeRequest
-     * @return Response.Body
-     */
-    @Override
-    public ResponseEntity<Response.Body> updateMySavedRouteNotificationStatus(Member.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        memberEntity.setMySavedRouteNotificationEnabled(alertAgreeRequest.isAlertAgree());
-        if (!alertAgreeRequest.isAlertAgree()) {
-            updateRouteDetailNotificationStatus(alertAgreeRequest);
-        }
-        memberRepository.save(memberEntity);
-        return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
-    }
-    /**
-     * 경로별 상세 설정 알림 활성/비활성 메서드
-     * 경로별 상세 설정 알림 꺼지면 나의 상세 경로 알림들 모두 비활성화
-     * @param : MemberRequest.AlertAgree alertAgreeRequest
-     * @return Response.Body
-     */
-    @Override
-    public ResponseEntity<Response.Body> updateRouteDetailNotificationStatus(Member.AlertAgree alertAgreeRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(alertAgreeRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        memberEntity.setRouteDetailNotificationEnabled(alertAgreeRequest.isAlertAgree());
-        if (!alertAgreeRequest.isAlertAgree()) {
-            // myFindRoadService에서 경로 데이터를 가져옴
-            ResponseEntity<Response.Body> response = myFindRoadService.getRoutes();
-
-            // Response.Body에서 데이터를 추출
-            List<MyFindRoadResponse> routes = (List<MyFindRoadResponse>) response.getBody().getData();
-
-            // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
-            for (MyFindRoadResponse route : routes) {
-                // MyPathId를 넘겨서 삭제 메서드 호출
-                notificationService.deleteNotificationTimes(route.getId());
-                myFindRoadService.updateRouteNotification(route.getId(), false);
-            }
-
-        }
-        memberRepository.save(memberEntity);
-        return response.success("경로 상세 설정 알림 수신 설정이 저장되었습니다.");
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getPushNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getPushNotificationEnabled());
-        return response.success(memberResponse, "", HttpStatus.OK);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getMySavedRouteNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getMySavedRouteNotificationEnabled());
-        return response.success(memberResponse, "", HttpStatus.OK);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getRouteDetailNotificationStatus(String email) {
-        MemberEntity memberEntity = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        MemberResponse.AlertAgree memberResponse = new MemberResponse.AlertAgree(memberEntity.getEmail(), memberEntity.getRouteDetailNotificationEnabled());
-        return response.success(memberResponse, "", HttpStatus.OK);
-    }
-    /**
-     * 소셜로그인시 푸시알림을 위해 토큰 저장할 메서드
-     * @param : MemberRequest.FcmTokenRequest fcmTokenRequest
-     * @return Response.Body
-     */
-    @Override
-    public ResponseEntity<Response.Body> saveFcmToken(Member.FcmTokenRequest fcmTokenRequest) {
-        MemberEntity memberEntity = memberRepository.findByEmail(fcmTokenRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        memberEntity.saveFcmToken(fcmTokenRequest.getFirebaseToken());
-        memberRepository.save(memberEntity);
-        return response.success("FireBase 토큰 저장 완료.");
+        return keyValue;
     }
 }
