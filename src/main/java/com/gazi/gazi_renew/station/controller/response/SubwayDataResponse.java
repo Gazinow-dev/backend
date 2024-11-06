@@ -4,17 +4,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Builder
 @Getter
 public class SubwayDataResponse {
-    private Double lat;
-    private Double lng;
-
-    @Setter
+    private final Double lat;
+    private final Double lng;
     @Builder
-    @Getter
-    public static class SubwayInfo{
-        private String name;
-        private String line;
+    public SubwayDataResponse(Double lat, Double lng) {
+        this.lat = lat;
+        this.lng = lng;
     }
 }

@@ -10,12 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-public interface SubwayRepository extends JpaRepository<StationEntity, Long> {
-    @Query("select s.name,s.line from StationEntity s where s.name Like:name%")
-    List<Double> findByName(@Param("name")String name);
+public interface SubwayJpaRepository extends JpaRepository<StationEntity, Long> {
     List<StationEntity> findByNameStartingWith(String name);
-    @Query("select new com.gazi.gazi_renew.dto.SubwayDataResponse(s.lat, s.lng) from StationEntity s where s.name = :name and s.line = :line")
-    SubwayDataResponse findCoordinateByNameAndLine(@Param("name")String name, @Param("line")String line);
+
+    StationEntity findByNameAndLine(String name, String line);
+
     boolean existsByStationCode(int stationCode);
 
     List<StationEntity> findByLine(String line);
@@ -23,6 +22,4 @@ public interface SubwayRepository extends JpaRepository<StationEntity, Long> {
     List<StationEntity> findByIssueStationCodeBetween(int lowerCode, int upperCode);
     @Transactional(readOnly = true)
     List<StationEntity> findByNameContainingAndLine(String name, String line);
-
-    StationEntity findByNameAndLine(String stationName, String line);
 }

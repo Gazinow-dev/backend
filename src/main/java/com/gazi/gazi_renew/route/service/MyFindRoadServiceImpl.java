@@ -12,7 +12,7 @@ import com.gazi.gazi_renew.issue.service.IssueServiceImpl;
 import com.gazi.gazi_renew.route.infrastructure.*;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.station.service.SubwayDataService;
+import com.gazi.gazi_renew.station.service.StationService;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
@@ -40,7 +40,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final LineRepository lineRepository;
-    private final SubwayDataService subwayDataService;
+    private final StationService stationService;
     private final IssueServiceImpl issueService;
     //회원 인증하고
 
@@ -119,7 +119,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
                 for (MyFindRoadStationEntity myFindRoadStationEntity : myFindRoadStationEntities) {
 
-                    StationEntity stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
+                    StationEntity stationEntity = stationService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
                     List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
                     List<IssueEntity> activeIssueEntities = new ArrayList<>();
                     // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
@@ -291,7 +291,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                     ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
 
                     for (MyFindRoadStationEntity myFindRoadStationEntity : myFindRoadStationEntities) {
-                        StationEntity stationEntity = subwayDataService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
+                        StationEntity stationEntity = stationService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
                         List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
                         List<IssueEntity> activeIssueEntities = new ArrayList<>();
                         // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계

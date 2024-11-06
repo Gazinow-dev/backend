@@ -43,7 +43,7 @@ import java.util.Optional;
 public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;
-    private final SubwayDataService subwayDataService;
+    private final StationService stationService;
     private final MemberJpaRepository memberJpaRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueServiceImpl issueService;
@@ -113,9 +113,9 @@ public class FindRoadServiceImpl implements FindRoadService {
         Optional<MemberEntity> member = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
-        SubwayDataResponse strSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
+        stationService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
         // 종착역 이름과 호선으로 데이터 찾기
-        SubwayDataResponse endSubwayInfo = subwayDataService.getCoordinateByNameAndLine(request.getEndStationName(), request.getEndStationLine());
+        SubwayDataResponse endSubwayInfo = stationService.getCoordinateByNameAndLine(request.getEndStationName(), request.getEndStationLine());
 
         JSONObject json = getJsonArray(strSubwayInfo.getLng(), strSubwayInfo.getLat(), endSubwayInfo.getLng(), endSubwayInfo.getLat());
 
@@ -220,7 +220,7 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                             System.out.println(stationNode.path("stationName").asText());
                             //staion 찾고 이슈 리스트 받기
-                            StationEntity stationEntity = subwayDataService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
+                            StationEntity stationEntity = stationService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
                             List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
                             List<IssueEntity> activeIssueEntities = new ArrayList<>();
                             // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
