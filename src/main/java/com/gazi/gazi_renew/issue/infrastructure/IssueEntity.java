@@ -66,7 +66,7 @@ public class IssueEntity extends AuditingFields {
         issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);
         issueEntity.title = issue.getTitle();
         issueEntity.content = issue.getContent();
-        issueEntity.stationEntities = issue.getIssueStations().stream().map(from());
+        issueEntity.stationEntities = issue.getIssueStations().stream().map(StationEntity::from);
         issueEntity.keyword = issue.getKeyword();
         issueEntity.lineEntities = issue.getLines().stream().map(from());
         issueEntity.latestNo = issue.getLatestNo();

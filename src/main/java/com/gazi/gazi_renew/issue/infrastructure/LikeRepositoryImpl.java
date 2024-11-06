@@ -4,6 +4,7 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.LikeJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
+import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
