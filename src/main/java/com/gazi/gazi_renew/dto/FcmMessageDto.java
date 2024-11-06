@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class FcmMessageDto {
         private FcmMessageDto.Notification notification;
         private String token;
         private FcmMessageDto.Data data;
-        private boolean contentAvailable;
+        private FcmMessageDto.Apns apns;
     }
 
     @Builder
@@ -36,6 +37,25 @@ public class FcmMessageDto {
     public static class Data {
         private String path;
     }
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class Apns {
+        private Payload payload;
+    }
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class Payload {
+        private Aps aps;
+    }
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class Aps {
+        @JsonProperty("content-available")
+        private int contentAvailable;
+    }
     public static FcmMessageDto createMessage(String firebaseToken, String title, String body, String pathJson) {
         return FcmMessageDto.builder()
                 .message(Message.builder()
@@ -45,10 +65,17 @@ public class FcmMessageDto {
                                 .body(body)
                                 .build()
                         )
-                        .data(Data.builder().path(pathJson)
+                        .data(Data.builder().path(pathJson).build())
+                        .apns(Apns.builder()
+                                .payload(Payload.builder()
+                                        .aps(Aps.builder()
+                                                .contentAvailable(1)  // 설정된 contentAvailable
+                                                .build())
+                                        .build())
                                 .build())
-                        .contentAvailable(true)
                         .build())
-                .validateOnly(false).build();
+                .validateOnly(false)
+                .build();
     }
+
 }
