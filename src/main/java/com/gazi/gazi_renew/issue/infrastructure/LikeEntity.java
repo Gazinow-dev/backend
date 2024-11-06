@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
+import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,5 +23,18 @@ public class LikeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private MemberEntity memberEntity;
+
+    public static LikeEntity from(Like like) {
+        LikeEntity likeEntity = new LikeEntity();
+        likeEntity.id = like.getId();
+        likeEntity.issueEntity = IssueEntity.from(like.getIssue());
+        return likeEntity;
+    }
+    public Like toModel() {
+        return Like.builder()
+                .id(id)
+                .issue(issueEntity.toModel())
+                .build();
+    }
 }
 

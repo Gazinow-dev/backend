@@ -17,12 +17,24 @@ public class LikeRepositoryImpl implements LikeRepository {
     private final LikeJpaRepository likeJpaRepository;
 
     @Override
-    public Optional<Like> findByIssueAndMember(IssueEntity issueEntity, MemberEntity memberEntity) {
-        return likeJpaRepository.findByIssueAndMember()
+    public Optional<Like> findByIssueAndMember(Issue issue, Member member) {
+        return likeJpaRepository.findByIssueEntityAndMemberEntity(IssueEntity.from(issue), MemberEntity.from(member))
+                .map(LikeEntity::toModel);
     }
 
     @Override
     public boolean existsByIssueAndMember(Issue issue, Member member) {
-        return false;
+        return likeJpaRepository.existsByIssueEntityAndMemberEntity(IssueEntity.from(issue), MemberEntity.from(member));
     }
+
+    @Override
+    public Like save(Like like) {
+        return likeJpaRepository.save(LikeEntity.from(like)).toModel();
+    }
+
+    @Override
+    public void delete(Like like) {
+        likeJpaRepository.delete(LikeEntity.from(like));
+    }
+
 }

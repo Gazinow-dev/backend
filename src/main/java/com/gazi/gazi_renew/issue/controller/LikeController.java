@@ -16,12 +16,15 @@ import org.springframework.web.bind.annotation.*;
 public class LikeController extends BaseController {
 
     private final LikeService likeService;
+    private final Response response;
     @PostMapping
     public ResponseEntity<Response.Body> likeIssue(Like like){
-        return likeService.likeIssue(like);
+        Long id = likeService.likeIssue(like);
+        return response.success(id +"번의 좋아요를 눌렀습니다.");
     }
     @DeleteMapping
     public ResponseEntity<Response.Body> deleteLikeIssue(Like like){
-        return likeService.deleteLikeIssue(like);
+        likeService.deleteLikeIssue(like);
+        return response.success("데이터 삭제 성공");
     }
 }

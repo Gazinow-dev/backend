@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface LikeService {
 
-    ResponseEntity<Response.Body> likeIssue(Like dto);
-    ResponseEntity<Response.Body> deleteLikeIssue(Like dto);
+    Long likeIssue(Like like);
+    void deleteLikeIssue(Like dto);
 
 }
