@@ -19,6 +19,7 @@ public class FcmMessageDto {
         private FcmMessageDto.Notification notification;
         private String token;
         private FcmMessageDto.Data data;
+        private boolean contentAvailable;
     }
 
     @Builder
@@ -37,14 +38,17 @@ public class FcmMessageDto {
     }
     public static FcmMessageDto createMessage(String firebaseToken, String title, String body, String pathJson) {
         return FcmMessageDto.builder()
-                .message(FcmMessageDto.Message.builder()
+                .message(Message.builder()
                         .token(firebaseToken)
-                        .notification(FcmMessageDto.Notification.builder()
+                        .notification(Notification.builder()
                                 .title(title)
                                 .body(body)
                                 .build()
                         )
-                        .data(FcmMessageDto.Data.builder().path(pathJson)
-                                .build()).build()).validateOnly(false).build();
+                        .data(Data.builder().path(pathJson)
+                                .build())
+                        .contentAvailable(true)
+                        .build())
+                .validateOnly(false).build();
     }
 }
