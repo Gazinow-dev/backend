@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.route.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.route.domain.MyFindRoadNotificationRequest;
-import com.gazi.gazi_renew.route.domain.MyFindRoadRequest;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
@@ -52,7 +52,7 @@ public class MyFindRoadController extends BaseController {
             )
     })
     @PostMapping("/add_route")
-    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadRequest request) {
+    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoad request) {
         return myFindRoadService.addRoute(request);
     }
     @DeleteMapping("/delete_route")

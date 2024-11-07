@@ -15,7 +15,7 @@ import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
+import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FcmServiceImpl implements FcmService {
     private final Response response;
-    private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
     private final IssueJpaRepository issueJpaRepository;
     private final MemberJpaRepository memberJpaRepository;
     private final MyFindRoadService myFindRoadService;
@@ -104,7 +104,7 @@ public class FcmServiceImpl implements FcmService {
     }
 
     private List<FcmMessageDto> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
-        Optional<MyFindRoadPathEntity> myPath = Optional.ofNullable(myFindRoadPathRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
+        Optional<MyFindRoadPathEntity> myPath = Optional.ofNullable(myFindRoadPathJpaRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
         if(myPath.isEmpty()) {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
         }

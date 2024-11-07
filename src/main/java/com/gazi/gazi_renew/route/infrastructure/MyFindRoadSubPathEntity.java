@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_road_sub_path")
 @Entity
-public class MyFindRoadSubPath {
+public class MyFindRoadSubPathEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

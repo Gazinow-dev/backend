@@ -16,7 +16,7 @@ import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathRepository;
+import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final Response response;
     private final StationService stationService;
     private final MemberJpaRepository memberJpaRepository;
-    private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
     private final IssueServiceImpl issueService;
     private final LineRepository lineRepository;
     @Value("${odsay.key}")
@@ -143,7 +143,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
                 if(member.isPresent()) {
-                    Optional<List<MyFindRoadPathEntity>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
+                    Optional<List<MyFindRoadPathEntity>> myFindRoadPath = myFindRoadPathJpaRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
                             pathNode.path("info").path("firstStartStation").asText(),
                             pathNode.path("info").path("lastEndStation").asText(),
                             member.get(),

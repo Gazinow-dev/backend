@@ -27,7 +27,7 @@ public class MyFindRoadPathEntity {
 
     @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
-    private List<MyFindRoadSubPath> subPaths = new ArrayList<>();
+    private List<MyFindRoadSubPathEntity> subPaths = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)

@@ -19,5 +19,5 @@ public class MyFindRoadLaneEntity {
     private String endName; // 하차 정류장
     @ManyToOne
     @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
-    private MyFindRoadSubPath myFindRoadSubPath;
+    private MyFindRoadSubPathEntity myFindRoadSubPathEntity;
 }

@@ -17,5 +17,5 @@ public class MyFindRoadStationEntity {
     private String stationName;
     @ManyToOne
     @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
-    private MyFindRoadSubPath myFindRoadSubPath;
+    private MyFindRoadSubPathEntity myFindRoadSubPathEntity;
 }
