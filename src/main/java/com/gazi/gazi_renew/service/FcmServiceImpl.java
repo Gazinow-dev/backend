@@ -120,11 +120,21 @@ public class FcmServiceImpl implements FcmService {
         List<Station> stations = issue.get().getStations();
 
         String pathJson = om.writeValueAsString(routeById);
+        //내가 저장한 경로의 호선과 같은 이슈만 필터링
+        List<String> pathLineNames = myPath.get().getSubPaths().stream()
+                .flatMap(subPath -> subPath.getLanes().stream())
+                .map(MyFindRoadLane::getName)
+                .distinct()
+                .collect(Collectors.toList());
 
         // 각 Line에 대해 FCM 메시지 생성
         List<FcmMessageDto> fcmMessages = new ArrayList<>();
         List<Line> lines = issue.get().getLines();
         for (Line line : lines) {
+            //내가 저장한 경로의 호선과 같은 이슈만 필터링
+            if (!pathLineNames.contains(line.getLineName())) {
+                continue;
+            }
             // 해당 호선에 속하는 역들만 필터링
             List<Station> stationsForLine = stations.stream()
                     .filter(station -> station.getLine().equals(line.getLineName()))
