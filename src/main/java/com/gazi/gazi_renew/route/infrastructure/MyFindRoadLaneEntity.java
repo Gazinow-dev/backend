@@ -1,11 +1,10 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_road_lane")
 @Entity
@@ -20,4 +19,23 @@ public class MyFindRoadLaneEntity {
     @ManyToOne
     @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
     private MyFindRoadSubPathEntity myFindRoadSubPathEntity;
+
+    public static MyFindRoadLaneEntity from(MyFindRoadLane myFindRoadLane) {
+        MyFindRoadLaneEntity myFindRoadLaneEntity = new MyFindRoadLaneEntity();
+        myFindRoadLaneEntity.name = myFindRoadLane.getName();
+        myFindRoadLaneEntity.stationCode = myFindRoadLane.getStationCode();
+        myFindRoadLaneEntity.startName = myFindRoadLane.getStartName();
+        myFindRoadLaneEntity.endName = myFindRoadLane.getEndName();
+
+        return myFindRoadLaneEntity;
+    }
+
+    public MyFindRoadLane toModel() {
+        return MyFindRoadLane.builder()
+                .name(name)
+                .stationCode(stationCode)
+                .startName(startName)
+                .endName(endName)
+                .build();
+    }
 }

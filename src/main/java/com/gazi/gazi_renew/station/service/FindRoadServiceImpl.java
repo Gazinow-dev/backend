@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
+import com.gazi.gazi_renew.issue.domain.IssueSummary;
 import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import com.gazi.gazi_renew.issue.service.IssueServiceImpl;
 import com.gazi.gazi_renew.station.controller.port.FindRoadService;
@@ -233,9 +234,9 @@ public class FindRoadServiceImpl implements FindRoadService {
                                 }
                             }
 
-                            List<IssueResponse.IssueSummaryDto> issueSummaryDto = IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities);
+                            List<IssueSummary> issueSummaryDto = IssueSummary.getIssueSummaryDto(activeIssueEntities);
                             issueDtoList.addAll(issueSummaryDto);
-                            station.setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities));
+                            station.setIssueSummary(IssueSummary.getIssueSummaryDto(activeIssueEntities));
                             stations.add(station);
                         }
                         if(!subPath.getLanes().isEmpty()){

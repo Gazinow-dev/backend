@@ -17,16 +17,15 @@ import java.util.stream.Collectors;
 public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
     private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
 
-
     @Override
     public List<MyFindRoad> findAllByMemberOrderByIdDesc(Member member) {
-        return myFindRoadPathJpaRepository.findAllByMemberOrderByIdDesc(MemberEntity.from(member)).stream()
+        return myFindRoadPathJpaRepository.findAllByMemberEntityOrderByIdDesc(MemberEntity.from(member)).stream()
                 .map(MyFindRoadPathEntity::toModel).collect(Collectors.toList());
     }
 
     @Override
     public boolean existsByNameAndMember(String roadName, Member member) {
-        return myFindRoadPathJpaRepository.existsByNameAndMember(roadName, MemberEntity.from(member));
+        return myFindRoadPathJpaRepository.existsByNameAndMemberEntity(roadName, MemberEntity.from(member));
     }
 
     @Override
@@ -56,6 +55,16 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
 
     @Override
     public MyFindRoad save(MyFindRoad myFindRoad) {
-        return myFindRoadPathJpaRepository.save(MyFindRoadPathEntity.from(myFindRoad));
+        return myFindRoadPathJpaRepository.save(MyFindRoadPathEntity.from(myFindRoad)).toModel();
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return myFindRoadPathJpaRepository.existsById(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        myFindRoadPathJpaRepository.deleteById(id);
     }
 }

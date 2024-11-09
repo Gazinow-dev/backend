@@ -19,4 +19,7 @@ public interface MyFindRoadPathRepository {
 
     MyFindRoad save(MyFindRoad myFindRoad);
 
+    boolean existsById(Long id);
+
+    void deleteById(Long id);
 }

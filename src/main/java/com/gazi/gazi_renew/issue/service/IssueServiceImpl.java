@@ -167,7 +167,7 @@ public class IssueServiceImpl implements IssueService {
         Issue issue = issueRepository.findById(issueUpdate.getId()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
         );
-        issue.update(issueUpdate);
+        issue = issue.update(issueUpdate);
         issueRepository.save(issue);
     }
     private List<Station> getStationList(List<IssueCreate.Station> issueStations) {

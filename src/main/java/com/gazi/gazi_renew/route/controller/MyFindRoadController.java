@@ -2,11 +2,12 @@ package com.gazi.gazi_renew.route.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
-import com.gazi.gazi_renew.route.domain.MyFindRoadNotificationRequest;
+import com.gazi.gazi_renew.route.domain.MyFindRoadNotification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -59,8 +60,9 @@ public class MyFindRoadController extends BaseController {
             )
     })
     @PostMapping("/add_route")
-    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoad request) {
-        return myFindRoadService.addRoute(request);
+    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadCreate myFindRoadCreate) {
+        Long id = myFindRoadService.addRoute(myFindRoadCreate);
+        return response.success(id, "데이터 저장완료", HttpStatus.CREATED);
     }
     @DeleteMapping("/delete_route")
     @Operation(summary = "내 경로 삭제")
@@ -79,7 +81,8 @@ public class MyFindRoadController extends BaseController {
     })
     public ResponseEntity<Response.Body> deleteRoute(@RequestParam Long id) {
         notificationService.deleteNotificationTimes(id);
-        return myFindRoadService.deleteRoute(id);
+        myFindRoadService.deleteRoute(id);
+        return response.success("삭제 완료");
     }
     @PostMapping("/enable_notification")
     @Operation(summary = "알림 활성화")
@@ -89,7 +92,7 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다."),
             @ApiResponse(responseCode = "502", description = "해당 요일에 대한 알림 설정이 이미 존재합니다")}
     )
-    public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotificationRequest request) {
+    public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotification request) {
         return notificationService.saveNotificationTimes(request);
     }
     @PostMapping("/disable_notification")
@@ -119,7 +122,7 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "200", description = "알림 시간이 성공적으로 업데이트 되었습니다"),
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다.")}
     )
-    public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotificationRequest request) {
+    public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotification request) {
         return notificationService.updateNotificationTimes(request);
     }
 

@@ -38,17 +38,34 @@ public class MyFindRoadPathEntity {
     @JsonManagedReference
     private List<Notification> notifications = new ArrayList<>();
 
-    public MyFindRoadPathEntity from(MyFindRoad myFindRoad) {
+    public static MyFindRoadPathEntity from(MyFindRoad myFindRoad) {
         MyFindRoadPathEntity myFindRoadPathEntity = new MyFindRoadPathEntity();
         myFindRoadPathEntity.totalTime = myFindRoad.getTotalTime();
         myFindRoadPathEntity.stationTransitCount = myFindRoad.getStationTransitCount();
         myFindRoadPathEntity.firstStartStation = myFindRoad.getFirstStartStation();
         myFindRoadPathEntity.lastEndStation = myFindRoad.getLastEndStation();
-        myFindRoadPathEntity.subPaths = myFindRoad.getSubPaths().stream()
+        myFindRoadPathEntity.subPaths = myFindRoad.getMyFindRoadSubPaths().stream()
                 .map(MyFindRoadSubPathEntity::from)
                 .collect(Collectors.toList());
         myFindRoadPathEntity.memberEntity = MemberEntity.from(myFindRoad.getMember());
         myFindRoadPathEntity.name = myFindRoad.getRoadName();
-        myFindRoadPathEntity.notification=
+        myFindRoadPathEntity.notification = myFindRoad.getNotification();
+
+        return myFindRoadPathEntity;
+    }
+
+    public MyFindRoad toModel() {
+        return MyFindRoad.builder()
+                .id(id)
+                .roadName(name)
+                .totalTime(totalTime)
+                .stationTransitCount(stationTransitCount)
+                .firstStartStation(firstStartStation)
+                .lastEndStation(lastEndStation)
+                .member(memberEntity.toModel())
+                .myFindRoadSubPaths(subPaths.stream().map(MyFindRoadSubPathEntity::toModel)
+                        .collect(Collectors.toList()))
+                .notification(notification)
+                .build();
     }
 }

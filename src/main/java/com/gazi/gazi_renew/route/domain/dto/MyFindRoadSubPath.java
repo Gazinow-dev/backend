@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class SubPath {
+public class MyFindRoadSubPath {
     private final int trafficType; //이동수단 종류
     private final double distance; //이동거리
     private final int sectionTime; //이동 소요 시간
@@ -16,7 +16,7 @@ public class SubPath {
     private final List<MyFindRoadLane> lanes; //
     private final List<MyFindRoadStation> stations;
     @Builder
-    public SubPath(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, List<MyFindRoadLane> lanes, List<MyFindRoadStation> stations) {
+    public MyFindRoadSubPath(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, List<MyFindRoadLane> lanes, List<MyFindRoadStation> stations) {
         this.trafficType = trafficType;
         this.distance = distance;
         this.sectionTime = sectionTime;

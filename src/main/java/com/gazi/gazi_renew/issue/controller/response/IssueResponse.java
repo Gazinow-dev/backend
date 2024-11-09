@@ -38,46 +38,6 @@ public class IssueResponse {
         }
     }
 
-    // 이슈 요약
-    @Getter
-    @Builder
-    public static class IssueSummaryDto{
-        private Long id;
-        private String title;
-        private int likeCount;
-        private IssueKeyword keyword;
-        private String agoTime; // 몇분전, 몇시간전...
-
-
-        public static List<IssueSummaryDto> getIssueSummaryDto(List<Issue> issueList){
-            List<IssueResponse.IssueSummaryDto> issueSummaryDto = issueList.stream().map(
-                    m ->{
-                        return IssueSummaryDto.builder()
-                                .id(m.getId())
-                                .title(m.getTitle())
-                                .likeCount(m.getLikeCount())
-                                .keyword(m.getKeyword())
-                                .build();
-                    }
-            ).collect(Collectors.toList());
-            return issueSummaryDto;
-        }
-        public static List<IssueSummaryDto> getIssueSummaryDtoByLine(List<IssueResponse.IssueSummaryDto> issues){
-            List<IssueResponse.IssueSummaryDto> issueSummaryDtoList = new ArrayList<>();
-
-            Set<Long> idSet = new HashSet<>();
-            // 중복된거면 넣지않기
-            for(IssueResponse.IssueSummaryDto issue : issues){
-                if (!idSet.contains(issue.getId())) {
-                    // HashSet에 아직 존재하지 않는 id인 경우에만 리스트에 추가합니다.
-                    issueSummaryDtoList.add(issue);
-                    idSet.add(issue.getId());
-                }
-            }
-
-            return issueSummaryDtoList;
-        }
-    }
     // 시간 구하기 로직
     public static String getTime(LocalDateTime startTime) {
         System.out.println(startTime);

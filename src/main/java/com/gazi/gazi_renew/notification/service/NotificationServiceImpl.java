@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.notification.infrastructure.Notification;
-import com.gazi.gazi_renew.route.domain.MyFindRoadNotificationRequest;
-import com.gazi.gazi_renew.route.controller.response.MyFindRoadNotificationResponse;
+import com.gazi.gazi_renew.route.domain.MyFindRoadNotification;
+import com.gazi.gazi_renew.notification.controller.response.NotificationResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
 import com.gazi.gazi_renew.notification.infrastructure.NotificationRepository;
@@ -41,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param : MyFindRoadNotificationRequest request
      */
     @Transactional
-    public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotificationRequest request) {
+    public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotification request) {
         try {
             List<Notification> savedTimes = new ArrayList<>();
             MyFindRoadPathEntity myPath = myFindRoadPathJpaRepository.findById(request.getMyPathId()).orElseThrow(
@@ -50,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
             List<Map<String, Object>> notificationJsonList = new ArrayList<>();
 
             // 각 DayTimeRange에 대해 Notification 객체 생성 및 저장
-            for (MyFindRoadNotificationRequest.DayTimeRange dayTimeRange : request.getDayTimeRanges()) {
+            for (MyFindRoadNotification.DayTimeRange dayTimeRange : request.getDayTimeRanges()) {
                 String day = dayTimeRange.getDay();
                 LocalTime fromTime = LocalTime.parse(dayTimeRange.getFromTime());
                 LocalTime toTime = LocalTime.parse(dayTimeRange.getToTime());
@@ -113,25 +113,25 @@ public class NotificationServiceImpl implements NotificationService {
     public ResponseEntity<Response.Body> getNotificationTimes(Long myPathId) {
         try {
             List<Notification> notifications = notificationRepository.findByMyFindRoadPathId(myPathId);
-            MyFindRoadNotificationResponse myFindRoadNotificationResponse = new MyFindRoadNotificationResponse();
-            myFindRoadNotificationResponse.setMyFindRoadPathId(myPathId);
+            NotificationResponse notificationResponse = new NotificationResponse();
+            notificationResponse.setMyFindRoadPathId(myPathId);
             MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathJpaRepository.findById(myPathId).orElseThrow(
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
             );
-            myFindRoadNotificationResponse.setEnabled(myFindRoadPathEntity.getNotification());
-            if (myFindRoadNotificationResponse.isEnabled()) {
-                List<MyFindRoadNotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
+            notificationResponse.setEnabled(myFindRoadPathEntity.getNotification());
+            if (notificationResponse.isEnabled()) {
+                List<NotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
                 for (Notification notification : notifications) {
-                    MyFindRoadNotificationResponse.NotificationTime notificationTime = MyFindRoadNotificationResponse.NotificationTime.builder()
+                    NotificationResponse.NotificationTime notificationTime = NotificationResponse.NotificationTime.builder()
                             .dayOfWeek(notification.getDayOfWeek())
                             .fromTime(notification.getFromTime())
                             .toTime(notification.getToTime())
                             .build();
                     notificationTimes.add(notificationTime);
                 }
-                myFindRoadNotificationResponse.setNotificationTimes(notificationTimes);
+                notificationResponse.setNotificationTimes(notificationTimes);
             }
-            return response.success(myFindRoadNotificationResponse, "마이 길찾기 알람 찾기 성공", HttpStatus.OK);
+            return response.success(notificationResponse, "마이 길찾기 알람 찾기 성공", HttpStatus.OK);
 
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -160,7 +160,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Transactional
-    public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotificationRequest request) {
+    public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotification request) {
         try {
             // 요청으로 받은 경로에 대한 알림 찾기
             MyFindRoadPathEntity myPath = myFindRoadPathJpaRepository.findById(request.getMyPathId())
@@ -173,7 +173,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             // 요청으로 받은 알림 시간 리스트를 순회
             for (int i = 0; i < request.getDayTimeRanges().size(); i++) {
-                MyFindRoadNotificationRequest.DayTimeRange timeRange = request.getDayTimeRanges().get(i);
+                MyFindRoadNotification.DayTimeRange timeRange = request.getDayTimeRanges().get(i);
                 Notification notification;
 
                 // 시간 검증 로직 추가

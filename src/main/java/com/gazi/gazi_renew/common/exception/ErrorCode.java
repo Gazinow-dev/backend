@@ -16,6 +16,7 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(CONFLICT, "중복된 닉네임입니다."),
     DUPLICATE_EMAIL(CONFLICT, "이미 가입된 이메일입니다."),
     ALREADY_LIKED_ISSUE(CONFLICT, "이미 좋아요를 누른 이슈입니다."),
+    DUPLICATE_ROAD_NAME(CONFLICT, "이미 존재하는 이름입니다."),
     /* 401 UNAUTHORIZED : 인증 실패 */
     INVALID_REFRESH_TOKEN(UNAUTHORIZED, "Refresh Token 정보가 일치하지 않습니다."),
     INVALID_VERIFICATION_CODE(UNAUTHORIZED, "인증코드가 일치하지 않습니다."),
@@ -23,7 +24,9 @@ public enum ErrorCode {
     INVALID_REFRESH_TOKEN_MISMATCH(BAD_REQUEST, "Refresh Token 정보가 일치하지 않습니다."),
     INVALID_PASSWORD(BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     INVALID_CUR_PASSWORD(BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
-    DUPLICATE_ISSUE(BAD_REQUEST, "이미 해당 데이터가 존재합니다.");
+    DUPLICATE_ISSUE(BAD_REQUEST, "이미 해당 데이터가 존재합니다."),
+    MY_FIND_ROAD_NOT_FOUND(BAD_REQUEST, "해당 id로 존재하는 MyFindRoad가 없습니다.");
+
 
 
     private final HttpStatus httpStatus;
@@ -64,4 +67,10 @@ public enum ErrorCode {
         return new CustomException(ALREADY_LIKED_ISSUE);
     }
 
+    public static CustomException throwDuplicateRoadName() {
+        return new CustomException(DUPLICATE_ROAD_NAME);
     }
+    public static CustomException throwMyFindRoadNotFoundException() {
+        return new CustomException(MY_FIND_ROAD_NOT_FOUND);
+    }
+}
