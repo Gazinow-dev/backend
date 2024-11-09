@@ -48,4 +48,14 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
         return myFindRoadPathJpaRepository.findByMemberId(memberId).stream()
                 .map(MyFindRoadPathEntity::toModel).collect(Collectors.toList());
     }
+
+    @Override
+    public Optional<MyFindRoad> findById(Long id) {
+        return myFindRoadPathJpaRepository.findById(id).map(MyFindRoadPathEntity::toModel);
+    }
+
+    @Override
+    public MyFindRoad save(MyFindRoad myFindRoad) {
+        return myFindRoadPathJpaRepository.save(MyFindRoadPathEntity.from(myFindRoad));
+    }
 }

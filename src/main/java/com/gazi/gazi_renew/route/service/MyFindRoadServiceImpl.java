@@ -1,25 +1,20 @@
 package com.gazi.gazi_renew.route.service;
 
 import com.gazi.gazi_renew.common.config.SecurityUtil;
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
-import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse.SubPath;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.service.IssueServiceImpl;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
 import com.gazi.gazi_renew.route.infrastructure.*;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadLaneJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadSubPathJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadSubwayJpaRepository;
-import com.gazi.gazi_renew.station.infrastructure.LineEntity;
-import com.gazi.gazi_renew.station.infrastructure.StationEntity;
+import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadSubwayRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadLaneRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.station.service.StationService;
 import com.gazi.gazi_renew.station.infrastructure.LineRepository;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -38,159 +31,62 @@ import java.util.List;
 public class MyFindRoadServiceImpl implements MyFindRoadService {
 
     private final Response response;
-    private final MemberJpaRepository memberJpaRepository;
-    private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
-    private final MyFindRoadSubPathJpaRepository myFindRoadSubPathJpaRepository;
-    private final MyFindRoadLaneJpaRepository myFindRoadLaneJpaRepository;
-    private final MyFindRoadSubwayJpaRepository myFindRoadSubwayJpaRepository;
+    private final MemberRepository memberRepository;
+    private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
+    private final MyFindRoadLaneRepository myFindRoadLaneRepository;
+    private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final LineRepository lineRepository;
     private final StationService stationService;
-    private final IssueServiceImpl issueService;
     //회원 인증하고
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getRoutes() {
-        try {
-            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            List<MyFindRoadPathEntity> myFindRoadPathEntities = myFindRoadPathJpaRepository.findAllByMemberOrderByIdDesc(memberEntity);
-            List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myFindRoadPathEntities);
-            return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-
+    public  List<MyFindRoad> getRoutes() {
+        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
+        return myFindRoadList;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Response.Body> getRoutesByMember(Long memberId) {
-        try {
-            List<MyFindRoadPathEntity> myfindRoadPathListEntity = myFindRoadPathJpaRepository.findByMemberId(memberId);
-            List<MyFindRoadResponse> myFindRoadResponses = getMyFindRoadResponses(myfindRoadPathListEntity);
-
-            return response.success(myFindRoadResponses, "마이 길찾기 조회 성공", HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-
+    public List<MyFindRoad> getRoutesByMember(Long memberId) {
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(memberId);
+        return myFindRoadList;
     }
 
     @Transactional(readOnly = true)
-    public MyFindRoadResponse getRouteById(Long id) {
-        MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathJpaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("id로 마이길찾기 데이터 정보를 찾을 수 없습니다."));
-
-        //서브패스를 찾는다.
-        List<MyFindRoadSubPathEntity> myFindRoadSubPathEntities = myFindRoadSubPathJpaRepository.findAllByMyFindRoadPath(myFindRoadPathEntity);
-        ArrayList<SubPath> subPaths = new ArrayList<>();
-        // subpathID로 lane과 station을 찾는다.
-        for(MyFindRoadSubPathEntity subPath : myFindRoadSubPathEntities){
-            SubPath subPathResponse = SubPath.builder()
-                    .way(subPath.getWay())
-                    .door(subPath.getDoor())
-                    .trafficType(subPath.getTrafficType())
-                    .stationCount(subPath.getStationCount())
-                    .sectionTime(subPath.getSectionTime())
-                    .distance(subPath.getDistance())
-                    .build();
-
-            if(subPath.getTrafficType() == 1) {
-                MyFindRoadLaneEntity myFindRoadLaneEntity = myFindRoadLaneJpaRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
-                List<MyFindRoadStationEntity> myFindRoadStationEntities = myFindRoadSubwayJpaRepository.findAllByMyFindRoadSubPath(subPath);
-
-                // response로 가공
-                String lineName =  myFindRoadLaneEntity.getName();
-                // line entity
-                LineEntity lineEntity = lineRepository.findByLineName(lineName).orElseThrow(
-                        () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
-                );
-                ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
-                boolean isDirect = false;
-                if(lineName.contains("(급행)")) {
-                    isDirect = true;
-                }
-                MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
-                        .name(myFindRoadLaneEntity.getName())
-                        .startName(myFindRoadLaneEntity.getStartName())
-                        .endName(myFindRoadLaneEntity.getEndName())
-                        .stationCode(myFindRoadLaneEntity.getStationCode())
-                        .direct(isDirect)
-                        .build();
-                lanes.add(lane);
-
-                ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
-                List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
-
-                for (MyFindRoadStationEntity myFindRoadStationEntity : myFindRoadStationEntities) {
-
-                    StationEntity stationEntity = stationService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
-                    List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
-                    List<IssueEntity> activeIssueEntities = new ArrayList<>();
-                    // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
-                    LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-
-                    for (IssueEntity issueEntity : issueEntities) {
-                        if (issueEntity.getExpireDate() != null && issueEntity.getExpireDate().isAfter(currentDateTime)) {
-                            activeIssueEntities.add(issueEntity);
-                        }
-                    }
-                    List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities);
-                    MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
-                            .stationName(myFindRoadStationEntity.getStationName())
-                            .index(myFindRoadStationEntity.getIndex())
-                            .build();
-                    stations.add(station);
-                    issueDtoList.addAll(issueSummaryDtos);
-                }
-                subPathResponse.setLanes(lanes);
-
-                // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
-                if(!subPathResponse.getLanes().isEmpty()) {
-                    subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
-                }
-                subPathResponse.setStations(stations);
-            }
-            subPaths.add(subPathResponse);
-        }
-
-        MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
-                .id(myFindRoadPathEntity.getId())
-                .roadName(myFindRoadPathEntity.getName())
-                .lastEndStation(myFindRoadPathEntity.getLastEndStation())
-                .notification(myFindRoadPathEntity.getNotification())
-                .totalTime(myFindRoadPathEntity.getTotalTime())
-                .subPaths(subPaths)
-                .build();
-
-        return myFindRoadResponse;
+    public MyFindRoad getRouteById(Long id) {
+        MyFindRoad myFindRoad = myFindRoadPathRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("id로 마이길찾기 데이터 정보를 찾을 수 없습니다."));
+        return myFindRoad;
     }
 
 
         @Override
-    public ResponseEntity<Response.Body> addRoute(MyFindRoad request) {
+    public ResponseEntity<Response.Body> addRoute(MyFindRoadCreate myFindRoadCreate) {
         log.info("길저장 서비스 로직 진입");
         try {
-            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+            Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
-            MyFindRoadPathEntity myFindRoadPathEntity = MyFindRoadPathEntity.builder()
-                    .memberEntity(memberEntity)
-                    .name(request.getRoadName())
-                    .totalTime(request.getTotalTime())
-                    .firstStartStation(request.getFirstStartStation())
-                    .lastEndStation(request.getLastEndStation())
-                    .stationTransitCount(request.getStationTransitCount())
-                    .notification(false)
-                    .build();
+//            MyFindRoad myFindRoad = MyFindRoadPathEntity.builder()
+//                    .memberEntity(memberEntity)
+//                    .name(myFindRoadCreate.getRoadName())
+//                    .totalTime(myFindRoadCreate.getTotalTime())
+//                    .firstStartStation(myFindRoadCreate.getFirstStartStation())
+//                    .lastEndStation(myFindRoadCreate.getLastEndStation())
+//                    .stationTransitCount(myFindRoadCreate.getStationTransitCount())
+//                    .notification(false)
+//                    .build();
 
-            if (myFindRoadPathJpaRepository.existsByNameAndMember(request.getRoadName(), memberEntity)) {
+            if (myFindRoadPathRepository.existsByNameAndMember(myFindRoadCreate.getRoadName(), member)) {
                 return response.fail("이미 존재하는 이름입니다.", HttpStatus.CONFLICT);
             }
 
-            myFindRoadPathJpaRepository.save(myFindRoadPathEntity);
+            myFindRoadPathRepository.save(myFindRoad);
             log.info("myFindRoadPath 저장");
-            for (MyFindRoad.SubPath subPath : request.getSubPaths()) {
+            for (MyFindRoad.SubPath subPath : myFindRoadCreate.getSubPaths()) {
                 MyFindRoadSubPathEntity myFindRoadSubPathEntity = MyFindRoadSubPathEntity.builder()
-                        .myFindRoadPathEntity(myFindRoadPathEntity)
+                        .myFindRoadPathEntity(myFindRoad)
                         .distance(subPath.getDistance())
                         .sectionTime(subPath.getSectionTime())
                         .stationCount(subPath.getStationCount())
@@ -198,7 +94,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         .door(subPath.getDoor())
                         .way(subPath.getWay())
                         .build();
-                myFindRoadSubPathJpaRepository.save(myFindRoadSubPathEntity);
+                myFindRoadSubPathRepository.save(myFindRoadSubPathEntity);
                 log.info("myFindRoadSubPath 저장");
                 for (MyFindRoad.Lane lain : subPath.getLanes()) {
                     MyFindRoadLaneEntity myFindRoadLaneEntity = MyFindRoadLaneEntity.builder()
@@ -208,7 +104,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                             .startName(lain.getStartName())
                             .endName(lain.getEndName())
                             .build();
-                    myFindRoadLaneJpaRepository.save(myFindRoadLaneEntity);
+                    myFindRoadLaneRepository.save(myFindRoadLaneEntity);
                     log.info("MyFindRoadLane 저장 완료");
                 }
 
@@ -218,13 +114,13 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                             .index(station.getIndex())
                             .stationName(station.getStationName())
                             .build();
-                    myFindRoadSubwayJpaRepository.save(myFindRoadStationEntity);
+                    myFindRoadSubwayRepository.save(myFindRoadStationEntity);
                     log.info("MyFindRoadSubway 저장 완료");
                 }
 
 
             }
-            return response.success(myFindRoadPathEntity.getId(), "데이터 저장완료", HttpStatus.CREATED);
+            return response.success(myFindRoad.getId(), "데이터 저장완료", HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return response.fail(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
@@ -235,10 +131,10 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public ResponseEntity<Response.Body> deleteRoute(Long id) {
         try {
-            MemberEntity memberEntity = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
+            MemberEntity memberEntity = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(()
                     -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-            if (myFindRoadPathJpaRepository.existsById(id)) {
-                myFindRoadPathJpaRepository.deleteById(id);
+            if (myFindRoadPathRepository.existsById(id)) {
+                myFindRoadPathRepository.deleteById(id);
                 return response.success("삭제 완료");
             } else {
                 return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.", HttpStatus.BAD_REQUEST);
@@ -249,104 +145,14 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-    private List<MyFindRoadResponse> getMyFindRoadResponses(List<MyFindRoadPathEntity> myFindRoadPathEntities) {
-        List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
-        for (MyFindRoadPathEntity myFindRoadPathEntity : myFindRoadPathEntities) {
-
-            //서브패스를 찾는다.
-            List<MyFindRoadSubPathEntity> myFindRoadSubPathEntities = myFindRoadSubPathJpaRepository.findAllByMyFindRoadPath(myFindRoadPathEntity);
-            ArrayList<SubPath> subPaths = new ArrayList<>();
-            // subpathID로 lane과 station을 찾는다.
-            for(MyFindRoadSubPathEntity subPath : myFindRoadSubPathEntities){
-                SubPath subPathResponse = SubPath.builder()
-                        .way(subPath.getWay())
-                        .door(subPath.getDoor())
-                        .trafficType(subPath.getTrafficType())
-                        .stationCount(subPath.getStationCount())
-                        .sectionTime(subPath.getSectionTime())
-                        .distance(subPath.getDistance())
-                        .build();
-
-                if(subPath.getTrafficType() == 1) {
-                    MyFindRoadLaneEntity myFindRoadLaneEntity = myFindRoadLaneJpaRepository.findByMyFindRoadSubPath(subPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
-                    List<MyFindRoadStationEntity> myFindRoadStationEntities = myFindRoadSubwayJpaRepository.findAllByMyFindRoadSubPath(subPath);
-
-                    // response로 가공
-                    String lineName =  myFindRoadLaneEntity.getName();
-                    // line entity
-                    LineEntity lineEntity = lineRepository.findByLineName(lineName).orElseThrow(
-                            () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
-                    );
-                    ArrayList<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
-                    boolean isDirect = false;
-                    if(lineName.contains("(급행)")) {
-                        isDirect = true;
-                    }
-                    MyFindRoadResponse.Lane lane = MyFindRoadResponse.Lane.builder()
-                            .name(myFindRoadLaneEntity.getName())
-                            .startName(myFindRoadLaneEntity.getStartName())
-                            .endName(myFindRoadLaneEntity.getEndName())
-                            .stationCode(myFindRoadLaneEntity.getStationCode())
-                            .direct(isDirect)
-                            .build();
-                    lanes.add(lane);
-
-                    List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
-                    ArrayList<MyFindRoadResponse.Station> stations = new ArrayList<>();
-
-                    for (MyFindRoadStationEntity myFindRoadStationEntity : myFindRoadStationEntities) {
-                        StationEntity stationEntity = stationService.getStationByNameAndLine(myFindRoadStationEntity.getStationName(),lineName);
-                        List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
-                        List<IssueEntity> activeIssueEntities = new ArrayList<>();
-                        // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
-                        LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-
-                        for (IssueEntity issueEntity : issueEntities) {
-                            if (issueEntity.getExpireDate() != null && issueEntity.getExpireDate().isAfter(currentDateTime)) {
-                                activeIssueEntities.add(issueEntity);
-                            }
-                        }
-                        List<IssueResponse.IssueSummaryDto> issueSummaryDtos =IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities);
-                        MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
-                                .stationName(myFindRoadStationEntity.getStationName())
-                                .index(myFindRoadStationEntity.getIndex())
-                                .issueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDto(activeIssueEntities))
-                                .build();
-                        stations.add(station);
-
-                        issueDtoList.addAll(issueSummaryDtos);
-                    }
-                    subPathResponse.setLanes(lanes);
-
-                    // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
-                    if(!subPathResponse.getLanes().isEmpty()) {
-                        subPathResponse.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
-                    }
-                    subPathResponse.setStations(stations);
-                }
-                subPaths.add(subPathResponse);
-            }
-
-            MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
-                    .id(myFindRoadPathEntity.getId())
-                    .roadName(myFindRoadPathEntity.getName())
-                    .lastEndStation(myFindRoadPathEntity.getLastEndStation())
-                    .notification(myFindRoadPathEntity.getNotification())
-                    .totalTime(myFindRoadPathEntity.getTotalTime())
-                    .subPaths(subPaths)
-                    .build();
-            myFindRoadResponses.add(myFindRoadResponse);
-        }
-        return myFindRoadResponses;
-    }
 
     @Override
     @Transactional
     public ResponseEntity<Response.Body> updateRouteNotification(Long id, Boolean enabled) {
         try {
-            MyFindRoadPathEntity myPath = myFindRoadPathJpaRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+            MyFindRoadPathEntity myPath = myFindRoadPathRepository.findById(id).orElseThrow(EntityNotFoundException::new);
             myPath.setNotification(enabled);
-            myFindRoadPathJpaRepository.save(myPath);
+            myFindRoadPathRepository.save(myPath);
         } catch (EntityNotFoundException e) {
             return response.fail("해당 id로 존재하는 MyFindRoad가 없습니다.", HttpStatus.BAD_REQUEST);
         }

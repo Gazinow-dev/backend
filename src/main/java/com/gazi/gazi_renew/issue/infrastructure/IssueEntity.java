@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.issue.infrastructure;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
@@ -60,13 +61,14 @@ public class IssueEntity extends AuditingFields {
 
     public static IssueEntity from(Issue issue) {
         IssueEntity issueEntity = new IssueEntity();
-        issueEntity.id = issue.getId();
         issueEntity.crawlingNo = issue.getCrawlingNo();
         issueEntity.startDate = issue.getStartDate().withSecond(0).withNano(0);
         issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);
         issueEntity.title = issue.getTitle();
         issueEntity.content = issue.getContent();
-        issueEntity.stationEntities = issue.getIssueStations().stream().map(StationEntity::from);
+        issueEntity.stationEntities = issue.getStationList().stream()
+                .map(StationEntity::from)
+                .collect(Collectors.toList());
         issueEntity.keyword = issue.getKeyword();
         issueEntity.lineEntities = issue.getLines().stream().map(from());
         issueEntity.latestNo = issue.getLatestNo();
@@ -75,11 +77,11 @@ public class IssueEntity extends AuditingFields {
     }
 
     public Issue toModel(){
-        List<Issue.IssueStation> issueStations = stationEntities.stream().map(stationEntity -> Issue.IssueStation.builder()
-                .stationName(stationEntity.getName())
-                .line(stationEntity.getLine())
-                .build()
-        ).collect(Collectors.toList());
+//        List<Issue.IssueStation> issueStations = stationEntities.stream().map(stationEntity -> Issue.IssueStation.builder()
+//                .stationName(stationEntity.getName())
+//                .line(stationEntity.getLine())
+//                .build()
+//        ).collect(Collectors.toList());
 
         return Issue.builder()
                 .id(id)
@@ -90,7 +92,7 @@ public class IssueEntity extends AuditingFields {
                 .crawlingNo(crawlingNo)
                 .keyword(keyword)
                 .lines(lineEntities.stream().map(LineEntity::getLineName).collect(Collectors.toList()))
-                .issueStations(issueStations)
+                .stationList(stationEntities.stream().map(StationEntity::toModel).collect(Collectors.toList()))
                 .latestNo(latestNo)
                 .likeCount(likeEntities.size())
                 .build();

@@ -3,16 +3,15 @@ package com.gazi.gazi_renew.route.infrastructure;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gazi.gazi_renew.notification.infrastructure.Notification;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
-@Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_road_path")
 @Entity
@@ -38,4 +37,18 @@ public class MyFindRoadPathEntity {
     @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
     private List<Notification> notifications = new ArrayList<>();
+
+    public MyFindRoadPathEntity from(MyFindRoad myFindRoad) {
+        MyFindRoadPathEntity myFindRoadPathEntity = new MyFindRoadPathEntity();
+        myFindRoadPathEntity.totalTime = myFindRoad.getTotalTime();
+        myFindRoadPathEntity.stationTransitCount = myFindRoad.getStationTransitCount();
+        myFindRoadPathEntity.firstStartStation = myFindRoad.getFirstStartStation();
+        myFindRoadPathEntity.lastEndStation = myFindRoad.getLastEndStation();
+        myFindRoadPathEntity.subPaths = myFindRoad.getSubPaths().stream()
+                .map(MyFindRoadSubPathEntity::from)
+                .collect(Collectors.toList());
+        myFindRoadPathEntity.memberEntity = MemberEntity.from(myFindRoad.getMember());
+        myFindRoadPathEntity.name = myFindRoad.getRoadName();
+        myFindRoadPathEntity.notification=
+    }
 }

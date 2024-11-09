@@ -104,10 +104,10 @@ public class IssueResponse {
         return formatTime;
     }
     public static IssueResponse from(Issue issue) {
-        List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
+        List<StationDto> stationDtoList = issue.getStationList().stream().map(issueStation -> {
                 return StationDto.builder()
                     .line(issueStation.getLine())
-                    .stationName(issueStation.getStationName())
+                    .stationName(issueStation.getName())
                     .build();
         }).collect(Collectors.toList());
 
@@ -124,10 +124,10 @@ public class IssueResponse {
                 .build();
     }
     public static IssueResponse fromIssueDetail(IssueDetail issueDetail) {
-        List<StationDto> stationDtoList = issueDetail.getIssue().getIssueStations().stream().map(issueStation -> {
+        List<StationDto> stationDtoList = issueDetail.getIssue().getStationList().stream().map(issueStation -> {
             return StationDto.builder()
                     .line(issueStation.getLine())
-                    .stationName(issueStation.getStationName())
+                    .stationName(issueStation.getName())
                     .build();
         }).collect(Collectors.toList());
 
@@ -148,10 +148,10 @@ public class IssueResponse {
         Page<IssueResponse> issueResponsePage = new PageImpl<>(
                 issuePage.stream().map(issue -> {
 
-                    List<StationDto> stationDtoList = issue.getIssueStations().stream().map(issueStation -> {
+                    List<StationDto> stationDtoList = issue.getStationList().stream().map(issueStation -> {
                         return StationDto.builder()
                                 .line(issueStation.getLine())
-                                .stationName(issueStation.getStationName())
+                                .stationName(issueStation.getName())
                                 .build();
                     }).collect(Collectors.toList());
 

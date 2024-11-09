@@ -10,6 +10,7 @@ import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
@@ -122,10 +123,10 @@ public class FcmServiceImpl implements FcmService {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
-        MyFindRoadResponse routeById = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
+        MyFindRoad myFindRoad = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
         List<StationEntity> stationEntities = issue.get().getStationEntities();
 
-        String pathJson = om.writeValueAsString(routeById);
+        String pathJson = om.writeValueAsString(MyFindRoadResponse.from(myFindRoad));
 
         // 각 Line에 대해 FCM 메시지 생성
         List<FcmMessageDto> fcmMessages = new ArrayList<>();

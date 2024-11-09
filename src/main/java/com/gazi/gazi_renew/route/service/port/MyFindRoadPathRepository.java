@@ -14,4 +14,9 @@ public interface MyFindRoadPathRepository {
     Optional<List<MyFindRoad>> findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(String startStation, String lastStation, Member member, int totalTime);
     MyFindRoad findMyFindRoadPathById(Long id);
     List<MyFindRoad> findByMemberId(Long memberId);
+
+    Optional<MyFindRoad> findById(Long id);
+
+    MyFindRoad save(MyFindRoad myFindRoad);
+
 }

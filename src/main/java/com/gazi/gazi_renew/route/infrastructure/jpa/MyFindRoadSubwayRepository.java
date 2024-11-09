@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface MyFindRoadSubwayJpaRepository extends JpaRepository<MyFindRoadStationEntity,Long> {
+public interface MyFindRoadSubwayRepository extends JpaRepository<MyFindRoadStationEntity,Long> {
     List<MyFindRoadStationEntity> findAllByMyFindRoadSubPath(MyFindRoadSubPathEntity subPath);
 }

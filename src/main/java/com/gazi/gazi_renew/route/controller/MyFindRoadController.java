@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.route.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
+import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.domain.MyFindRoadNotificationRequest;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.common.controller.response.Response;
@@ -13,8 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -25,6 +29,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class MyFindRoadController extends BaseController {
     private final MyFindRoadService myFindRoadService;
     private final NotificationService notificationService;
+    private final Response response;
     @GetMapping("/get_roads")
     @Operation(summary = "내 경로 전체 조회")
     @ApiResponses(value = {
@@ -32,12 +37,14 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "404", description = "0호선으로된 데이터 정보를 찾을 수 없습니다.")}
     )
     public ResponseEntity<Response.Body> getRoutes() {
-        return myFindRoadService.getRoutes();
+        List<MyFindRoad> myFindRoadList = myFindRoadService.getRoutes();
+        return response.success(MyFindRoadResponse.fromList(myFindRoadList), "마이 길찾기 조회 성공", HttpStatus.OK);
     }
     @Hidden
     @GetMapping("/get_roads/by_id")
     public ResponseEntity<Response.Body> getRoutesByMember(@RequestParam Long memberId) {
-        return myFindRoadService.getRoutesByMember(memberId);
+        List<MyFindRoad> myFindRoadList = myFindRoadService.getRoutesByMember(memberId);
+        return response.success(MyFindRoadResponse.fromList(myFindRoadList), "마이 길찾기 조회 성공", HttpStatus.OK);
     }
 
     @Operation(summary = "내 경로 저장")

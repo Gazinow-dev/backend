@@ -3,13 +3,12 @@ package com.gazi.gazi_renew.issue.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
-import com.gazi.gazi_renew.common.exception.custom.DuplicateIssueException;
-import com.gazi.gazi_renew.common.exception.custom.UnauthorizedException;
 import com.gazi.gazi_renew.issue.domain.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.IssueUpdate;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
 import com.gazi.gazi_renew.station.domain.Station;
@@ -20,7 +19,6 @@ import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +38,7 @@ public class IssueServiceImpl implements IssueService {
     private final IssueRepository issueRepository;
     private final LikeRepository likeRepository;
     private final SubwayJpaRepository subwayJpaRepository;
-    private final MemberJpaRepository memberJpaRepository;
+    private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
     private final RedisTemplate redisTemplate;
 
@@ -106,7 +104,7 @@ public class IssueServiceImpl implements IssueService {
     @Transactional(readOnly = true)
     public IssueDetail getIssue(Long id) {
         //TOdo member 도메인으로 변경
-        Optional<MemberEntity> member = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<MemberEntity> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         //TOdo : like 도메인으로 변경
@@ -210,7 +208,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleLineTwo(Issue.IssueStation issueStation, int startStationCode, int endStationCode) {
+    private List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode) {
         if (issueStation.getDirection() == SubwayDirection.Clockwise) {
             // 2호선 내선 처리
             return handleClockwiseDirection(startStationCode, endStationCode);
