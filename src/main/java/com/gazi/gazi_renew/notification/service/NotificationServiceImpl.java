@@ -1,241 +1,96 @@
 package com.gazi.gazi_renew.notification.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
+import com.gazi.gazi_renew.common.service.RedisUtilService;
+import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
-import com.gazi.gazi_renew.notification.infrastructure.Notification;
-import com.gazi.gazi_renew.route.domain.MyFindRoadNotification;
-import com.gazi.gazi_renew.notification.controller.response.NotificationResponse;
-import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
-import com.gazi.gazi_renew.notification.infrastructure.NotificationRepository;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalTime;
 import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotificationServiceImpl implements NotificationService {
-    private final Response response;
     private final NotificationRepository notificationRepository;
-    private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
+    private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadService myFindRoadService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RedisUtilService redisUtilService;
     /**
      * 알림 설정 변경 메서드
      * myFindRoadService의 updateRouteNotification메세드를 여기서 호출해서
      * 하나의 트랜잭션으로 묶기
-     * @param : MyFindRoadNotificationRequest request
+     * @param : MyFindRoadNotificationRequest myFindRoadNotification
      */
     @Transactional
-    public ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotification request) {
-        try {
-            List<Notification> savedTimes = new ArrayList<>();
-            MyFindRoadPathEntity myPath = myFindRoadPathJpaRepository.findById(request.getMyPathId()).orElseThrow(
-                    () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
-            );
-            List<Map<String, Object>> notificationJsonList = new ArrayList<>();
+    public List<Notification> saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
 
-            // 각 DayTimeRange에 대해 Notification 객체 생성 및 저장
-            for (MyFindRoadNotification.DayTimeRange dayTimeRange : request.getDayTimeRanges()) {
-                String day = dayTimeRange.getDay();
-                LocalTime fromTime = LocalTime.parse(dayTimeRange.getFromTime());
-                LocalTime toTime = LocalTime.parse(dayTimeRange.getToTime());
+        MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId()).orElseThrow(
+                () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
+        );
 
-                // 시간 검증 로직 추가
-                if (fromTime.isAfter(toTime) || fromTime.equals(toTime)) {
-                    throw new IllegalArgumentException("fromTime은 toTime보다 이전이어야 합니다: "
-                            + "fromTime=" + fromTime + ", toTime=" + toTime);
-                }
+        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad);
 
-                // 'from' 및 'to' 시간 설정 후 Notification 객체 생성
-                Notification notification = Notification.builder()
-                        .dayOfWeek(day)
-                        .fromTime(fromTime)
-                        .toTime(toTime)
-                        .myFindRoadPathEntity(myPath) // 해당하는 경로 설정
-                        .build();
-
-                // 생성된 Notification 객체 저장
-                savedTimes.add(notificationRepository.save(notification));
-
-                Map<String, Object> notificationData = new HashMap<>();
-                notificationData.put("day", notification.getDayOfWeek());
-                notificationData.put("from_time", notification.getFromTime().toString());
-                notificationData.put("to_time", notification.getToTime().toString());
-
-                notificationJsonList.add(notificationData);
-            }
-
-            String fieldName = myPath.getMemberEntity().getId().toString();
-
-            String notificationJsonArray = convertListToJson(notificationJsonList);
-            System.out.println(notificationJsonArray);
-
-            // redis에 저장
-            redisTemplate.opsForHash().put("user_notifications", fieldName, notificationJsonArray);
-
-            // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
-            ResponseEntity<Response.Body> updateNotificationResult = myFindRoadService.updateRouteNotification(request.getMyPathId(), true);
-            if (!updateNotificationResult.getStatusCode().is2xxSuccessful()) {
-                return updateNotificationResult;
-            }
-
-            return response.success(savedTimes, "마이 길찾기 알람 저장 성공 및 알림 설정 변경 완료", HttpStatus.OK);
-
-
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (DataIntegrityViolationException e) {
-            return response.fail("해당 요일에 대한 알림 설정이 이미 존재합니다", HttpStatus.BAD_GATEWAY);
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.BAD_GATEWAY);
-        }
+        // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
+        notificationRepository.saveAll(notificationList);
+        myFindRoadService.updateRouteNotification(myFindRoadNotificationCreate.getMyPathId(), true);
+        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+        return notificationList;
     }
 
-    private String convertListToJson(List<Map<String, Object>> notificationJsonList) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(notificationJsonList);
-    }
-
-    public ResponseEntity<Response.Body> getNotificationTimes(Long myPathId) {
-        try {
-            List<Notification> notifications = notificationRepository.findByMyFindRoadPathId(myPathId);
-            NotificationResponse notificationResponse = new NotificationResponse();
-            notificationResponse.setMyFindRoadPathId(myPathId);
-            MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathJpaRepository.findById(myPathId).orElseThrow(
-                    () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
-            );
-            notificationResponse.setEnabled(myFindRoadPathEntity.getNotification());
-            if (notificationResponse.isEnabled()) {
-                List<NotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
-                for (Notification notification : notifications) {
-                    NotificationResponse.NotificationTime notificationTime = NotificationResponse.NotificationTime.builder()
-                            .dayOfWeek(notification.getDayOfWeek())
-                            .fromTime(notification.getFromTime())
-                            .toTime(notification.getToTime())
-                            .build();
-                    notificationTimes.add(notificationTime);
-                }
-                notificationResponse.setNotificationTimes(notificationTimes);
-            }
-            return response.success(notificationResponse, "마이 길찾기 알람 찾기 성공", HttpStatus.OK);
-
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public List<Notification> getNotificationTimes(Long myPathId) {
+        List<Notification> notificationList = notificationRepository.findByMyFindRoadPathId(myPathId);
+        return notificationList;
     }
 
     @Transactional
-    public ResponseEntity<Response.Body> deleteNotificationTimes(Long myPathId) {
-        try {
-            MyFindRoadPathEntity myFindRoadPathEntity = myFindRoadPathJpaRepository.findById(myPathId).orElseThrow(
-                    () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
-            );
-            notificationRepository.deleteByMyFindRoadPath(myFindRoadPathEntity);
+    public void deleteNotificationTimes(Long myPathId) {
+        MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myPathId).orElseThrow(
+                () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
+        );
+        notificationRepository.deleteByMyFindRoad(myFindRoad);
 
-            String fieldName = myFindRoadPathEntity.getMemberEntity().getId().toString();
-            // redis에 데이터도 삭제
-            redisTemplate.opsForHash().delete("user_notifications", fieldName);
+        String fieldName = myFindRoad.getMember().getId().toString();
 
-            return response.success(null, "마이 길찾기 알람 삭제 성공", HttpStatus.OK);
-
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        // redis에 데이터도 삭제
+        redisUtilService.deleteNotification(fieldName);
     }
 
     @Transactional
-    public ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotification request) {
-        try {
-            // 요청으로 받은 경로에 대한 알림 찾기
-            MyFindRoadPathEntity myPath = myFindRoadPathJpaRepository.findById(request.getMyPathId())
-                    .orElseThrow(() -> new EntityNotFoundException("해당 경로가 존재하지 않습니다."));
+    public List<Notification> updateNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
+        // 요청으로 받은 경로에 대한 알림 찾기
+        MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 경로가 존재하지 않습니다."));
+        //알림 모두 삭제 후 다시 저장
+        deleteNotificationTimes(myFindRoadNotificationCreate.getMyPathId());
+        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad);
 
-            // 알림 시간 업데이트 또는 새 알림 저장
-            List<Notification> notifications = notificationRepository.findByMyFindRoadPathId(myPath.getId());
-            List<Notification> savedTimes = new ArrayList<>();
-            List<Map<String, Object>> notificationJsonList = new ArrayList<>();
+        // 알림 다시 저장
+        notificationRepository.saveAll(notificationList);
 
-            // 요청으로 받은 알림 시간 리스트를 순회
-            for (int i = 0; i < request.getDayTimeRanges().size(); i++) {
-                MyFindRoadNotification.DayTimeRange timeRange = request.getDayTimeRanges().get(i);
-                Notification notification;
-
-                // 시간 검증 로직 추가
-                LocalTime fromTime = LocalTime.parse(timeRange.getFromTime());
-                LocalTime toTime = LocalTime.parse(timeRange.getToTime());
-                if (fromTime.isAfter(toTime) || fromTime.equals(toTime)) {
-                    throw new IllegalArgumentException("fromTime은 toTime보다 이전이어야 합니다: "
-                            + "fromTime=" + fromTime + ", toTime=" + toTime);
-                }
-
-                // 기존 알림이 있다면 업데이트, 부족하면 새로 생성
-                if (i < notifications.size()) {
-                    notification = notifications.get(i);
-                    notification.updateNotification(timeRange.getDay(), fromTime, toTime);
-                } else {
-                    notification = Notification.builder()
-                            .dayOfWeek(timeRange.getDay())
-                            .fromTime(fromTime)
-                            .toTime(toTime)
-                            .myFindRoadPathEntity(myPath)
-                            .build();
-                }
-
-                // 저장
-                savedTimes.add(notificationRepository.save(notification));
-
-                // Redis에 저장할 JSON 데이터 준비
-                Map<String, Object> notificationData = new HashMap<>();
-                notificationData.put("day", notification.getDayOfWeek());
-                notificationData.put("from_time", notification.getFromTime().toString());
-                notificationData.put("to_time", notification.getToTime().toString());
-                notificationJsonList.add(notificationData);
-            }
-
-            // Redis의 기존 값을 삭제
-            String fieldName = myPath.getMemberEntity().getId().toString();
-            redisTemplate.opsForHash().delete("user_notifications", fieldName);
-
-            // 새로운 알림 데이터를 Redis에 저장
-            String notificationJsonArray = convertListToJson(notificationJsonList);
-            redisTemplate.opsForHash().put("user_notifications", fieldName, notificationJsonArray);
-
-            return response.success(savedTimes, "알림 시간이 성공적으로 업데이트 되었습니다.", HttpStatus.OK);
-
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (DataIntegrityViolationException e) {
-            return response.fail("해당 요일에 대한 알림 설정이 이미 존재합니다", HttpStatus.BAD_GATEWAY);
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.BAD_GATEWAY);
-        }
+        String fieldName = myFindRoad.getMember().getId().toString();
+        // Redis의 기존 값을 삭제
+        redisUtilService.deleteNotification(fieldName);
+        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+        return notificationList;
     }
 
     @Override
-    public ResponseEntity<Response.Body> getPathId(Long notificationId) {
-        try {
-            Notification notification = notificationRepository.findById(notificationId)
-                    .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
-            Long myPathId = notification.getMyFindRoadPathEntity().getId();
-            return response.success(myPathId, "알림 경로 ID 조회 성공", HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
-            return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public Long getPathId(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
+        Long myPathId = notification.getMyFindRoad().getId();
+        return myPathId;
     }
 }

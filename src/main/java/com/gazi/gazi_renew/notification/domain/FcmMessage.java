@@ -6,17 +6,17 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class FcmMessageDto {
+public class FcmMessage {
     private boolean validateOnly;
-    private FcmMessageDto.Message message;
+    private FcmMessage.Message message;
 
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private FcmMessageDto.Notification notification;
+        private FcmMessage.Notification notification;
         private String token;
-        private FcmMessageDto.Data data;
+        private FcmMessage.Data data;
     }
 
     @Builder
@@ -33,16 +33,16 @@ public class FcmMessageDto {
     public static class Data {
         private String path;
     }
-    public static FcmMessageDto createMessage(String firebaseToken, String title, String body, String pathJson) {
-        return FcmMessageDto.builder()
-                .message(FcmMessageDto.Message.builder()
+    public static FcmMessage createMessage(String firebaseToken, String title, String body, String pathJson) {
+        return FcmMessage.builder()
+                .message(FcmMessage.Message.builder()
                         .token(firebaseToken)
-                        .notification(FcmMessageDto.Notification.builder()
+                        .notification(FcmMessage.Notification.builder()
                                 .title(title)
                                 .body(body)
                                 .build()
                         )
-                        .data(FcmMessageDto.Data.builder().path(pathJson)
+                        .data(FcmMessage.Data.builder().path(pathJson)
                                 .build()).build()).validateOnly(false).build();
     }
 }

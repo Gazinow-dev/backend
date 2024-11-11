@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.gazi.gazi_renew.notification.infrastructure.Notification;
+import com.gazi.gazi_renew.notification.infrastructure.NotificationEntity;
 import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import jakarta.persistence.*;
@@ -36,7 +36,7 @@ public class MyFindRoadPathEntity {
 
     @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
-    private List<Notification> notifications = new ArrayList<>();
+    private List<NotificationEntity> notificationEntities = new ArrayList<>();
 
     public static MyFindRoadPathEntity from(MyFindRoad myFindRoad) {
         MyFindRoadPathEntity myFindRoadPathEntity = new MyFindRoadPathEntity();

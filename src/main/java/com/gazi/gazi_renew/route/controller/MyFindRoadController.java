@@ -1,8 +1,11 @@
 package com.gazi.gazi_renew.route.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.BaseController;
+import com.gazi.gazi_renew.notification.controller.response.NotificationResponse;
+import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
-import com.gazi.gazi_renew.route.domain.MyFindRoadNotification;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
@@ -92,8 +95,9 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다."),
             @ApiResponse(responseCode = "502", description = "해당 요일에 대한 알림 설정이 이미 존재합니다")}
     )
-    public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotification request) {
-        return notificationService.saveNotificationTimes(request);
+    public ResponseEntity<Response.Body> enableRouteNotification(@RequestBody MyFindRoadNotificationCreate request) throws JsonProcessingException {
+        List<Notification> notificationList = notificationService.saveNotificationTimes(request);
+        return response.success(notificationList, "마이 길찾기 알람 저장 성공 및 알림 설정 변경 완료", HttpStatus.OK);
     }
     @PostMapping("/disable_notification")
     @Operation(summary = "알림 비활성화")
@@ -103,7 +107,8 @@ public class MyFindRoadController extends BaseController {
     )
     public ResponseEntity<Response.Body> disableRouteNotification(@RequestParam Long id) {
         myFindRoadService.updateRouteNotification(id, false);
-        return notificationService.deleteNotificationTimes(id);
+        notificationService.deleteNotificationTimes(id);
+        return response.success(null, "마이 길찾기 알람 삭제 성공", HttpStatus.OK);
     }
 
     @GetMapping("/get_notifications")
@@ -113,7 +118,8 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다.")}
     )
     public ResponseEntity<Response.Body> getNotificationTimes(@RequestParam Long myPathId) {
-        return notificationService.getNotificationTimes(myPathId);
+        List<Notification> notificationList = notificationService.getNotificationTimes(myPathId);
+        return response.success(NotificationResponse.fromList(notificationList), "마이 길찾기 알람 찾기 성공", HttpStatus.OK);
     }
 
     @PostMapping("/update_notification")
@@ -122,8 +128,9 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "200", description = "알림 시간이 성공적으로 업데이트 되었습니다"),
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다.")}
     )
-    public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotification request) {
-        return notificationService.updateNotificationTimes(request);
+    public ResponseEntity<Response.Body> updateNotificationTimes(@RequestBody MyFindRoadNotificationCreate request) throws JsonProcessingException {
+        List<Notification> notificationList = notificationService.updateNotificationTimes(request);
+        return response.success(notificationList, "알림 시간이 성공적으로 업데이트 되었습니다.", HttpStatus.OK);
     }
 
     @GetMapping("/path-id")
@@ -133,7 +140,8 @@ public class MyFindRoadController extends BaseController {
             @ApiResponse(responseCode = "404", description = "해당 알림이 존재하지 않습니다.")}
     )
     public ResponseEntity<Response.Body> getPathId(@RequestParam Long notificationId) {
-        return notificationService.getPathId(notificationId);
+        Long pathId = notificationService.getPathId(notificationId);
+        return response.success(pathId, "알림 경로 ID 조회 성공", HttpStatus.OK);
     }
 
 }

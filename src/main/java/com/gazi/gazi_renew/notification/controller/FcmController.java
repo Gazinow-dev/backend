@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.notification.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
-import com.gazi.gazi_renew.notification.domain.FcmSendDto;
+import com.gazi.gazi_renew.notification.domain.NotificationCreate;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.notification.controller.port.FcmService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class FcmController extends BaseController {
     private final FcmService fcmService;
 
     @PostMapping("/send")
-    public ResponseEntity<Response.Body> pushMessage(@RequestBody @Validated FcmSendDto fcmSendDto) throws IOException {
-        return fcmService.sendMessageTo(fcmSendDto);
+    public ResponseEntity<Response.Body> pushMessage(@RequestBody @Validated NotificationCreate notificationCreate) throws IOException {
+        return fcmService.sendMessageTo(notificationCreate);
     }
 }

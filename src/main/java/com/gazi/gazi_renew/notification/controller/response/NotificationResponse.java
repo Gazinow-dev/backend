@@ -1,9 +1,12 @@
 package com.gazi.gazi_renew.notification.controller.response;
 
+import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +20,15 @@ public class NotificationResponse {
         this.myFindRoadPathId = myFindRoadPathId;
         this.notificationTimes = notificationTimes;
     }
+    // 알림 상태값 없데이트
+    public NotificationResponse updateEnabled(boolean enabled) {
+        return NotificationResponse.builder()
+                .enabled(enabled)
+                .myFindRoadPathId(this.myFindRoadPathId)
+                .notificationTimes(this.notificationTimes)
+                .build();
 
+    }
     // 다중 알림 시간 리스트를 처리하기 위한 내부 클래스
     @Getter
     public static class NotificationTime {
@@ -30,6 +41,36 @@ public class NotificationResponse {
             this.fromTime = fromTime;
             this.toTime = toTime;
         }
+    }
+
+    public static NotificationResponse fromList(List<Notification> notificationList) {
+        if (notificationList == null || notificationList.isEmpty()) {
+            throw new IllegalArgumentException("해당 알림이 존재하지 않습니다.");
+        }
+        MyFindRoad myFindRoad = notificationList.get(0).getMyFindRoad();
+
+        NotificationResponse notificationResponse = NotificationResponse.builder()
+                .enabled(myFindRoad.getNotification())
+                .myFindRoadPathId(myFindRoad.getId())
+                .build();
+        if (notificationResponse.isEnabled()) {
+            List<NotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
+            for (Notification notification : notificationList) {
+                NotificationResponse.NotificationTime notificationTime = NotificationResponse.NotificationTime.builder()
+                        .dayOfWeek(notification.getDayOfWeek())
+                        .fromTime(notification.getFromTime())
+                        .toTime(notification.getToTime())
+                        .build();
+                notificationTimes.add(notificationTime);
+
+            }
+            notificationResponse = NotificationResponse.builder()
+                    .enabled(notificationResponse.enabled)
+                    .myFindRoadPathId(notificationResponse.myFindRoadPathId)
+                    .notificationTimes(notificationTimes)
+                    .build();
+        }
+        return notificationResponse;
     }
 
 }

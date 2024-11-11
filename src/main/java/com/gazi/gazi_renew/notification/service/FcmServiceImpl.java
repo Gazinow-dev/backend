@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.notification.controller.port.FcmService;
-import com.gazi.gazi_renew.notification.domain.FcmMessageDto;
-import com.gazi.gazi_renew.notification.domain.FcmSendDto;
+import com.gazi.gazi_renew.notification.domain.FcmMessage;
+import com.gazi.gazi_renew.notification.domain.NotificationCreate;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
@@ -56,9 +56,9 @@ public class FcmServiceImpl implements FcmService {
 
     @Override
     @Transactional
-    public ResponseEntity<Response.Body> sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
+    public ResponseEntity<Response.Body> sendMessageTo(NotificationCreate notificationCreate) throws IOException {
         // FCM 메시지를 리스트로 받음 (각 호선에 대해 개별 메시지 생성)
-        List<FcmMessageDto> messages = makeFcmDto(fcmSendDto);
+        List<FcmMessage> messages = makeFcmDto(notificationCreate);
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -68,8 +68,8 @@ public class FcmServiceImpl implements FcmService {
         headers.set("Authorization", "Bearer " + getAccessToken());
 
         // 각 메시지를 순회하며 FCM 전송
-        for (FcmMessageDto message : messages) {
-            HttpEntity<FcmMessageDto> entity = new HttpEntity<>(message, headers);
+        for (FcmMessage message : messages) {
+            HttpEntity<FcmMessage> entity = new HttpEntity<>(message, headers);
 
             // FCM 메시지 전송
             ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
@@ -104,8 +104,8 @@ public class FcmServiceImpl implements FcmService {
         return token.getTokenValue();
     }
 
-    private List<FcmMessageDto> makeFcmDto(FcmSendDto fcmSendDto) throws JsonProcessingException {
-        Optional<MyFindRoadPathEntity> myPath = Optional.ofNullable(myFindRoadPathJpaRepository.findMyFindRoadPathById(fcmSendDto.getMyRoadId()));
+    private List<FcmMessage> makeFcmDto(NotificationCreate notificationCreate) throws JsonProcessingException {
+        Optional<MyFindRoadPathEntity> myPath = Optional.ofNullable(myFindRoadPathJpaRepository.findMyFindRoadPathById(notificationCreate.getMyRoadId()));
         if(myPath.isEmpty()) {
             throw new EntityNotFoundException("해당 경로가 존재하지 않습니다.");
         }
@@ -118,18 +118,18 @@ public class FcmServiceImpl implements FcmService {
         String firebaseToken = member.get().getFirebaseToken();
 
 
-        Optional<IssueEntity> issue = issueJpaRepository.findById(fcmSendDto.getIssueId());
+        Optional<IssueEntity> issue = issueJpaRepository.findById(notificationCreate.getIssueId());
         if(issue.isEmpty()) {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
-        MyFindRoad myFindRoad = myFindRoadService.getRouteById(fcmSendDto.getMyRoadId());
+        MyFindRoad myFindRoad = myFindRoadService.getRouteById(notificationCreate.getMyRoadId());
         List<StationEntity> stationEntities = issue.get().getStationEntities();
 
         String pathJson = om.writeValueAsString(MyFindRoadResponse.from(myFindRoad));
 
         // 각 Line에 대해 FCM 메시지 생성
-        List<FcmMessageDto> fcmMessages = new ArrayList<>();
+        List<FcmMessage> fcmMessages = new ArrayList<>();
         List<LineEntity> lineEntities = issue.get().getLineEntities();
         for (LineEntity lineEntity : lineEntities) {
             // 해당 호선에 속하는 역들만 필터링
@@ -142,13 +142,13 @@ public class FcmServiceImpl implements FcmService {
                 StationEntity startStationEntity = stationsForLine.get(0);
                 StationEntity endStationEntity = stationsForLine.get(stationsForLine.size() - 1);
 
-                FcmMessageDto fcmMessageDto = FcmMessageDto.createMessage(
+                FcmMessage fcmMessage = FcmMessage.createMessage(
                         firebaseToken,
                         makeTitle(myPathName, issue.get().getKeyword()),
                         makeBody(lineEntity.getLineName(), startStationEntity.getName(), endStationEntity.getName()),
                         pathJson
                 );
-                fcmMessages.add(fcmMessageDto);
+                fcmMessages.add(fcmMessage);
             }
         }
 

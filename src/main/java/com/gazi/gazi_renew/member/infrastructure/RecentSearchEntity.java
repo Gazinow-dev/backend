@@ -9,11 +9,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
-@Setter
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@Table(name = "recent_search")
 @Entity
 public class RecentSearchEntity extends AuditingFields {
 
@@ -38,9 +36,19 @@ public class RecentSearchEntity extends AuditingFields {
 
     public RecentSearch toModel() {
         return RecentSearch.builder()
+                .id(id)
                 .stationName(stationName)
                 .stationLine(stationLine)
+                .member(memberEntity.toModel())
+                .modifiedAt(getModifiedAt())
                 .build();
+    }
+    public static RecentSearchEntity from(RecentSearch recentSearch) {
+        RecentSearchEntity recentSearchEntity = new RecentSearchEntity();
+        recentSearchEntity.stationName = recentSearch.getStationName();
+        recentSearchEntity.stationLine = recentSearch.getStationLine();
+        recentSearchEntity.memberEntity = MemberEntity.from(recentSearch.getMember());
 
+        return recentSearchEntity;
     }
 }

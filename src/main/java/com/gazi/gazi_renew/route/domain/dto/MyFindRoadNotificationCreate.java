@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.route.domain;
+package com.gazi.gazi_renew.route.domain.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,12 +6,12 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class MyFindRoadNotification {
+public class MyFindRoadNotificationCreate {
     private final Long myPathId;
     private final List<DayTimeRange> dayTimeRanges; // 요일과 시간 범위 리스트
 
     @Builder
-    public MyFindRoadNotification(Long myPathId, List<DayTimeRange> dayTimeRanges) {
+    public MyFindRoadNotificationCreate(Long myPathId, List<DayTimeRange> dayTimeRanges) {
         this.myPathId = myPathId;
         this.dayTimeRanges = dayTimeRanges;
     }

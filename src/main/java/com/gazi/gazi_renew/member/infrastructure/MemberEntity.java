@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "MEMBER")
+@Table(name = "member")
 @Entity
 public class MemberEntity extends AuditingFields {
     @Id
@@ -86,7 +86,9 @@ public class MemberEntity extends AuditingFields {
         memberEntity.routeDetailNotificationEnabled = member.getRouteDetailNotificationEnabled();
         memberEntity.firebaseToken = member.getFirebaseToken();
         memberEntity.createdAt = member.getCreatedAt();
-        memberEntity.recentSearchEntities = member.getRecentSearchList().stream().map(RecentSearchEntity::from);
+        memberEntity.recentSearchEntities = member.getRecentSearchList().stream()
+                .map(RecentSearchEntity::from).collect(Collectors.toList());
+
         return memberEntity;
     }
 

@@ -10,8 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface RecentSearchJpaRepository extends JpaRepository<RecentSearchEntity, Long> {
-    List<RecentSearchEntity> findAllByMemberOrderByModifiedAtDesc(MemberEntity memberEntity);
-    Optional<RecentSearchEntity> findByMemberAndStationLineAndStationName(MemberEntity memberEntity, String stationLine, String stationName);
+    List<RecentSearchEntity> findAllByMemberEntityOrderByModifiedAtDesc(MemberEntity memberEntity);
+    Optional<RecentSearchEntity> findByMemberEntityAndStationLineAndStationName(MemberEntity memberEntity, String stationLine, String stationName);
 
-    Optional<RecentSearchEntity> findByIdAndMember(Long recentSearchID, MemberEntity memberEntity);
+    Optional<RecentSearchEntity> findByIdAndMemberEntity(Long recentSearchID, MemberEntity memberEntity);
 }

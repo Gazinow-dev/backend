@@ -1,17 +1,20 @@
 package com.gazi.gazi_renew.notification.controller.port;
 
-import com.gazi.gazi_renew.route.domain.MyFindRoadNotification;
-import com.gazi.gazi_renew.common.controller.response.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface NotificationService {
-    ResponseEntity<Response.Body> saveNotificationTimes(MyFindRoadNotification request);
+    List<Notification> saveNotificationTimes(MyFindRoadNotificationCreate request) throws JsonProcessingException;
 
-    ResponseEntity<Response.Body> getNotificationTimes(Long myPathId);
+    List<Notification> getNotificationTimes(Long myPathId);
 
-    ResponseEntity<Response.Body> deleteNotificationTimes(Long myPathId);
+    void deleteNotificationTimes(Long myPathId);
 
-    ResponseEntity<Response.Body> updateNotificationTimes(MyFindRoadNotification request);
+    List<Notification> updateNotificationTimes(MyFindRoadNotificationCreate request) throws JsonProcessingException;
 
-    ResponseEntity<Response.Body> getPathId(Long notificationId);
+    Long getPathId(Long notificationId);
 }

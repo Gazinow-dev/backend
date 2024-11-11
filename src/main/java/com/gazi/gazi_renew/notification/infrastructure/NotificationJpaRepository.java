@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findByMyFindRoadPathId(Long myFindRoadPathId);
+public interface NotificationJpaRepository extends JpaRepository<NotificationEntity, Long> {
+    List<NotificationEntity> findByMyFindRoadPathId(Long myFindRoadPathId);
 
-    void deleteByMyFindRoadPath(MyFindRoadPathEntity myFindRoadPathEntity);
+    void deleteByMyFindRoadPathEntity(MyFindRoadPathEntity myFindRoadPathEntity);
 }
