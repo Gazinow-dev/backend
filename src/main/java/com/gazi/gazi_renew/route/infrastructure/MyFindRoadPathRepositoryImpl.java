@@ -19,7 +19,7 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
 
     @Override
     public List<MyFindRoad> findAllByMemberOrderByIdDesc(Member member) {
-        return myFindRoadPathJpaRepository.findAllByMemberEntityOrderByIdDesc(MemberEntity.from(member)).stream()
+        return myFindRoadPathJpaRepository.findAllByMemberEntityIdOrderByIdDesc(member.getId()).stream()
                 .map(MyFindRoadPathEntity::toModel).collect(Collectors.toList());
     }
 
@@ -31,7 +31,7 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
     @Override
     public Optional<List<MyFindRoad>> findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(String startStation, String lastStation, Member member, int totalTime) {
         return myFindRoadPathJpaRepository
-                .findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(startStation, lastStation, MemberEntity.from(member), totalTime)
+                .findAllByFirstStartStationAndLastEndStationAndMemberEntityAndTotalTime(startStation, lastStation, MemberEntity.from(member), totalTime)
                 .map(entities -> entities.stream()
                         .map(MyFindRoadPathEntity::toModel)
                         .collect(Collectors.toList()));
@@ -44,7 +44,7 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
 
     @Override
     public List<MyFindRoad> findByMemberId(Long memberId) {
-        return myFindRoadPathJpaRepository.findByMemberId(memberId).stream()
+        return myFindRoadPathJpaRepository.findByMemberEntityId(memberId).stream()
                 .map(MyFindRoadPathEntity::toModel).collect(Collectors.toList());
     }
 

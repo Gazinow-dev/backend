@@ -2,17 +2,16 @@ package com.gazi.gazi_renew.member.service;
 
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
-import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.member.domain.dto.*;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
-import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.common.service.RedisUtilService;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -21,7 +20,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -85,7 +83,7 @@ public class MemberServiceImpl implements MemberService {
         UsernamePasswordAuthenticationToken authenticationToken = memberLogin.usernamePasswordAuthenticationToken();
             // login 시 받은 firebase token 저장
         member = member.saveFireBaseToken(memberLogin.getFirebaseToken());
-        memberRepository.save(member);
+        memberRepository.updateFireBaseToken(member);
         // 실제 검증 (사용자 비밀번호 체크)
         // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
         Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken); // 인증 정보를 기반으로 JWT 토큰 생성
@@ -153,6 +151,8 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         member = member.saveFireBaseToken(memberReissue.getFirebaseToken());
 
+        memberRepository.updateFireBaseToken(member);
+
         // 새로운 토큰 생성
         ResponseToken tokenInfo = jwtTokenProvider.generateMemberAndToken(authentication, member);
         // RefreshToken Redis 업데이트
@@ -170,7 +170,8 @@ public class MemberServiceImpl implements MemberService {
         } else {
             member = member.changeNickname(nickname);
 
-            return memberRepository.save(member);
+            memberRepository.updateNickname(member);
+            return member;
         }
     }
     @Override
@@ -178,6 +179,7 @@ public class MemberServiceImpl implements MemberService {
     public boolean checkPassword(MemberCheckPassword memberCheckPassword) {
         Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+
         return member.isMatchesPassword(passwordEncoder, memberCheckPassword, member);
     }
     @Override
@@ -190,7 +192,7 @@ public class MemberServiceImpl implements MemberService {
             String tempPassword = member.getTempPassword();
 
             member = member.changePassword(passwordEncoder, tempPassword);
-            memberRepository.save(member);
+            memberRepository.updatePassword(member);
             // 이메일로 임시비밀번호 전송
             MimeMessage message = createMessageToPassword(isMember.getEmail(), tempPassword);
             try{
@@ -213,8 +215,10 @@ public class MemberServiceImpl implements MemberService {
 
         if (checkPassword(memberCheckPassword)) {
             if (memberChangePassword.getChangePassword().equals(memberChangePassword.getConfirmPassword())) {
-                member.changePassword(passwordEncoder, memberChangePassword.getChangePassword());
-                return memberRepository.save(member);
+                member = member.changePassword(passwordEncoder, memberChangePassword.getChangePassword());
+
+                memberRepository.updatePassword(member);
+                return member;
             } else {
                 throw ErrorCode.throwInvalidPassword();
             }
@@ -286,16 +290,12 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(memberAlertAgree.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        member.updatePushNotificationEnabled(memberAlertAgree.isAlertAgree());
-        if (!memberAlertAgree.isAlertAgree()) {
-            member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
-        }
-        // 푸시알림이 켜지면 아래 알림도 다 켜져야함
-        if (memberAlertAgree.isAlertAgree()) {
-            member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
-            member.updateRouteDetailNotificationEnabled(memberAlertAgree.isAlertAgree());
-        }
-        return memberRepository.save(member);
+        member = member.updatePushNotificationEnabled(memberAlertAgree.isAlertAgree());
+        member = member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
+        member = member.updateRouteDetailNotificationEnabled(memberAlertAgree.isAlertAgree());
+
+        memberRepository.updateAlertAgree(member);
+        return member;
     }
     /**
      * 내가 저장한 경로 알림 활성/비활성 메서드
@@ -308,11 +308,12 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         boolean alertAgree = memberAlertAgree.isAlertAgree();
 
-        member.updateMySavedRouteNotificationEnabled(alertAgree);
+        member = member.updateMySavedRouteNotificationEnabled(alertAgree);
         if (!memberAlertAgree.isAlertAgree()) {
-            member.updateRouteDetailNotificationEnabled(alertAgree);
+            member = member.updateRouteDetailNotificationEnabled(alertAgree);
         }
-        return memberRepository.save(member);
+        memberRepository.updateAlertAgree(member);
+        return member;
     }
     /**
      * 경로별 상세 설정 알림 활성/비활성 메서드
@@ -325,23 +326,20 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         boolean alertAgree = memberAlertAgree.isAlertAgree();
 
-        member.updateRouteDetailNotificationEnabled(alertAgree);
+
         if (!memberAlertAgree.isAlertAgree()) {
             // myFindRoadService에서 경로 데이터를 가져옴
-            ResponseEntity<Response.Body> response = myFindRoadService.getRoutes();
-
-            // Response.Body에서 데이터를 추출
-            List<MyFindRoadResponse> routes = (List<MyFindRoadResponse>) response.getBody().getData();
-
+            List<MyFindRoad> myFindRoadList = myFindRoadService.getRoutes();
             // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
-            for (MyFindRoadResponse route : routes) {
+            for (MyFindRoad myFindRoad : myFindRoadList) {
                 // MyPathId를 넘겨서 삭제 메서드 호출
-                notificationService.deleteNotificationTimes(route.getId());
-                myFindRoadService.updateRouteNotification(route.getId(), false);
+                notificationService.deleteNotificationTimes(myFindRoad.getId());
+                myFindRoadService.updateRouteNotification(myFindRoad.getId(), false);
             }
-
         }
-        return memberRepository.save(member);
+        member = member.updateRouteDetailNotificationEnabled(alertAgree);
+        memberRepository.updateAlertAgree(member);
+        return member;
     }
     @Override
     @Transactional(readOnly = true)
@@ -370,7 +368,9 @@ public class MemberServiceImpl implements MemberService {
     public Member saveFcmToken(MemberFcmToken memberFcmToken) {
         Member member = memberRepository.findByEmail(memberFcmToken.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         member = member.saveFcmToken(memberFcmToken.getFirebaseToken());
-        return memberRepository.save(member);
+        memberRepository.updateFireBaseToken(member);
+
+        return member;
     }
 
     private MimeMessage createMessageToPassword(String to, String password)throws Exception{

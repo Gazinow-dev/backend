@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import jakarta.persistence.*;
 import lombok.*;
 

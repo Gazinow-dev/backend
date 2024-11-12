@@ -46,4 +46,25 @@ public class MemberRepositoryImpl implements MemberRepository {
         memberJpaRepository.delete(MemberEntity.from(member));
     }
 
+    @Override
+    public void updateFireBaseToken(Member member) {
+        memberJpaRepository.updateFireBaseToken(member.getFirebaseToken(), member.getEmail());
+    }
+
+    @Override
+    public void updateNickname(Member member) {
+        memberJpaRepository.updateNickname(member.getId(), member.getNickName());
+    }
+
+    @Override
+    public void updatePassword(Member member) {
+        memberJpaRepository.updatePassword(member.getId(), member.getPassword());
+    }
+
+    @Override
+    public void updateAlertAgree(Member member) {
+        memberJpaRepository.updateAlertAgree(member.getPushNotificationEnabled(), member.getMySavedRouteNotificationEnabled(),
+                member.getRouteDetailNotificationEnabled(), member.getEmail());
+    }
+
 }

@@ -18,13 +18,12 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public List<Notification> findByMyFindRoadPathId(Long myFindRoadPathId) {
-        return notificationJpaRepository.findByMyFindRoadPathId(myFindRoadPathId).stream()
+        return notificationJpaRepository.findByMyFindRoadPathEntityId(myFindRoadPathId).stream()
                 .map(NotificationEntity::toModel).collect(Collectors.toList());
     }
 
     public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        notificationJpaRepository.deleteByMyFindRoadPathEntity(MyFindRoadPathEntity.from(myFindRoad));
-        // TODO : REMOVE 먼저 되는지 확인
+        notificationJpaRepository.deleteByMyFindRoadPathEntityId(myFindRoad.getId());
         notificationJpaRepository.flush();
     }
 

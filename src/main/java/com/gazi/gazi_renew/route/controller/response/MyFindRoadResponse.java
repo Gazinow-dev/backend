@@ -1,12 +1,11 @@
 package com.gazi.gazi_renew.route.controller.response;
 
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueSummary;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStation;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDateTime;
@@ -121,7 +120,7 @@ public class MyFindRoadResponse {
             //서브패스를 찾는다.
             List<SubPath> subPaths = new ArrayList<>();
             // subpathID로 lane과 station을 찾는다.
-            for(MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getMyFindRoadSubPaths()){
+            for(MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()){
                 SubPath subPathResponse = SubPath.builder()
                         .way(myFindRoadSubPath.getWay())
                         .door(myFindRoadSubPath.getDoor())
@@ -159,17 +158,18 @@ public class MyFindRoadResponse {
                         List<Issue> issueList = myFindRoadStation.getIssueList();
                         // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
                         LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-
-                        for (Issue issue : issueList) {
-                            if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
-                                activeIssue.add(issue);
+                        if (issueList != null) {
+                            for (Issue issue : issueList) {
+                                if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                                    activeIssue.add(issue);
+                                }
                             }
                         }
                         List<IssueSummary> issueSummaryDtoList =IssueSummary.getIssueSummaryDto(activeIssue);
                         MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                 .stationName(myFindRoadStation.getStationName())
                                 .index(myFindRoadStation.getIndex())
-                                .issueSummary(IssueSummary.getIssueSummaryDto(activeIssue))
+                                .issueSummary(issueSummaryDtoList)
                                 .build();
                         stations.add(station);
 
@@ -199,7 +199,7 @@ public class MyFindRoadResponse {
     }
     public static MyFindRoadResponse from(MyFindRoad myFindRoad) {
         List<SubPath> subPaths = new ArrayList<>();
-        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getMyFindRoadSubPaths()) {
+        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
             SubPath.SubPathBuilder subPathBuilder = SubPath.builder()
                     .way(myFindRoadSubPath.getWay())
                     .door(myFindRoadSubPath.getDoor())
@@ -228,9 +228,11 @@ public class MyFindRoadResponse {
                     List<Issue> issueList = myFindRoadStation.getIssueList();
                     List<Issue> activeIssues = new ArrayList<>();
                     LocalDateTime currentDateTime = LocalDateTime.now();
-                    for (Issue issue : issueList) {
-                        if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
-                            activeIssues.add(issue);
+                    if (issueList != null) {
+                        for (Issue issue : issueList) {
+                            if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
+                                activeIssues.add(issue);
+                            }
                         }
                     }
                     List<IssueSummary> issueSummaryDtoList = IssueSummary.getIssueSummaryDto(activeIssues);

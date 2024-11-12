@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.issue.controller.response;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.station.domain.Line;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class IssueResponse {
     private final LocalDateTime startDate;
     private final LocalDateTime expireDate;
     private final List<StationDto> stationDtos;
+    @Getter
     public static class StationDto {
         private final String line;
         private final String stationName;
@@ -76,7 +78,9 @@ public class IssueResponse {
                 .title(issue.getTitle())
                 .content(issue.getContent())
                 .agoTime(getTime(issue.getStartDate()))
-                .lines(issue.getLines())
+                .lines(issue.getLines().stream()
+                        .map(Line::getLineName)
+                        .collect(Collectors.toList()))
                 .likeCount(issue.getLikeCount())
                 .startDate(issue.getStartDate())
                 .expireDate(issue.getExpireDate())
@@ -97,7 +101,9 @@ public class IssueResponse {
                 .content(issueDetail.getIssue().getContent())
                 .agoTime(getTime(issueDetail.getIssue().getStartDate()))
                 .isLike(issueDetail.isLike())
-                .lines(issueDetail.getIssue().getLines())
+                .lines(issueDetail.getIssue().getLines().stream()
+                        .map(Line::getLineName)
+                        .collect(Collectors.toList()))
                 .likeCount(issueDetail.getIssue().getLikeCount())
                 .startDate(issueDetail.getIssue().getStartDate())
                 .expireDate(issueDetail.getIssue().getExpireDate())
@@ -121,7 +127,9 @@ public class IssueResponse {
                             .content(issue.getContent())
                             .keyword(issue.getKeyword())
                             .stationDtos(stationDtoList)
-                            .lines(issue.getLines())
+                            .lines(issue.getLines().stream()
+                                    .map(Line::getLineName)
+                                    .collect(Collectors.toList()))
                             .startDate(issue.getStartDate())
                             .expireDate(issue.getExpireDate())
                             .agoTime(getTime(issue.getStartDate()))

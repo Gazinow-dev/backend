@@ -16,4 +16,12 @@ public interface MemberRepository {
     Member save(Member member);
 
     void delete(Member member);
+
+    void updateFireBaseToken(Member member);
+
+    void updateNickname(Member member);
+
+    void updatePassword(Member member);
+
+    void updateAlertAgree(Member member);
 }

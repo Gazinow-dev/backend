@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.station.controller.port;
 
-import com.gazi.gazi_renew.station.domain.FindRoadRequest;
+import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import org.springframework.http.ResponseEntity;
 

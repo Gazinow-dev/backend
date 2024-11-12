@@ -1,6 +1,8 @@
 package com.gazi.gazi_renew.common.exception;
 
 import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.common.exception.CustomException;
+import com.gazi.gazi_renew.common.exception.ErrorCode;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

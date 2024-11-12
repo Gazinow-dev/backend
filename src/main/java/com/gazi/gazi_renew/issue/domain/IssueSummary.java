@@ -4,10 +4,7 @@ import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -27,6 +24,9 @@ public class IssueSummary {
     }
 
     public static List<IssueSummary> getIssueSummaryDto(List<Issue> issueList){
+        if (issueList == null) {
+            return Collections.emptyList(); // issueList가 null일 경우 빈 리스트 반환
+        }
         List<IssueSummary> issueSummaryDto = issueList.stream().map(
                 m ->{
                     return IssueSummary.builder()

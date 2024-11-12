@@ -17,23 +17,10 @@ public class SubwayRepositoryImpl implements SubwayRepository {
         return subwayJpaRepository.findByNameStartingWith(name).stream()
                 .map(StationEntity::toModel).collect(Collectors.toList());
     }
-
     @Override
     public Station findCoordinateByNameAndLine(String name, String line) {
         return subwayJpaRepository.findByNameAndLine(name, line).toModel();
     }
-
-    @Override
-    public boolean existsByStationCode(int stationCode) {
-        return subwayJpaRepository.existsByStationCode(stationCode);
-    }
-
-    @Override
-    public List<Station> findByLine(String line) {
-        return subwayJpaRepository.findByLine(line).stream()
-                .map(StationEntity::toModel).collect(Collectors.toList());
-    }
-
     @Override
     public List<Station> findByIssueStationCodeBetween(int lowerCode, int upperCode) {
         return subwayJpaRepository.findByIssueStationCodeBetween(lowerCode, upperCode).stream()
@@ -44,5 +31,10 @@ public class SubwayRepositoryImpl implements SubwayRepository {
     public List<Station> findByNameContainingAndLine(String name, String line) {
         return subwayJpaRepository.findByNameContainingAndLine(name, line).stream()
                 .map(StationEntity::toModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public void save(Station station) {
+        subwayJpaRepository.save(StationEntity.from(station));
     }
 }

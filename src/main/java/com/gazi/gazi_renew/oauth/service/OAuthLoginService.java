@@ -2,12 +2,11 @@ package com.gazi.gazi_renew.oauth.service;
 
 import com.gazi.gazi_renew.common.config.AppleProperties;
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
-import com.gazi.gazi_renew.member.domain.enums.Role;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.oauth.domain.OAuthLoginParams;
-import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class OAuthLoginService {
 
     private final MemberService memberService;
-    private final MemberJpaRepository memberJpaRepository;
+    private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RequestOAuthInfoService requestOAuthInfoService;
 
@@ -97,46 +96,29 @@ public class OAuthLoginService {
     }
     public ResponseEntity<Void> login(OAuthLoginParams params) {
         OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
-        MemberEntity memberEntity = findOrCreateMember(oAuthInfoResponse);
+        Member member = findOrCreateMember(oAuthInfoResponse);
 
         Collection<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberEntity.getEmail(), null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), null, authorities);
 
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
-        responseToken.setEmail(memberEntity.getEmail());
-        responseToken.setNickName(memberEntity.getNickName());
+        responseToken = responseToken.login(member.getEmail(), member.getNickName());
         //redis에 refresh token 저장
         saveRefreshToken(authentication, responseToken);
 
         return createRedirectResponse(responseToken);
     }
-    private MemberEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
-        return memberJpaRepository.findByEmail(oAuthInfoResponse.getEmail())
+    private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
+        return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
                 .orElseGet(() -> newMember(oAuthInfoResponse));
     }
-    private MemberEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
-        String email = oAuthInfoResponse.getEmail();
-        String nickname = oAuthInfoResponse.getNickname();
-        // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
-        if (nickname == null || nickname.isEmpty()) {
-            nickname = email.substring(0, email.indexOf("@"));
-        }
-        MemberEntity memberEntity = MemberEntity.builder()
-                .pushNotificationEnabled(true)
-                .mySavedRouteNotificationEnabled(true)
-                .routeDetailNotificationEnabled(true)
-                .email(email)
-                .password(passwordEncoder.encode("dummy"))
-                .role(Role.valueOf("ROLE_USER"))
-                .nickName(nickname)
-                .provider(oAuthInfoResponse.getOAuthProvider())
-                .build();
+    private Member newMember(OAuthInfoResponse oAuthInfoResponse) {
+        Member member = Member.saveSocialLoginMember(oAuthInfoResponse, passwordEncoder);
+        memberService.validateEmail(member.getEmail());
+        memberService.validateNickName(member.getNickName());
+        memberRepository.save(member);
 
-        memberService.validateEmail(memberEntity.getEmail());
-        memberService.validateNickName(memberEntity.getNickName());
-        memberJpaRepository.save(memberEntity);
-
-        return memberEntity;
+        return member;
     }
     // URI 생성과 리다이렉트 응답을 담당하는 메서드
     private ResponseEntity<Void> createRedirectResponse(ResponseToken responseToken) {

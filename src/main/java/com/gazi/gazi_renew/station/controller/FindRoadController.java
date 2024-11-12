@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.station.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
-import com.gazi.gazi_renew.station.domain.FindRoadRequest;
+import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.station.controller.port.FindRoadService;
@@ -49,13 +49,13 @@ public class FindRoadController extends BaseController {
             @RequestParam String endStationLine
     ) throws IOException {
 
-        FindRoadRequest request = FindRoadRequest.builder()
+        FindRoadRequest findRoadRequest = FindRoadRequest.builder()
                 .strStationName(strStationName)
                 .strStationLine(strStationLine)
                 .endStationName(endStationName)
                 .endStationLine(endStationLine).build();
 
-        return findRoadService.findRoad(request);
+        return findRoadService.findRoad(findRoadRequest);
     }
 
 }

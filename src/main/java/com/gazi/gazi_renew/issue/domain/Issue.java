@@ -1,6 +1,8 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
 import lombok.*;
 
@@ -18,12 +20,12 @@ public class Issue {
     private final String secretCode;
     private final String crawlingNo;
     private final IssueKeyword keyword;
-    private final List<String> lines;
+    private final List<Line> lines;
     private final List<Station> stationList;
     private final int latestNo;
     private final int likeCount;
     @Builder
-    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<String> lines, List<Station> stationList, int latestNo, int likeCount) {
+    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<Line> lines, List<Station> stationList, int latestNo, int likeCount) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -37,6 +39,7 @@ public class Issue {
         this.latestNo = latestNo;
         this.likeCount = likeCount;
     }
+    // 이슈 업데이트 (도메인 객체 행동 부여)
     public Issue update(IssueUpdate issueUpdate) {
         return Issue.builder()
                 .id(this.id)
@@ -55,12 +58,9 @@ public class Issue {
     }
 
     public static Issue from(IssueCreate issueCreate, List<Station> stationList) {
-//        List<IssueStation> issueStationList = stationList.stream()
-//                .map(station -> new IssueStation(
-//                        station.getLine(),
-//                        station.getName()))
-//                .collect(Collectors.toList());
-
+        List<Line> lineList = issueCreate.getLines().stream().map(lineName -> Line.builder()
+                .lineName(lineName)
+                .build()).collect(Collectors.toList());
         return Issue.builder()
                 .title(issueCreate.getTitle())
                 .content(issueCreate.getContent())
@@ -69,21 +69,9 @@ public class Issue {
                 .secretCode(issueCreate.getSecretCode())
                 .crawlingNo(issueCreate.getCrawlingNo())
                 .keyword(issueCreate.getKeyword())
-                .lines(issueCreate.getLines())
+                .lines(lineList)
                 .stationList(stationList)
                 .latestNo(issueCreate.getLatestNo())
                 .build();
     }
-//    @Getter
-//    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-//    public static class IssueStation {
-//        private final String line;
-//        private final String stationName;
-//        @Builder
-//        public IssueStation(String line, String stationName) {
-//            this.line = line;
-//            this.stationName = stationName;
-//        }
-//        public static IssueStation from()
-//    }
 }

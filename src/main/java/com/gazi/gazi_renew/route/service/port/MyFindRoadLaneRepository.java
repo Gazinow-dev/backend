@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.route.service.port;
 
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 
 import java.util.Optional;
 

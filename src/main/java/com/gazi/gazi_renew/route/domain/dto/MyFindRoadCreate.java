@@ -12,15 +12,15 @@ public class MyFindRoadCreate {
     private final int stationTransitCount;
     private final String firstStartStation;
     private final String lastEndStation;
-    private final List<MyFindRoadSubPath> myFindRoadSubPaths;
+    private final List<MyFindRoadSubPathCreate> subPaths;
     @Builder
-    public MyFindRoadCreate(String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, List<MyFindRoadSubPath> myFindRoadSubPaths) {
+    public MyFindRoadCreate(String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, List<MyFindRoadSubPathCreate> subPaths) {
         this.roadName = roadName;
         this.totalTime = totalTime;
         this.stationTransitCount = stationTransitCount;
         this.firstStartStation = firstStartStation;
         this.lastEndStation = lastEndStation;
-        this.myFindRoadSubPaths = myFindRoadSubPaths;
+        this.subPaths = subPaths;
     }
 
 }

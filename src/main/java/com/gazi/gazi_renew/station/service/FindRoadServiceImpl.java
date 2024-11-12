@@ -4,21 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueSummary;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
-import com.gazi.gazi_renew.issue.service.IssueServiceImpl;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.station.controller.port.FindRoadService;
-import com.gazi.gazi_renew.station.infrastructure.LineEntity;
-import com.gazi.gazi_renew.station.infrastructure.LineRepository;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
-import com.gazi.gazi_renew.station.domain.FindRoadRequest;
+import com.gazi.gazi_renew.station.domain.Line;
+import com.gazi.gazi_renew.station.domain.Station;
+import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
-import com.gazi.gazi_renew.station.controller.response.SubwayDataResponse;
-import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.member.infrastructure.jpa.MemberJpaRepository;
-import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadPathJpaRepository;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.station.service.port.LineRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -45,9 +42,8 @@ public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;
     private final StationService stationService;
-    private final MemberJpaRepository memberJpaRepository;
-    private final MyFindRoadPathJpaRepository myFindRoadPathJpaRepository;
-    private final IssueServiceImpl issueService;
+    private final MemberRepository memberRepository;
+    private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final LineRepository lineRepository;
     @Value("${odsay.key}")
     public String apiKey;
@@ -109,16 +105,16 @@ public class FindRoadServiceImpl implements FindRoadService {
 
     @Override
     @Transactional
-    public ResponseEntity<Response.Body> findRoad(FindRoadRequest request) throws IOException {
+    public ResponseEntity<Response.Body> findRoad(FindRoadRequest findRoadRequest) throws IOException {
 
-        Optional<MemberEntity> member = memberJpaRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
-        stationService.getCoordinateByNameAndLine(request.getStrStationName(), request.getStrStationLine());
+        Station startStation = stationService.getCoordinateByNameAndLine(findRoadRequest.getStrStationName(), findRoadRequest.getStrStationLine());
         // 종착역 이름과 호선으로 데이터 찾기
-        SubwayDataResponse endSubwayInfo = stationService.getCoordinateByNameAndLine(request.getEndStationName(), request.getEndStationLine());
+        Station endStation = stationService.getCoordinateByNameAndLine(findRoadRequest.getEndStationName(), findRoadRequest.getEndStationLine());
 
-        JSONObject json = getJsonArray(strSubwayInfo.getLng(), strSubwayInfo.getLat(), endSubwayInfo.getLng(), endSubwayInfo.getLat());
+        JSONObject json = getJsonArray(startStation.getLng(), startStation.getLat(), endStation.getLng(), endStation.getLat());
 
         String jsonString = json.toString();
 
@@ -144,7 +140,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
                 if(member.isPresent()) {
-                    Optional<List<MyFindRoadPathEntity>> myFindRoadPath = myFindRoadPathJpaRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
+                    Optional<List<MyFindRoad>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
                             pathNode.path("info").path("firstStartStation").asText(),
                             pathNode.path("info").path("lastEndStation").asText(),
                             member.get(),
@@ -154,8 +150,8 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                     if (myFindRoadPath.get().size() > 0) {
                         path.setMyPath(true);
-                        for (MyFindRoadPathEntity myFindRoadPathEntity1 : myFindRoadPath.get()) {
-                            myPathId.add(myFindRoadPathEntity1.getId());
+                        for (MyFindRoad myFindRoad : myFindRoadPath.get()) {
+                            myPathId.add(myFindRoad.getId());
                         }
                         path.setMyPathId(myPathId);
                     } else {
@@ -204,13 +200,13 @@ public class FindRoadServiceImpl implements FindRoadService {
                         if(stationArray.size() >= 2){
                             subPath.setWay(stationArray.get(1).path("stationName").asText());
                         }
-                        List<IssueResponse.IssueSummaryDto> issueDtoList = new ArrayList<>();
+                        List<IssueSummary> issueDtoList = new ArrayList<>();
                         for (JsonNode stationNode : stationArray) {
                             System.out.println("lineName :" + lineName);
                             if(lineName.equals("수도권 9호선(급행)")){
                                 lineName = "수도권 9호선";
                             }
-                            LineEntity lineEntity = lineRepository.findByLineName(lineName).orElseThrow(
+                            Line line = lineRepository.findByLineName(lineName).orElseThrow(
                                     () -> new EntityNotFoundException("호선으로된 데이터 정보를 찾을 수 없습니다.")
                             );
 
@@ -221,16 +217,17 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                             System.out.println(stationNode.path("stationName").asText());
                             //staion 찾고 이슈 리스트 받기
-                            StationEntity stationEntity = stationService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
-                            List<IssueEntity> issueEntities = stationEntity.getIssueEntities();
-                            List<IssueEntity> activeIssueEntities = new ArrayList<>();
+                            Station stationName = stationService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
+
+                            List<Issue> issueEntities = stationName.getIssueList();
+                            List<Issue> activeIssueEntities = new ArrayList<>();
                             // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
                             LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
 
-                            for (IssueEntity issueEntity : issueEntities) {
+                            for (Issue issue : issueEntities) {
                                 // 만약 현재시간 시작시간 이전이고 만료시간이 현재시간 이후이면
-                                if (currentDateTime.isAfter(issueEntity.getStartDate()) && currentDateTime.isBefore(issueEntity.getExpireDate())) {
-                                    activeIssueEntities.add(issueEntity);
+                                if (currentDateTime.isAfter(issue.getStartDate()) && currentDateTime.isBefore(issue.getExpireDate())) {
+                                    activeIssueEntities.add(issue);
                                 }
                             }
 
@@ -240,11 +237,8 @@ public class FindRoadServiceImpl implements FindRoadService {
                             stations.add(station);
                         }
                         if(!subPath.getLanes().isEmpty()){
-
-
-                            subPath.getLanes().get(0).setIssueSummary(IssueResponse.IssueSummaryDto.getIssueSummaryDtoByLine(issueDtoList));
+                            subPath.getLanes().get(0).setIssueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList));
                         }
-
                         subPath.setStations(stations);
                         subPaths.add(subPath);
                     }
@@ -266,7 +260,6 @@ public class FindRoadServiceImpl implements FindRoadService {
         }
 
     }
-
 
     public ArrayList<FindRoadResponse.TransitStation> getTransitStation(FindRoadResponse.Path path) {
 

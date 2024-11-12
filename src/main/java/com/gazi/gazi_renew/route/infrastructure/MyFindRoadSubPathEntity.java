@@ -1,11 +1,12 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,9 +25,9 @@ public class MyFindRoadSubPathEntity {
     @ManyToOne
     @JoinColumn(name = "my_find_road_path_id", nullable = false)
     private MyFindRoadPathEntity myFindRoadPathEntity;
-    @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "myFindRoadSubPathEntity", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<MyFindRoadLaneEntity> lanes = new ArrayList<>();
-    @OneToMany(mappedBy = "myFindRoadSubPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "myFindRoadSubPathEntity", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<MyFindRoadStationEntity> stations = new ArrayList<>();
 
     public static MyFindRoadSubPathEntity from(MyFindRoadSubPath myFindRoadSubPath) {
@@ -42,12 +43,16 @@ public class MyFindRoadSubPathEntity {
     }
     public MyFindRoadSubPath toModel() {
         return MyFindRoadSubPath.builder()
+                .id(id)
                 .trafficType(trafficType)
                 .distance(distance)
                 .sectionTime(sectionTime)
                 .stationCount(stationCount)
                 .door(door)
                 .way(way)
+                .lanes(lanes.stream().map(MyFindRoadLaneEntity::toModel).collect(Collectors.toList()))
+                .stations(stations.stream().map(MyFindRoadStationEntity::toModel).collect(Collectors.toList()))
                 .build();
     }
+
 }

@@ -52,4 +52,9 @@ public class IssueRepositoryImpl implements IssueRepository {
     public Optional<Issue> findById(Long id) {
         return issueJpaRepository.findById(id).map(IssueEntity::toModel);
     }
+
+    @Override
+    public void updateContent(Issue issue) {
+        issueJpaRepository.updateContent(issue.getId(), issue.getContent());
+    }
 }

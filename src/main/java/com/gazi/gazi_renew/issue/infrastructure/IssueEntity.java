@@ -1,9 +1,10 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.station.domain.Station;
+import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.infrastructure.LineEntity;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
@@ -40,9 +41,10 @@ public class IssueEntity extends AuditingFields {
     private IssueKeyword keyword;
     @Column(nullable = true)
     private Integer latestNo;
-    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "issueEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LikeEntity> likeEntities = new HashSet<>();
     // 다대다 관계 매핑
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "issue_station",
@@ -50,7 +52,7 @@ public class IssueEntity extends AuditingFields {
             inverseJoinColumns = @JoinColumn(name = "station_id")
     )
     private List<StationEntity> stationEntities;
-
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "issue_line",
@@ -69,20 +71,16 @@ public class IssueEntity extends AuditingFields {
         issueEntity.stationEntities = issue.getStationList().stream()
                 .map(StationEntity::from)
                 .collect(Collectors.toList());
+        issueEntity.lineEntities = issue.getLines().stream()
+                .map(LineEntity::from)
+                .collect(Collectors.toList());
         issueEntity.keyword = issue.getKeyword();
-        issueEntity.lineEntities = issue.getLines().stream().map(from());
         issueEntity.latestNo = issue.getLatestNo();
 
         return issueEntity;
     }
 
     public Issue toModel(){
-//        List<Issue.IssueStation> issueStations = stationEntities.stream().map(stationEntity -> Issue.IssueStation.builder()
-//                .stationName(stationEntity.getName())
-//                .line(stationEntity.getLine())
-//                .build()
-//        ).collect(Collectors.toList());
-
         return Issue.builder()
                 .id(id)
                 .title(title)
@@ -91,7 +89,7 @@ public class IssueEntity extends AuditingFields {
                 .expireDate(expireDate)
                 .crawlingNo(crawlingNo)
                 .keyword(keyword)
-                .lines(lineEntities.stream().map(LineEntity::getLineName).collect(Collectors.toList()))
+                .lines(lineEntities.stream().map(LineEntity::toModel).collect(Collectors.toList()))
                 .stationList(stationEntities.stream().map(StationEntity::toModel).collect(Collectors.toList()))
                 .latestNo(latestNo)
                 .likeCount(likeEntities.size())

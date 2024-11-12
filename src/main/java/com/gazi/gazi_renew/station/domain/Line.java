@@ -19,8 +19,8 @@ public class Line {
         this.issueList = issueList;
     }
 
-    public void addIssue(List<Issue> issueList) {
-             Line.builder()
+    public Line addIssue(List<Issue> issueList) {
+             return Line.builder()
                 .id(this.id)
                 .lineName(this.lineName)
                 .issueList(issueList)

@@ -2,25 +2,31 @@ package com.gazi.gazi_renew.route.service;
 
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStation;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadLaneRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
+import com.gazi.gazi_renew.station.domain.Station;
+import com.gazi.gazi_renew.station.service.StationService;
+import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,15 +39,15 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final StationService stationService;
 
     @Override
     @Transactional(readOnly = true)
     public  List<MyFindRoad> getRoutes() {
         Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
         List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
-        return myFindRoadList;
+        return getStationList(myFindRoadList);
     }
-
     @Override
     @Transactional(readOnly = true)
     public List<MyFindRoad> getRoutesByMember(Long memberId) {
@@ -68,7 +74,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         }
         myFindRoadPathRepository.save(myFindRoad);
         log.info("myFindRoadPath 저장");
-        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoadCreate.getMyFindRoadSubPaths()) {
+
+        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
             myFindRoadSubPathRepository.save(myFindRoadSubPath);
             log.info("myFindRoadSubPath 저장");
             for (MyFindRoadLane myFindRoadLane: myFindRoadSubPath.getLanes()) {
@@ -76,6 +83,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 log.info("MyFindRoadLane 저장 완료");
             }
             for (MyFindRoadStation myFindRoadStation : myFindRoadSubPath.getStations()) {
+
                 myFindRoadSubwayRepository.save(myFindRoadStation, myFindRoadSubPath);
                 log.info("MyFindRoadSubway 저장 완료");
             }
@@ -98,4 +106,22 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         myFindRoad = myFindRoad.updateNotification(enabled);
         myFindRoadPathRepository.save(myFindRoad);
     }
+    private List<MyFindRoad> getStationList(List<MyFindRoad> myFindRoadList) {
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
+                MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(myFindRoadSubPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+                List<MyFindRoadStation> myFindRoadStationList = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(myFindRoadSubPath);
+
+                for (MyFindRoadStation myFindRoadStation : myFindRoadStationList) {
+                    Station station = stationService.getStationByNameAndLine(myFindRoadStation.getStationName(), myFindRoadLane.getName());
+                    if (station != null) {
+                        List<Issue> issueList = station.getIssueList();
+                        myFindRoadStation = myFindRoadStation.updateIssueList(issueList);
+                    }
+                }
+            }
+        }
+        return myFindRoadList;
+    }
+
 }

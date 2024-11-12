@@ -2,6 +2,8 @@ package com.gazi.gazi_renew.member.domain;
 
 import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
+import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
+import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import lombok.Builder;
@@ -24,9 +26,8 @@ public class Member {
     private final Boolean routeDetailNotificationEnabled;
     private final String firebaseToken;
     private final LocalDateTime createdAt;
-    private final List<RecentSearch> recentSearchList;
     @Builder
-    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean routeDetailNotificationEnabled, String firebaseToken, LocalDateTime createdAt, List<RecentSearch> recentSearchList) {
+    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean routeDetailNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -38,7 +39,26 @@ public class Member {
         this.routeDetailNotificationEnabled = routeDetailNotificationEnabled;
         this.firebaseToken = firebaseToken;
         this.createdAt = createdAt;
-        this.recentSearchList = recentSearchList;
+    }
+
+    public static Member saveSocialLoginMember(OAuthInfoResponse oAuthInfoResponse, PasswordEncoder passwordEncoder) {
+        String email = oAuthInfoResponse.getEmail();
+        String nickname = oAuthInfoResponse.getNickname();
+        // 소셜로그인으로 회원 가입 시 nickname이 null일 경우 임의로 메일의 id로 대체
+        if (nickname == null || nickname.isEmpty()) {
+            nickname = email.substring(0, email.indexOf("@"));
+        }
+
+        return Member.builder()
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
+                .email(email)
+                .password(passwordEncoder.encode("dummy"))
+                .role(Role.valueOf("ROLE_USER"))
+                .nickName(nickname)
+                .provider(oAuthInfoResponse.getOAuthProvider())
+                .build();
     }
     public static Member from(MemberCreate memberCreate, PasswordEncoder passwordEncoder) {
         return Member.builder()
@@ -54,13 +74,14 @@ public class Member {
     }
     public Member saveFireBaseToken(String firebaseToken) {
         return Member.builder()
-                .email(this.email)
-                .password(this.password)
-                .nickName(this.nickName)
-                .role(this.role)
-                .pushNotificationEnabled(this.pushNotificationEnabled)
-                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .id(id)
+                .email(email)
+                .password(password)
+                .nickName(nickName)
+                .role(role)
+                .pushNotificationEnabled(pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .build();
     }

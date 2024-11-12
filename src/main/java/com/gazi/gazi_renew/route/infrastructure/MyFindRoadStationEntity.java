@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStation;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +24,13 @@ public class MyFindRoadStationEntity {
         myFindRoadStationEntity.stationName = myFindRoadStation.getStationName();
         myFindRoadStationEntity.myFindRoadSubPathEntity = MyFindRoadSubPathEntity.from(myFindRoadSubPath);
 
-        return null;
+        return myFindRoadStationEntity;
+    }
+
+    public MyFindRoadStation toModel() {
+        return MyFindRoadStation.builder()
+                .index(index)
+                .stationName(stationName)
+                .build();
     }
 }

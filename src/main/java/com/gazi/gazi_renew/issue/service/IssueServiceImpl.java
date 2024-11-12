@@ -8,17 +8,16 @@ import com.gazi.gazi_renew.issue.domain.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.IssueUpdate;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
+import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
 import com.gazi.gazi_renew.station.domain.Station;
-import com.gazi.gazi_renew.station.infrastructure.LineRepository;
-import com.gazi.gazi_renew.station.infrastructure.StationEntity;
-import com.gazi.gazi_renew.station.infrastructure.SubwayJpaRepository;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.station.service.port.LineRepository;
+import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +36,7 @@ public class IssueServiceImpl implements IssueService {
 
     private final IssueRepository issueRepository;
     private final LikeRepository likeRepository;
-    private final SubwayJpaRepository subwayJpaRepository;
+    private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
     private final RedisTemplate redisTemplate;
@@ -61,7 +60,10 @@ public class IssueServiceImpl implements IssueService {
 
         List<Station> stationList = getStationList(issueCreate.getStations());
         Issue issue = Issue.from(issueCreate, stationList);
-        List<Line> lineList = getLineList(issue.getLines());
+        List<String> lineNameList = issue.getLines().stream()
+                .map(Line::getLineName).collect(Collectors.toList());
+        List<Line> lineList = getLineList(lineNameList);
+
         issueRepository.save(issue);
 
         // Redis에 이슈 추가
@@ -72,14 +74,14 @@ public class IssueServiceImpl implements IssueService {
             List<Issue> issueList = station.getIssueList();
             issueList.add(issue);
             station.addIssue(issueList);
-            subwayJpaRepository.save(station);
+            subwayRepository.save(station);
         }
 
         // line에 추가
         for (Line line : lineList) {
             List<Issue> issueList = line.getIssueList();
             issueList.add(issue);
-            line.addIssue(issueList);
+            line = line.addIssue(issueList);
             lineRepository.save(line);
         }
         return true;
@@ -103,11 +105,9 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public IssueDetail getIssue(Long id) {
-        //TOdo member 도메인으로 변경
-        Optional<MemberEntity> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
-        //TOdo : like 도메인으로 변경
         boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue, member.get());
         return new IssueDetail(issue, isLike);
     }
@@ -129,9 +129,8 @@ public class IssueServiceImpl implements IssueService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<Issue> getLineByIssues(String line, Pageable pageable) {
-        //TOdo : line 도메인으로 변경
-        Line line = lineRepository.findByLineName(line).orElseThrow(
+    public Page<Issue> getLineByIssues(String lineName, Pageable pageable) {
+        Line line = lineRepository.findByLineName(lineName).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
         );
 
@@ -168,7 +167,7 @@ public class IssueServiceImpl implements IssueService {
                 () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
         );
         issue = issue.update(issueUpdate);
-        issueRepository.save(issue);
+        issueRepository.updateContent(issue);
     }
     private List<Station> getStationList(List<IssueCreate.Station> issueStations) {
         List<Station> stationEntityResponse = new ArrayList<>();
@@ -237,7 +236,7 @@ public class IssueServiceImpl implements IssueService {
     private List<Station> handleClockwiseDirection(int startStationCode, int endStationCode) {
         if (startStationCode < endStationCode) {
             // 구간이 연속되는 경우
-            return subwayJpaRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
+            return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
         } else {
             // 구간이 원형을 넘어가는 경우 (예: 역 번호가 큰 출발역에서 작은 도착역으로 이동)
             return getStationsForCircularRoute(startStationCode, endStationCode);
@@ -250,10 +249,10 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<StationEntity> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
+    private List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
         // 반시계일때, 구간이 시작역이 끝역코드보다 커야 연속
         if (startStationCode > endStationCode) {
-            return subwayJpaRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
+            return subwayRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
         } else {
             return getStationsForCircularRoute(endStationCode, startStationCode);
         }
@@ -268,8 +267,8 @@ public class IssueServiceImpl implements IssueService {
      */
     private List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode) {
         // 구간을 두 부분으로 나누어 처리
-        List<Station> leftList = subwayJpaRepository.findByIssueStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
-        List<Station> rightList = subwayJpaRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
+        List<Station> leftList = subwayRepository.findByIssueStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
+        List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
 
         // 두 구간의 결과를 합침
         leftList.addAll(rightList);
@@ -283,7 +282,7 @@ public class IssueServiceImpl implements IssueService {
      * @return 구간에 해당하는 Station 목록
      */
     private List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
-        return subwayJpaRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
+        return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
     }
 
 

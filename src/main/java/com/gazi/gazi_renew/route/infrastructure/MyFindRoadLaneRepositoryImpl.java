@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.route.infrastructure;
 
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLane;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.infrastructure.jpa.MyFindRoadLaneJpaRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadLaneRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class MyFindRoadLaneRepositoryImpl implements MyFindRoadLaneRepository {
     private final MyFindRoadLaneJpaRepository myFindRoadLaneJpaRepository;
     public Optional<MyFindRoadLane> findByMyFindRoadSubPath(MyFindRoadSubPath myFindRoadSubPath) {
-        return myFindRoadLaneJpaRepository.findByMyFindRoadSubPath(MyFindRoadSubPathEntity.from(myFindRoadSubPath)).map(MyFindRoadLaneEntity::toModel);
+        return myFindRoadLaneJpaRepository.findByMyFindRoadSubPathEntityId(myFindRoadSubPath.getId()).map(MyFindRoadLaneEntity::toModel);
     }
 
     @Override

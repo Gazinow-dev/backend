@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "my_find_road_path")
 @Entity
-public class MyFindRoadPathEntity {
+public class  MyFindRoadPathEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,9 +24,9 @@ public class MyFindRoadPathEntity {
     private String firstStartStation;
     private String lastEndStation;
 
-    @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "myFindRoadPathEntity", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
-    private List<MyFindRoadSubPathEntity> subPaths = new ArrayList<>();
+    private List<MyFindRoadSubPathEntity> myFindRoadPathEntity = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -34,7 +34,7 @@ public class MyFindRoadPathEntity {
     private String name;
     private Boolean notification;
 
-    @OneToMany(mappedBy = "myFindRoadPath", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "myFindRoadPathEntity", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
     private List<NotificationEntity> notificationEntities = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class MyFindRoadPathEntity {
         myFindRoadPathEntity.stationTransitCount = myFindRoad.getStationTransitCount();
         myFindRoadPathEntity.firstStartStation = myFindRoad.getFirstStartStation();
         myFindRoadPathEntity.lastEndStation = myFindRoad.getLastEndStation();
-        myFindRoadPathEntity.subPaths = myFindRoad.getMyFindRoadSubPaths().stream()
+        myFindRoadPathEntity.myFindRoadPathEntity = myFindRoad.getSubPaths().stream()
                 .map(MyFindRoadSubPathEntity::from)
                 .collect(Collectors.toList());
         myFindRoadPathEntity.memberEntity = MemberEntity.from(myFindRoad.getMember());
@@ -63,7 +63,7 @@ public class MyFindRoadPathEntity {
                 .firstStartStation(firstStartStation)
                 .lastEndStation(lastEndStation)
                 .member(memberEntity.toModel())
-                .myFindRoadSubPaths(subPaths.stream().map(MyFindRoadSubPathEntity::toModel)
+                .subPaths(myFindRoadPathEntity.stream().map(MyFindRoadSubPathEntity::toModel)
                         .collect(Collectors.toList()))
                 .notification(notification)
                 .build();

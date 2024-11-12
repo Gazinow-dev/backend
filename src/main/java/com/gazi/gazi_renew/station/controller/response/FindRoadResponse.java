@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.station.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
+import com.gazi.gazi_renew.issue.domain.IssueSummary;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,7 +54,7 @@ public class FindRoadResponse {
         String startName; //승차 정류장
         String endName; // 하차 정류장
         boolean direct; //급행여부
-        List<IssueResponse.IssueSummaryDto> issueSummary; // 호선에서 발생한 이슈
+        List<IssueSummary> issueSummary; // 호선에서 발생한 이슈
 
     }
     @Getter
@@ -74,7 +74,7 @@ public class FindRoadResponse {
         int index; // 정류장 순번
         String stationName;
         int stationCode; //역코드
-        List<IssueResponse.IssueSummaryDto> issueSummary; // 역에서 발생한 이슈
+        List<IssueSummary> issueSummary; // 역에서 발생한 이슈
     }
 
 

@@ -18,4 +18,6 @@ public interface IssueRepository {
     Page<Issue> findAll(Pageable pageable);
 
     Optional<Issue> findById(Long id);
+
+    void updateContent(Issue issue);
 }

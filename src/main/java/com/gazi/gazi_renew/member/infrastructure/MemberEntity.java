@@ -35,7 +35,7 @@ public class MemberEntity extends AuditingFields {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String nickName;
 
     @Enumerated(EnumType.STRING)
@@ -59,13 +59,13 @@ public class MemberEntity extends AuditingFields {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일시
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<RecentSearchEntity> recentSearchEntities = new LinkedList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<MyFindRoadPathEntity> myFindRoadPathEntities = new LinkedList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LikeEntity> likeEntities = new HashSet<>();
 
     @Builder
@@ -86,19 +86,15 @@ public class MemberEntity extends AuditingFields {
         memberEntity.routeDetailNotificationEnabled = member.getRouteDetailNotificationEnabled();
         memberEntity.firebaseToken = member.getFirebaseToken();
         memberEntity.createdAt = member.getCreatedAt();
-        memberEntity.recentSearchEntities = member.getRecentSearchList().stream()
-                .map(RecentSearchEntity::from).collect(Collectors.toList());
-
+//        memberEntity.recentSearchEntities = Optional.ofNullable(member.getRecentSearchList())
+//                .orElse(Collections.emptyList()) // null인 경우 빈 리스트로 대체
+//                .stream()
+//                .map(RecentSearchEntity::from)
+//                .collect(Collectors.toList());
         return memberEntity;
     }
 
     public Member toModel() {
-        List<RecentSearch> recentSearchList = Optional.ofNullable(recentSearchEntities)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(RecentSearchEntity::toModel)
-                .collect(Collectors.toList());
-
         return Member.builder()
                 .id(id)
                 .email(email)
@@ -111,7 +107,6 @@ public class MemberEntity extends AuditingFields {
                 .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .createdAt(createdAt)
-                .recentSearchList(recentSearchList)
                 .build();
     }
 

@@ -34,4 +34,16 @@ public class ResponseToken {
         this.notificationByRepost = notificationByRepost;
         this.notificationByLike = notificationByLike;
     }
+
+    public ResponseToken login(String email, String nickName) {
+        return ResponseToken.builder()
+                .grantType(this.grantType)
+                .accessToken(this.accessToken)
+                .refreshToken(this.refreshToken)
+                .accessTokenExpirationTime(this.accessTokenExpirationTime)
+                .refreshTokenExpirationTime(this.refreshTokenExpirationTime)
+                .email(email)
+                .nickName(nickName)
+                .build();
+    }
 }

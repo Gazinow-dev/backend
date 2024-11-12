@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface NotificationJpaRepository extends JpaRepository<NotificationEntity, Long> {
-    List<NotificationEntity> findByMyFindRoadPathId(Long myFindRoadPathId);
+    List<NotificationEntity> findByMyFindRoadPathEntityId(Long myFindRoadPathEntityId);
 
-    void deleteByMyFindRoadPathEntity(MyFindRoadPathEntity myFindRoadPathEntity);
+    void deleteByMyFindRoadPathEntityId(Long myFindRoadPathEntityId);
 }

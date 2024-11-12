@@ -2,11 +2,12 @@ package com.gazi.gazi_renew.route.domain;
 
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPath;
+import com.gazi.gazi_renew.station.domain.Station;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class MyFindRoad {
@@ -17,7 +18,7 @@ public class MyFindRoad {
     private final String firstStartStation;
     private final String lastEndStation;
     private final Member member;
-    private final List<MyFindRoadSubPath> myFindRoadSubPaths;
+    private final List<MyFindRoadSubPath> subPaths;
     private final Boolean notification;
 
     public static MyFindRoad from(MyFindRoadCreate myFindRoadCreate, Member member) {
@@ -28,12 +29,13 @@ public class MyFindRoad {
                 .firstStartStation(myFindRoadCreate.getFirstStartStation())
                 .lastEndStation(myFindRoadCreate.getLastEndStation())
                 .member(member)
-                .myFindRoadSubPaths(myFindRoadCreate.getMyFindRoadSubPaths())
+                .subPaths(myFindRoadCreate.getSubPaths().stream()
+                        .map(MyFindRoadSubPath::from).collect(Collectors.toList()))
                 .notification(false)
                 .build();
     }
     @Builder
-    public MyFindRoad(Long id, String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, Member member, List<MyFindRoadSubPath> myFindRoadSubPaths, Boolean notification) {
+    public MyFindRoad(Long id, String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, Member member, List<MyFindRoadSubPath> subPaths, Boolean notification) {
         this.id = id;
         this.roadName = roadName;
         this.totalTime = totalTime;
@@ -41,7 +43,7 @@ public class MyFindRoad {
         this.firstStartStation = firstStartStation;
         this.lastEndStation = lastEndStation;
         this.member = member;
-        this.myFindRoadSubPaths = myFindRoadSubPaths;
+        this.subPaths = subPaths;
         this.notification = notification;
     }
     public MyFindRoad updateNotification(Boolean enabled) {
@@ -52,7 +54,7 @@ public class MyFindRoad {
                 .firstStartStation(this.getFirstStartStation())
                 .lastEndStation(this.getLastEndStation())
                 .member(this.member)
-                .myFindRoadSubPaths(this.getMyFindRoadSubPaths())
+                .subPaths(this.getSubPaths())
                 .notification(enabled)
                 .build();
     }
