@@ -289,9 +289,6 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         member = member.updatePushNotificationEnabled(memberAlertAgree.isAlertAgree());
-        member = member.updateMySavedRouteNotificationEnabled(memberAlertAgree.isAlertAgree());
-        member = member.updateRouteDetailNotificationEnabled(memberAlertAgree.isAlertAgree());
-
         memberRepository.updateAlertAgree(member);
         return member;
     }
@@ -365,7 +362,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member saveFcmToken(MemberFcmToken memberFcmToken) {
         Member member = memberRepository.findByEmail(memberFcmToken.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        member = member.saveFcmToken(memberFcmToken.getFirebaseToken());
+        member = member.saveFireBaseToken(memberFcmToken.getFirebaseToken());
         memberRepository.updateFireBaseToken(member);
 
         return member;

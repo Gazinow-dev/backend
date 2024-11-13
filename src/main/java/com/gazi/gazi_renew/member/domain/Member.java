@@ -110,6 +110,7 @@ public class Member {
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
+    // 푸시 알림 꺼지면 내가 저장한 경로 및 상세 경로 알림까지 비활성화
     public Member updatePushNotificationEnabled(boolean alertAgree) {
         return Member.builder()
                 .id(this.id)
@@ -118,8 +119,8 @@ public class Member {
                 .nickName(this.nickName)
                 .role(this.role)
                 .pushNotificationEnabled(alertAgree)
-                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
+                .mySavedRouteNotificationEnabled(alertAgree)
+                .routeDetailNotificationEnabled(alertAgree)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -147,20 +148,6 @@ public class Member {
                 .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
                 .routeDetailNotificationEnabled(alertAgree)
                 .firebaseToken(this.firebaseToken)
-                .build();
-    }
-
-    public Member saveFcmToken(String firebaseToken) {
-        return Member.builder()
-                .id(this.id)
-                .email(this.email)
-                .password(this.password)
-                .nickName(this.nickName)
-                .role(this.role)
-                .pushNotificationEnabled(this.pushNotificationEnabled)
-                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
-                .firebaseToken(firebaseToken)
                 .build();
     }
     //비밀번호 일치 여부
