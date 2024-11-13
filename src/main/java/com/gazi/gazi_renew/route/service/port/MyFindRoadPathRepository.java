@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.route.service.port;
 
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +21,6 @@ public interface MyFindRoadPathRepository {
     boolean existsById(Long id);
 
     void deleteById(Long id);
+
+    void updateNotification(MyFindRoad myFindRoad);
 }

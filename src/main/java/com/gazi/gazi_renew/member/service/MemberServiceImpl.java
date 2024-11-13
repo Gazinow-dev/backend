@@ -6,12 +6,12 @@ import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.member.domain.dto.*;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
-import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
-import com.gazi.gazi_renew.notification.controller.port.NotificationService;
+import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.common.service.RedisUtilService;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -19,7 +19,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,13 +43,12 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    private final MyFindRoadService myFindRoadService;
+    private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final AuthenticationManagerBuilder managerBuilder;
-    private final RedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender emailSender;
     private final RedisUtilService redisUtilService;
-    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public Member signUp(@Valid MemberCreate memberCreate, Errors errors) {
@@ -324,12 +322,14 @@ public class MemberServiceImpl implements MemberService {
 
         if (!memberAlertAgree.isAlertAgree()) {
             // myFindRoadService에서 경로 데이터를 가져옴
-            List<MyFindRoad> myFindRoadList = myFindRoadService.getRoutes();
+            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
             for (MyFindRoad myFindRoad : myFindRoadList) {
                 // MyPathId를 넘겨서 삭제 메서드 호출
-                notificationService.deleteNotificationTimes(myFindRoad.getId());
-                myFindRoadService.updateRouteNotification(myFindRoad.getId(), false);
+                notificationRepository.deleteByMyFindRoad(myFindRoad);
+                myFindRoad = myFindRoad.updateNotification(false);
+
+                myFindRoadPathRepository.updateNotification(myFindRoad);
             }
         }
         member = member.updateRouteDetailNotificationEnabled(alertAgree);
@@ -460,7 +460,8 @@ public class MemberServiceImpl implements MemberService {
             //유효시간 5분
             redisUtilService.setDataExpire(to, keyValue, 60 * 5L);
         }else{
-            redisTemplate.delete(to);
+
+            redisUtilService.deleteToken(to);
             redisUtilService.setDataExpire(to,keyValue,60*5L);
         }
         return keyValue;
