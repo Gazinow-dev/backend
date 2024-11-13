@@ -113,12 +113,11 @@ public class MemberServiceImpl implements MemberService {
         // Access Token 유효시간 가지고 와서 BlackList 로 저장하기
         Long expiration = jwtTokenProvider.getExpiration(memberLogout.getAccessToken());
         redisUtilService.addToBlacklist(memberLogout.getAccessToken(), expiration);
-
         // firebaseToken 삭제
         Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(
                 () -> new EntityNotFoundException("회원을 찾을 수 없습니다.")
         );
-       return memberRepository.save(member);
+        return member;
     }
     @Override
     public ResponseToken reissue(MemberReissue memberReissue) {
@@ -183,7 +182,6 @@ public class MemberServiceImpl implements MemberService {
         return member.isMatchesPassword(passwordEncoder, memberCheckPassword, member);
     }
     @Override
-    @Transactional(readOnly = true)
     public String findPassword(IsMember isMember){
         try{
             Member member = memberRepository.findByEmailAndNickName(isMember.getEmail(), isMember.getNickname())

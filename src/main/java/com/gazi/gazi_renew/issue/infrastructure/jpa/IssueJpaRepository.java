@@ -24,4 +24,7 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
     @Modifying
     @Query("UPDATE IssueEntity i SET i.content = :content WHERE i.id = :id")
     void updateContent(@Param("id") Long id, @Param("content") String content);
+
+    @Query("SELECT i FROM IssueEntity i JOIN FETCH i.stationEntities s WHERE s.id = :stationId")
+    List<IssueEntity> findAllByStationId(@Param("stationId") Long stationId);
 }

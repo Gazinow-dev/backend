@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.route.service;
 import com.gazi.gazi_renew.common.config.SecurityUtil;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
@@ -17,7 +18,6 @@ import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
 import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.service.StationService;
-import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.ListIterator;
 
 @Slf4j
 @Service
@@ -40,6 +40,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final StationService stationService;
+    private final IssueRepository issueRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -107,21 +109,36 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         myFindRoadPathRepository.save(myFindRoad);
     }
     private List<MyFindRoad> getStationList(List<MyFindRoad> myFindRoadList) {
-        for (MyFindRoad myFindRoad : myFindRoadList) {
-            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
-                MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(myFindRoadSubPath).orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
-                List<MyFindRoadStation> myFindRoadStationList = myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(myFindRoadSubPath);
+        List<MyFindRoad> updatedRoadList = new ArrayList<>();
 
-                for (MyFindRoadStation myFindRoadStation : myFindRoadStationList) {
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            List<MyFindRoadSubPath> updatedSubPaths = new ArrayList<>();
+
+            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
+                MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(myFindRoadSubPath)
+                        .orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+
+                List<MyFindRoadStation> updatedStations = new ArrayList<>();
+
+                for (MyFindRoadStation myFindRoadStation : myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(myFindRoadSubPath)) {
                     Station station = stationService.getStationByNameAndLine(myFindRoadStation.getStationName(), myFindRoadLane.getName());
                     if (station != null) {
-                        List<Issue> issueList = station.getIssueList();
-                        myFindRoadStation = myFindRoadStation.updateIssueList(issueList);
+                        List<Issue> issueList = issueRepository.findByStationId(station.getId());
+                        myFindRoadStation = myFindRoadStation.updateIssueList(issueList);  // 업데이트된 station 객체 생성
                     }
+                    updatedStations.add(myFindRoadStation);  // 변경된 객체를 리스트에 추가
                 }
+
+                MyFindRoadSubPath updatedSubPath = myFindRoadSubPath.updateStations(updatedStations);  // 변경된 stations 반영
+                updatedSubPaths.add(updatedSubPath);  // 변경된 subPath 리스트에 추가
             }
+
+            MyFindRoad updatedRoad = myFindRoad.updateSubPaths(updatedSubPaths);  // 변경된 subPaths 반영
+            updatedRoadList.add(updatedRoad);  // 변경된 road 리스트에 추가
         }
-        return myFindRoadList;
+
+        return updatedRoadList;
     }
+
 
 }

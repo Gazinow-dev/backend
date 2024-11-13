@@ -77,7 +77,7 @@ public class MemberEntity extends AuditingFields {
     public static MemberEntity from(Member member) {
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.email = member.getEmail();
-        memberEntity.password = member.getEmail();
+        memberEntity.password = member.getPassword();
         memberEntity.nickName = member.getNickName();
         memberEntity.provider = member.getProvider();
         memberEntity.role = member.getRole();

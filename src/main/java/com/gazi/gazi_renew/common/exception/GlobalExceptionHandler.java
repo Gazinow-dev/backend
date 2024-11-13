@@ -21,10 +21,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Response.Body> handleEntityNotFoundException(EntityNotFoundException e) {
         return response.fail(e.getMessage(), HttpStatus.NOT_FOUND);
     }
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Response.Body> handleGeneralException(Exception e) {
-        return response.fail("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Response.Body> handleGeneralException(Exception e) {
+//        return response.fail("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Response.Body> handleBadCredentialsException(BadCredentialsException e) {
         return response.fail("비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED);

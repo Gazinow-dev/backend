@@ -16,19 +16,19 @@ public class MemberCreate {
     private final String password;
     @NotBlank
     private final String nickName;
-    private final String firebasetoken;
+    private final String firebaseToken;
     @Builder
-    public MemberCreate(String email, String password, String nickName, String firebasetoken) {
+    public MemberCreate(String email, String password, String nickName, String firebaseToken) {
         this.email = email;
         this.password = password;
         this.nickName = nickName;
-        this.firebasetoken = firebasetoken;
+        this.firebaseToken = firebaseToken;
     }
     public MemberLogin toMemberLogin() {
         return MemberLogin.builder()
                 .email(email)
                 .password(password)
-                .firebaseToken(firebasetoken)
+                .firebaseToken(firebaseToken)
                 .build();
     }
 }

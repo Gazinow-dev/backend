@@ -47,4 +47,18 @@ public class MyFindRoadSubPath {
                         .map(MyFindRoadStation::from).collect(Collectors.toList()))
                 .build();
     }
+
+    public MyFindRoadSubPath updateStations(List<MyFindRoadStation> updatedStations) {
+        return MyFindRoadSubPath.builder()
+                .id(this.id)
+                .trafficType(this.trafficType)
+                .distance(this.distance)
+                .sectionTime(this.sectionTime)
+                .stationCount(this.stationCount)
+                .way(this.way)
+                .door(this.door)
+                .lanes(this.lanes)
+                .stations(updatedStations)
+                .build();
+    }
 }

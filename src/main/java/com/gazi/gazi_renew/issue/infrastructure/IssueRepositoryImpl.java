@@ -57,4 +57,10 @@ public class IssueRepositoryImpl implements IssueRepository {
     public void updateContent(Issue issue) {
         issueJpaRepository.updateContent(issue.getId(), issue.getContent());
     }
+
+    @Override
+    public List<Issue> findByStationId(Long stationId) {
+        return issueJpaRepository.findAllByStationId(stationId).stream()
+                .map(IssueEntity::toModel).collect(Collectors.toList());
+    }
 }

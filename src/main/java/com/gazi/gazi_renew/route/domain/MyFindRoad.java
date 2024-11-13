@@ -58,4 +58,18 @@ public class MyFindRoad {
                 .notification(enabled)
                 .build();
     }
+
+    public MyFindRoad updateSubPaths(List<MyFindRoadSubPath> updatedSubPaths) {
+        return MyFindRoad.builder()
+                .id(this.id)
+                .roadName(this.roadName)
+                .totalTime(this.totalTime)
+                .stationTransitCount(this.stationTransitCount)
+                .firstStartStation(this.firstStartStation)
+                .lastEndStation(this.lastEndStation)
+                .member(this.member)
+                .subPaths(updatedSubPaths)
+                .notification(this.notification)
+                .build();
+    }
 }

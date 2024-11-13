@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.member.domain;
 
 import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.oauth.domain.enums.OAuthProvider;
 import com.gazi.gazi_renew.member.domain.enums.Role;
@@ -11,7 +10,6 @@ import lombok.Getter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 public class Member {
@@ -69,7 +67,7 @@ public class Member {
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
                 .routeDetailNotificationEnabled(true)
-                .firebaseToken(memberCreate.getFirebasetoken())
+                .firebaseToken(memberCreate.getFirebaseToken())
                 .build();
     }
     public Member saveFireBaseToken(String firebaseToken) {
@@ -88,6 +86,7 @@ public class Member {
     // 닉네임 변경
     public Member changeNickname(String nickname) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(this.password)
                 .nickName(nickname)
@@ -100,6 +99,7 @@ public class Member {
     }
     public Member changePassword(PasswordEncoder passwordEncoder, String tempPassword) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(passwordEncoder.encode(tempPassword))
                 .nickName(this.nickName)
@@ -112,6 +112,7 @@ public class Member {
     }
     public Member updatePushNotificationEnabled(boolean alertAgree) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(this.password)
                 .nickName(this.nickName)
@@ -124,6 +125,7 @@ public class Member {
     }
     public Member updateMySavedRouteNotificationEnabled(boolean alertAgree) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(this.password)
                 .nickName(this.nickName)
@@ -136,6 +138,7 @@ public class Member {
     }
     public Member updateRouteDetailNotificationEnabled(boolean alertAgree) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(this.password)
                 .nickName(this.nickName)
@@ -149,6 +152,7 @@ public class Member {
 
     public Member saveFcmToken(String firebaseToken) {
         return Member.builder()
+                .id(this.id)
                 .email(this.email)
                 .password(this.password)
                 .nickName(this.nickName)
