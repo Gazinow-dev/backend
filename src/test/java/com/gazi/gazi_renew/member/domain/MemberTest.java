@@ -4,7 +4,6 @@ import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.TestPasswordEncoder;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -126,7 +125,7 @@ public class MemberTest {
                 .firebaseToken("firebaseToken")
                 .build();
         //when
-        member = member.updateRouteDetailNotificationEnabled(false);
+        member = member.updatePushNotificationEnabled(false);
         //then
         assertThat(member.getEmail()).isEqualTo("mw310@naver.com");
         assertThat(member.getNickName()).isEqualTo("minu");
