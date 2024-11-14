@@ -1,23 +1,17 @@
 package com.gazi.gazi_renew.issue.service;
 
-import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
-import com.gazi.gazi_renew.issue.infrastructure.LikeEntity;
 import com.gazi.gazi_renew.issue.controller.port.LikeService;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
 import com.gazi.gazi_renew.member.domain.Member;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.issue.domain.Like;
-import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -28,12 +22,12 @@ public class LikeServiceImpl implements LikeService {
     private final IssueRepository issueRepository;
     private final LikeRepository likeRepository;
     private final MemberRepository memberRepository;
-    private final Response response;
+    private final SecurityUtilService securityUtilService;
     @Override
     public Long likeIssue(Like like) {
         Issue issue = issueRepository.findById(like.getIssue().getId())
                 .orElseThrow(() -> new EntityNotFoundException("선택한 id가 없습니다."));
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail())
+        Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         if(!likeRepository.existsByIssueAndMember(issue, member)){
@@ -49,7 +43,7 @@ public class LikeServiceImpl implements LikeService {
     public void deleteLikeIssue(Like likeRequest) {
         Issue issue = issueRepository.findById(likeRequest.getIssue().getId())
                 .orElseThrow(() -> new EntityNotFoundException("선택한 id가 없습니다."));
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail())
+        Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         //이슈와 맴버를 찾는 로직추가

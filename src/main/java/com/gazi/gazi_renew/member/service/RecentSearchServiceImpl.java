@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.member.service;
 
-import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.member.controller.port.RecentSearchService;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -24,6 +24,7 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     private final MemberRepository memberRepository;
     private final RecentSearchRepository recentSearchRepository;
     private final ClockHolder clockHolder;
+    private final SecurityUtilService securityUtilService;
     @Override
     public List<RecentSearch> getRecentSearch() {
         Member member = isUser();
@@ -67,7 +68,7 @@ public class RecentSearchServiceImpl implements RecentSearchService {
         }
     }
     private Member isUser() {
-        return memberRepository.findByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(
+        return memberRepository.findByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(
                 () -> new EntityNotFoundException("해당 회원이 존재하지 않습니다.")
         );
     }

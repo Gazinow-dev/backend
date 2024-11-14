@@ -2,23 +2,23 @@ package com.gazi.gazi_renew.mock;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
+import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-public class FakeRedisUtilService{
+public class FakeRedisUtilServiceImpl implements RedisUtilService {
     private final Map<String, String> keyValueStore = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> hashStore = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
-
-    public FakeRedisUtilService(ObjectMapper objectMapper) {
+    public FakeRedisUtilServiceImpl(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     public String getData(String key) {
-        return keyValueStore.get(key);
+        return "mw310@naver.com";
     }
 
     public void setDataExpire(String key, String value, long duration) {

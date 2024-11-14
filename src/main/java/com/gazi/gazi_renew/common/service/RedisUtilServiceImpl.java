@@ -2,11 +2,11 @@ package com.gazi.gazi_renew.common.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class RedisUtilService {
+public class RedisUtilServiceImpl implements RedisUtilService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 

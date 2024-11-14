@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.route.service;
 
-import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 @Slf4j
 @Service
@@ -41,12 +40,13 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final StationService stationService;
     private final IssueRepository issueRepository;
+    private final SecurityUtilService securityUtilService;
 
 
     @Override
     @Transactional(readOnly = true)
     public  List<MyFindRoad> getRoutes() {
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
         List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
         return getStationList(myFindRoadList);
     }
@@ -67,7 +67,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public Long addRoute(MyFindRoadCreate myFindRoadCreate) {
         log.info("길저장 서비스 로직 진입");
-        Member member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member);
 

@@ -1,7 +1,10 @@
 package com.gazi.gazi_renew.mock;
 
+import com.gazi.gazi_renew.common.config.JwtTokenProvider;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.member.domain.Member;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,8 +12,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+public class FakeJwtTokenProvider extends JwtTokenProvider {
 
-public class FakeJwtTokenProvider {
+
+    public FakeJwtTokenProvider(String secretKey) {
+        super(secretKey);
+    }
 
     public ResponseToken generateToken(Authentication authentication) {
         // 임의의 테스트용 토큰과 만료 시간 반환
@@ -28,7 +35,7 @@ public class FakeJwtTokenProvider {
         return ResponseToken.builder()
                 .grantType("Bearer")
                 .accessToken("fakeAccessToken")
-                .refreshToken("fakeRefreshToken")
+                .refreshToken("mw310@naver.com")
                 .accessTokenExpirationTime(new Date().getTime() + 3600 * 1000L)
                 .refreshTokenExpirationTime(new Date().getTime() + 30 * 24 * 3600 * 1000L)
                 .memberId(member.getId())
@@ -40,7 +47,7 @@ public class FakeJwtTokenProvider {
 
     public Authentication getAuthentication(String accessToken) {
         // Fake Authentication 객체 반환
-        return new UsernamePasswordAuthenticationToken("testUser", null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        return new UsernamePasswordAuthenticationToken("mw310@naver.com", null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
     public boolean validateToken(String token) {

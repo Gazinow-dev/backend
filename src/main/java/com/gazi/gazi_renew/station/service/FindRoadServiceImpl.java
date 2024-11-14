@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.station.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueSummary;
@@ -45,6 +45,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final LineRepository lineRepository;
+    private final SecurityUtilService securityUtilService;
     @Value("${odsay.key}")
     public String apiKey;
 
@@ -107,7 +108,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     @Transactional
     public ResponseEntity<Response.Body> findRoad(FindRoadRequest findRoadRequest) throws IOException {
 
-        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
         Station startStation = stationService.getCoordinateByNameAndLine(findRoadRequest.getStrStationName(), findRoadRequest.getStrStationLine());

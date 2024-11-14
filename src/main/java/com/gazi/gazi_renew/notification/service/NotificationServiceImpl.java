@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.notification.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.service.RedisUtilService;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;

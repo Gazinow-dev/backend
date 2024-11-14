@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.config.SecurityUtil;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.IssueDetail;
@@ -40,6 +40,7 @@ public class IssueServiceImpl implements IssueService {
     private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
     private final RedisTemplate redisTemplate;
+    private final SecurityUtilService securityUtilService;
 
     @Value("${issue.code}")
     private String secretCode;
@@ -105,7 +106,7 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public IssueDetail getIssue(Long id) {
-        Optional<Member> member = memberRepository.getReferenceByEmail(SecurityUtil.getCurrentUserEmail());
+        Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue, member.get());
