@@ -16,6 +16,7 @@ import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.service.port.LineRepository;
+import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ import java.util.Optional;
 public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;
-    private final StationService stationService;
+    private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final LineRepository lineRepository;
@@ -111,9 +112,9 @@ public class FindRoadServiceImpl implements FindRoadService {
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         // 출발역 이름과 호선으로 데이터 찾기
-        Station startStation = stationService.getCoordinateByNameAndLine(findRoadRequest.getStrStationName(), findRoadRequest.getStrStationLine());
+        Station startStation = subwayRepository.findCoordinateByNameAndLine(findRoadRequest.getStrStationName(), findRoadRequest.getStrStationLine());
         // 종착역 이름과 호선으로 데이터 찾기
-        Station endStation = stationService.getCoordinateByNameAndLine(findRoadRequest.getEndStationName(), findRoadRequest.getEndStationLine());
+        Station endStation = subwayRepository.findCoordinateByNameAndLine(findRoadRequest.getEndStationName(), findRoadRequest.getEndStationLine());
 
         JSONObject json = getJsonArray(startStation.getLng(), startStation.getLat(), endStation.getLng(), endStation.getLat());
 
@@ -217,8 +218,10 @@ public class FindRoadServiceImpl implements FindRoadService {
                             station.setStationCode(stationNode.path("stationID").asInt());
 
                             System.out.println(stationNode.path("stationName").asText());
+
                             //staion 찾고 이슈 리스트 받기
-                            Station stationName = stationService.getStationByNameAndLine(stationNode.path("stationName").asText(), lineName);
+                            List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
+                            Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
 
                             List<Issue> issueEntities = stationName.getIssueList();
                             List<Issue> activeIssueEntities = new ArrayList<>();

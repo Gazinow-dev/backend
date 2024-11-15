@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.station.domain;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -41,7 +41,29 @@ public class Station {
                 .issueList(issueList)
                 .build();
     }
+
+    public static Station toFirstStation(String name, List<Station> stationList) {
+        if (stationList == null || stationList.isEmpty()) {
+            throw new EntityNotFoundException("Station이 존재하지 않습니다");
+        }
+        Station firstStation = stationList.get(0);
+        int k = 0;
+        // 필터링
+        if (!stationList.isEmpty() && stationList.size() >= 2) {
+            for (Station station : stationList) {
+                int stationLength = station.getName().length(); // 찾은 entity 역글자수
+                int result = stationLength - name.length();
+
+                if (k > result) {
+                    firstStation = station;
+                    k = result;
+                }
+            }
+        }
+        return firstStation;
+    }
 }
+
 
 
 

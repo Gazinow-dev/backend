@@ -32,10 +32,12 @@ public class MyFindRoadLaneEntity {
 
     public MyFindRoadLane toModel() {
         return MyFindRoadLane.builder()
+                .id(id)
                 .name(name)
                 .stationCode(stationCode)
                 .startName(startName)
                 .endName(endName)
+                .myFindRoadSubPathId(myFindRoadSubPathEntity.getId())
                 .build();
     }
 }

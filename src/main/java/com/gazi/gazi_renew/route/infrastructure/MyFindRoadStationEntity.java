@@ -29,8 +29,10 @@ public class MyFindRoadStationEntity {
 
     public MyFindRoadStation toModel() {
         return MyFindRoadStation.builder()
+                .id(id)
                 .index(index)
                 .stationName(stationName)
+                .myFindRoadSubPathId(myFindRoadSubPathEntity.getId())
                 .build();
     }
 }

@@ -25,7 +25,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadService myFindRoadService;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisUtilService redisUtilService;
     /**
      * 알림 설정 변경 메서드

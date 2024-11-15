@@ -48,6 +48,7 @@ public class MyFindRoad {
     }
     public MyFindRoad updateNotification(Boolean enabled) {
         return MyFindRoad.builder()
+                .id(this.id)
                 .roadName(this.getRoadName())
                 .totalTime(this.getTotalTime())
                 .stationTransitCount(this.getStationTransitCount())

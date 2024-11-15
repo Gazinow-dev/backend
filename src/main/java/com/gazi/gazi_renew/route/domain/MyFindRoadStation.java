@@ -10,14 +10,18 @@ import java.util.List;
 
 @Getter
 public class MyFindRoadStation {
+    private final Long id;
     private final int index; // 정류장 순번
     private final String stationName;
     private final List<Issue> issueList;
+    private final Long myFindRoadSubPathId;
     @Builder
-    public MyFindRoadStation(int index, String stationName, List<Issue> issueList) {
+    public MyFindRoadStation(Long id, int index, String stationName, List<Issue> issueList, Long myFindRoadSubPathId) {
+        this.id = id;
         this.index = index;
         this.stationName = stationName;
         this.issueList = issueList;
+        this.myFindRoadSubPathId = myFindRoadSubPathId;
     }
 
     public static MyFindRoadStation from(MyFindRoadStationCreate myFindRoadStationCreate) {

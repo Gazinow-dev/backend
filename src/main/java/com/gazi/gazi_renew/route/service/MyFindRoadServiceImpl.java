@@ -17,8 +17,9 @@ import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
 import com.gazi.gazi_renew.station.domain.Station;
-import com.gazi.gazi_renew.station.service.StationService;
+import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Builder
 @Transactional
 @RequiredArgsConstructor
 public class MyFindRoadServiceImpl implements MyFindRoadService {
@@ -38,7 +40,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
-    private final StationService stationService;
+    private final SubwayRepository subwayRepository;
     private final IssueRepository issueRepository;
     private final SecurityUtilService securityUtilService;
 
@@ -74,7 +76,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         if (myFindRoadPathRepository.existsByNameAndMember(myFindRoadCreate.getRoadName(), member)) {
             throw ErrorCode.throwDuplicateRoadName();
         }
-        myFindRoadPathRepository.save(myFindRoad);
+        myFindRoad = myFindRoadPathRepository.save(myFindRoad);
         log.info("myFindRoadPath 저장");
 
         for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
@@ -106,7 +108,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 .orElseThrow(ErrorCode::throwMyFindRoadNotFoundException);
 
         myFindRoad = myFindRoad.updateNotification(enabled);
-        myFindRoadPathRepository.save(myFindRoad);
+        myFindRoadPathRepository.updateNotification(myFindRoad);
     }
     private List<MyFindRoad> getStationList(List<MyFindRoad> myFindRoadList) {
         List<MyFindRoad> updatedRoadList = new ArrayList<>();
@@ -121,7 +123,14 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 List<MyFindRoadStation> updatedStations = new ArrayList<>();
 
                 for (MyFindRoadStation myFindRoadStation : myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(myFindRoadSubPath)) {
-                    Station station = stationService.getStationByNameAndLine(myFindRoadStation.getStationName(), myFindRoadLane.getName());
+                    //TODO 이전 코드랑 비교 문제 없는지
+                    String line = myFindRoadLane.getName();
+                    if(myFindRoadLane.getName().equals("수도권 9호선(급행)")){
+                        line = "수도권 9호선";
+                    }
+                    List<Station> stationList = subwayRepository.findByNameContainingAndLine(myFindRoadStation.getStationName(), line);
+                    Station station = Station.toFirstStation(myFindRoadStation.getStationName(), stationList);
+
                     if (station != null) {
                         List<Issue> issueList = issueRepository.findByStationId(station.getId());
                         myFindRoadStation = myFindRoadStation.updateIssueList(issueList);  // 업데이트된 station 객체 생성
