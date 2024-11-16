@@ -4,6 +4,8 @@ import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.controller.port.LikeService;
+import com.gazi.gazi_renew.issue.domain.dto.LikeCreate;
+import com.gazi.gazi_renew.issue.domain.dto.LikeDelete;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -24,11 +26,15 @@ public class LikeServiceImpl implements LikeService {
     private final MemberRepository memberRepository;
     private final SecurityUtilService securityUtilService;
     @Override
-    public Long likeIssue(Like like) {
-        Issue issue = issueRepository.findById(like.getIssue().getId())
-                .orElseThrow(() -> new EntityNotFoundException("선택한 id가 없습니다."));
+    public Long likeIssue(LikeCreate likeCreate) {
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+
+
+        Issue issue = issueRepository.findById(likeCreate.getIssueId())
+                .orElseThrow(() -> new EntityNotFoundException("선택한 id가 없습니다."));
+
+        Like like = Like.from(likeCreate, member.getId(), issue);
 
         if(!likeRepository.existsByIssueAndMember(issue, member)){
             likeRepository.save(like);
@@ -40,8 +46,8 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void deleteLikeIssue(Like likeRequest) {
-        Issue issue = issueRepository.findById(likeRequest.getIssue().getId())
+    public void deleteLikeIssue(LikeDelete likeDelete) {
+        Issue issue = issueRepository.findById(likeDelete.getIssueId())
                 .orElseThrow(() -> new EntityNotFoundException("선택한 id가 없습니다."));
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));

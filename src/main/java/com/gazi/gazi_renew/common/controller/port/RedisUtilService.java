@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.common.controller.port;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 
@@ -20,4 +21,6 @@ public interface RedisUtilService {
     void saveNotificationTimes(List<Notification> notificationList, MyFindRoad myFindRoad) throws JsonProcessingException;
 
     void deleteNotification(String fieldName);
+
+    void addIssueToRedis(String key, String hashKey, IssueRedisDto issueRedisDto) throws JsonProcessingException;
 }

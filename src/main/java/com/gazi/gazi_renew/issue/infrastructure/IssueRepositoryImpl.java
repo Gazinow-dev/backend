@@ -63,4 +63,11 @@ public class IssueRepositoryImpl implements IssueRepository {
         return issueJpaRepository.findAllByStationId(stationId).stream()
                 .map(IssueEntity::toModel).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Issue> findByLineId(Long lineId) {
+        return issueJpaRepository.findByLineId(lineId).stream()
+                .map(IssueEntity::toModel).collect(Collectors.toList());
+
+    }
 }

@@ -2,16 +2,14 @@ package com.gazi.gazi_renew.issue.controller.port;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.domain.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.IssueDetail;
-import com.gazi.gazi_renew.issue.domain.IssueUpdate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
+import com.gazi.gazi_renew.station.domain.Station;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 public interface IssueService {
     // 웹 크롤링
@@ -28,4 +26,15 @@ public interface IssueService {
     void updateIssueContent(IssueUpdate issueUpdate);
     //인기 이슈 조회
     List<Issue> getPopularIssues();
+
+    List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode);
+
+    List<Station> handleClockwiseDirection(int startStationCode, int endStationCode);
+
+    List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode);
+
+    List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode);
+
+    List<Station> findStationsForOtherLines(int startStationCode, int endStationCode);
+
 }

@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.station.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.gazi.gazi_renew.issue.domain.IssueSummary;
+import com.gazi.gazi_renew.issue.domain.dto.IssueSummary;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

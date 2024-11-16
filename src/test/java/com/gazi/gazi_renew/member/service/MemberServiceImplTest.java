@@ -107,8 +107,6 @@ class MemberServiceImplTest {
                 .lanes(Collections.singletonList(MyFindRoadLane.builder()
                         .name("수도권 6호선")
                         .stationCode(6)
-                        .startName("")
-                        .endName("")
                         .build()))
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),

@@ -34,6 +34,7 @@ public class LikeEntity {
         return Like.builder()
                 .id(id)
                 .issue(issueEntity.toModel())
+                .memberId(memberEntity.getId())
                 .build();
     }
 }

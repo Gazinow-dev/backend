@@ -1,5 +1,6 @@
-package com.gazi.gazi_renew.issue.domain;
+package com.gazi.gazi_renew.issue.domain.dto;
 
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import lombok.Builder;
 import lombok.Getter;

@@ -22,4 +22,6 @@ public interface IssueRepository {
     void updateContent(Issue issue);
 
     List<Issue> findByStationId(Long stationId);
+
+    List<Issue> findByLineId(Long id);
 }

@@ -99,8 +99,6 @@ class MyFindRoadServiceImplTest {
                 .id(1L)
                 .name("수도권 6호선")
                 .stationCode(6)
-                .startName("")
-                .endName("")
                 .myFindRoadSubPathId(1L)
                 .build();
 
@@ -207,8 +205,6 @@ class MyFindRoadServiceImplTest {
                 .lanes(Collections.singletonList(MyFindRoadLaneCreate.builder()
                         .name("수도권 6호선")
                         .stationCode(6)
-                        .startName("")
-                        .endName("")
                         .build()))
                 .stations(Arrays.asList(
                         MyFindRoadStationCreate.builder().index(0).stationName("삼각지").build(),
@@ -241,8 +237,6 @@ class MyFindRoadServiceImplTest {
                 .lanes(Collections.singletonList(MyFindRoadLaneCreate.builder()
                         .name("수도권 6호선")
                         .stationCode(6)
-                        .startName("")
-                        .endName("")
                         .build()))
                 .stations(Arrays.asList(
                         MyFindRoadStationCreate.builder().index(0).stationName("삼각지").build(),

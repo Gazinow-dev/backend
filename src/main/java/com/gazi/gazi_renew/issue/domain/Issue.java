@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
@@ -39,6 +40,7 @@ public class Issue {
         this.latestNo = latestNo;
         this.likeCount = likeCount;
     }
+
     // 이슈 업데이트 (도메인 객체 행동 부여)
     public Issue update(IssueUpdate issueUpdate) {
         return Issue.builder()
@@ -61,6 +63,7 @@ public class Issue {
         List<Line> lineList = issueCreate.getLines().stream().map(lineName -> Line.builder()
                 .lineName(lineName)
                 .build()).collect(Collectors.toList());
+
         return Issue.builder()
                 .title(issueCreate.getTitle())
                 .content(issueCreate.getContent())

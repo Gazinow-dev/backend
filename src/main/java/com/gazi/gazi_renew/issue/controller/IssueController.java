@@ -3,7 +3,7 @@ package com.gazi.gazi_renew.issue.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.domain.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;

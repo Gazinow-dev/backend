@@ -14,8 +14,6 @@ public class MyFindRoadLaneEntity {
     private Long id;
     private String name; // 노선명
     private int stationCode; //노선코드 ex:) 2
-    private String startName; //승차 정류장
-    private String endName; // 하차 정류장
     @ManyToOne
     @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
     private MyFindRoadSubPathEntity myFindRoadSubPathEntity;
@@ -24,8 +22,6 @@ public class MyFindRoadLaneEntity {
         MyFindRoadLaneEntity myFindRoadLaneEntity = new MyFindRoadLaneEntity();
         myFindRoadLaneEntity.name = myFindRoadLane.getName();
         myFindRoadLaneEntity.stationCode = myFindRoadLane.getStationCode();
-        myFindRoadLaneEntity.startName = myFindRoadLane.getStartName();
-        myFindRoadLaneEntity.endName = myFindRoadLane.getEndName();
 
         return myFindRoadLaneEntity;
     }
@@ -35,8 +31,6 @@ public class MyFindRoadLaneEntity {
                 .id(id)
                 .name(name)
                 .stationCode(stationCode)
-                .startName(startName)
-                .endName(endName)
                 .myFindRoadSubPathId(myFindRoadSubPathEntity.getId())
                 .build();
     }

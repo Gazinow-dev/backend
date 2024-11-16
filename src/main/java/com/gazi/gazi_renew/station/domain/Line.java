@@ -11,19 +11,9 @@ import java.util.List;
 public class Line {
     private final Long id;
     private final String lineName;
-    private final List<Issue> issueList;
     @Builder
-    public Line(Long id, String lineName, List<Issue> issueList) {
+    public Line(Long id, String lineName) {
         this.id = id;
         this.lineName = lineName;
-        this.issueList = issueList;
-    }
-
-    public Line addIssue(List<Issue> issueList) {
-             return Line.builder()
-                .id(this.id)
-                .lineName(this.lineName)
-                .issueList(issueList)
-                .build();
     }
 }

@@ -1,11 +1,12 @@
 package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
-import com.gazi.gazi_renew.issue.domain.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.IssueDetail;
-import com.gazi.gazi_renew.issue.domain.IssueUpdate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -19,6 +20,7 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.station.service.port.LineRepository;
 import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -39,9 +41,8 @@ public class IssueServiceImpl implements IssueService {
     private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
     private final LineRepository lineRepository;
-    private final RedisTemplate redisTemplate;
+    private final RedisUtilService redisUtilService;
     private final SecurityUtilService securityUtilService;
-
     @Value("${issue.code}")
     private String secretCode;
     private static final int minStationNo = 201;
@@ -61,41 +62,23 @@ public class IssueServiceImpl implements IssueService {
 
         List<Station> stationList = getStationList(issueCreate.getStations());
         Issue issue = Issue.from(issueCreate, stationList);
-        List<String> lineNameList = issue.getLines().stream()
-                .map(Line::getLineName).collect(Collectors.toList());
-        List<Line> lineList = getLineList(lineNameList);
 
-        issueRepository.save(issue);
+        issue = issueRepository.save(issue);
 
         // Redis에 이슈 추가
         addIssueToRedis(issue);
 
-        // station에 추가
-        for (Station station : stationList) {
-            List<Issue> issueList = station.getIssueList();
-            issueList.add(issue);
-            station.addIssue(issueList);
-            subwayRepository.save(station);
-        }
-
-        // line에 추가
-        for (Line line : lineList) {
-            List<Issue> issueList = line.getIssueList();
-            issueList.add(issue);
-            line = line.addIssue(issueList);
-            lineRepository.save(line);
-        }
         return true;
     }
     /**
      * redis에 issue 저장
      * @param : Issue issue
      */
-    public void addIssueToRedis(Issue issue) throws JsonProcessingException {
+    private void addIssueToRedis(Issue issue) throws JsonProcessingException {
         IssueRedisDto issueRedisDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
 
-        redisTemplate.opsForHash().put("issues", issue.getId().toString() , issueRedisDto);
+        redisUtilService.addIssueToRedis("issues", issue.getId().toString(), issueRedisDto);
     }
     /**
      * 이슈 세부사항 조회
@@ -134,10 +117,11 @@ public class IssueServiceImpl implements IssueService {
         Line line = lineRepository.findByLineName(lineName).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
         );
+        List<Issue> issueList = issueRepository.findByLineId(line.getId());
 
         int start = (int) pageable.getOffset();
-        int end = (start + pageable.getPageSize()) > line.getIssueList().size()? line.getIssueList().size() : (start + pageable.getPageSize());
-        List<Issue> sortedList = line.getIssueList().stream()
+        int end = (start + pageable.getPageSize()) > issueList.size()? issueList.size() : (start + pageable.getPageSize());
+        List<Issue> sortedList = issueList.stream()
                 .sorted(Comparator.comparing(Issue::getStartDate).reversed()) // startDate를 기준으로 내림차순 정렬
                 .collect(Collectors.toList());
         sortedList = sortedList.subList(start, end);
@@ -170,7 +154,7 @@ public class IssueServiceImpl implements IssueService {
         issue = issue.update(issueUpdate);
         issueRepository.updateContent(issue);
     }
-    private List<Station> getStationList(List<IssueCreate.Station> issueStations) {
+    public List<Station> getStationList(List<IssueCreate.Station> issueStations) {
         List<Station> stationEntityResponse = new ArrayList<>();
 
         // 입력된 모든 역 정보를 순회하며 각 역을 처리
@@ -190,17 +174,6 @@ public class IssueServiceImpl implements IssueService {
         return stationEntityResponse;
     }
 
-    public List<Line> getLineList(List<String> lines){
-        List<Line> lineEntityResponse = new ArrayList<>();
-        for(String lineName : lines){
-            Line line = lineRepository.findByLineName(lineName).orElseThrow(
-                    () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
-            );
-            lineEntityResponse.add(line);
-        }
-        return lineEntityResponse;
-    }
-
     /**
      * 2호선의 경우, 시계방향과 반시계방향에 따라 다르게 처리
      * @param issueStation IssueRequest의 역 정보
@@ -208,7 +181,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode) {
+    public List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode) {
         if (issueStation.getDirection() == SubwayDirection.Clockwise) {
             // 2호선 내선 처리
             return handleClockwiseDirection(startStationCode, endStationCode);
@@ -230,17 +203,17 @@ public class IssueServiceImpl implements IssueService {
 
     /**
      * 시계방향(내선)일 때의 역 구간 처리
-     * @param startStationCode 출발역 코드
-     * @param endStationCode 도착역 코드
+     * @param startIssueStationCode 출발역 코드
+     * @param endIssueStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleClockwiseDirection(int startStationCode, int endStationCode) {
-        if (startStationCode < endStationCode) {
+    public List<Station> handleClockwiseDirection(int startIssueStationCode, int endIssueStationCode) {
+        if (startIssueStationCode < endIssueStationCode) {
             // 구간이 연속되는 경우
-            return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
+            return subwayRepository.findByIssueStationCodeBetween(startIssueStationCode, endIssueStationCode);
         } else {
             // 구간이 원형을 넘어가는 경우 (예: 역 번호가 큰 출발역에서 작은 도착역으로 이동)
-            return getStationsForCircularRoute(startStationCode, endStationCode);
+            return getStationsForCircularRoute(startIssueStationCode, endIssueStationCode);
         }
     }
 
@@ -250,7 +223,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
+    public List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode) {
         // 반시계일때, 구간이 시작역이 끝역코드보다 커야 연속
         if (startStationCode > endStationCode) {
             return subwayRepository.findByIssueStationCodeBetween(endStationCode, startStationCode);
@@ -266,7 +239,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode) {
+    public List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode) {
         // 구간을 두 부분으로 나누어 처리
         List<Station> leftList = subwayRepository.findByIssueStationCodeBetween(startStationCode, maxStationNo); // 최대역 번호까지의 구간
         List<Station> rightList = subwayRepository.findByIssueStationCodeBetween(minStationNo, endStationCode); // 최소역 번호부터 구간
@@ -282,7 +255,7 @@ public class IssueServiceImpl implements IssueService {
      * @param endStationCode 도착역 코드
      * @return 구간에 해당하는 Station 목록
      */
-    private List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
+    public List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
         return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
     }
 

@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.issue.controller.response;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.domain.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.Line;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.issue.domain;
+package com.gazi.gazi_renew.issue.domain.dto;
 
 import lombok.Builder;
 import lombok.Getter;

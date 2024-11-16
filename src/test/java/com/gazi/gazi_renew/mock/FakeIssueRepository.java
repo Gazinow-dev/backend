@@ -80,7 +80,7 @@ public class FakeIssueRepository implements IssueRepository {
 
     @Override
     public void updateContent(Issue issue) {
-        data.removeIf(existingIssue -> existingIssue.getContent().equals(issue.getContent()));
+        data.removeIf(existingIssue -> existingIssue.getId().equals(issue.getId()));
 
         Issue updatedIssue = Issue.builder()
                 .id(issue.getId())
@@ -105,6 +105,14 @@ public class FakeIssueRepository implements IssueRepository {
         return data.stream()
                 .filter(issue -> issue.getStationList().stream()
                         .anyMatch(station -> station.getId().equals(stationId)))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Issue> findByLineId(Long id) {
+        return data.stream()
+                .filter(issue -> issue.getLines().stream()
+                        .anyMatch(line -> line.getId().equals(id)))
                 .collect(Collectors.toList());
     }
 }

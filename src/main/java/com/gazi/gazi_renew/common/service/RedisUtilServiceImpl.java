@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.common.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
+import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +73,9 @@ public class RedisUtilServiceImpl implements RedisUtilService {
     }
     private String convertListToJson(List<Map<String, Object>> notificationJsonList) throws JsonProcessingException {
         return objectMapper.writeValueAsString(notificationJsonList);
+    }
+    @Override
+    public void addIssueToRedis(String hashKey, String issueKey, IssueRedisDto issueRedisDto) throws JsonProcessingException {
+        redisTemplate.opsForHash().put(hashKey, issueKey, issueRedisDto);
     }
 }

@@ -16,9 +16,8 @@ public class Station {
     private final double lat;
     private final double lng;
     private final Integer issueStationCode;
-    private final List<Issue> issueList;
     @Builder
-    public Station(Long id, String line, String name, int stationCode, double lat, double lng, Integer issueStationCode, List<Issue> issueList) {
+    public Station(Long id, String line, String name, int stationCode, double lat, double lng, Integer issueStationCode) {
         this.id = id;
         this.line = line;
         this.name = name;
@@ -26,20 +25,6 @@ public class Station {
         this.lat = lat;
         this.lng = lng;
         this.issueStationCode = issueStationCode;
-        this.issueList = issueList;
-    }
-
-    public void addIssue(List<Issue> issueList) {
-        Station.builder()
-                .id(this.id)
-                .line(this.line)
-                .name(this.name)
-                .stationCode(this.stationCode)
-                .lat(this.lat)
-                .lng(this.lng)
-                .issueStationCode(this.issueStationCode)
-                .issueList(issueList)
-                .build();
     }
 
     public static Station toFirstStation(String name, List<Station> stationList) {

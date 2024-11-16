@@ -28,9 +28,6 @@ public class StationEntity {
     private double lat;
     private double lng;
     private Integer issueStationCode;
-//    @JsonIgnore // issues 필드를 JSON 시리얼라이제이션에서 무시
-//    @ManyToMany(mappedBy = "stationEntities" ,fetch = FetchType.LAZY)
-//    private List<IssueEntity> issueEntities;
 
     public static StationEntity from(Station station) {
         StationEntity stationEntity = new StationEntity();
@@ -41,13 +38,9 @@ public class StationEntity {
         stationEntity.lat = station.getLat();
         stationEntity.lng = station.getLng();
         stationEntity.issueStationCode = station.getIssueStationCode();
-//        stationEntity.issueEntities = station.getIssueList().stream()
-//                .map(IssueEntity::from).collect(Collectors.toList());
         return stationEntity;
     }
     public Station toModel() {
-//        List<Issue> issueList = issueEntities.stream().map(IssueEntity::toModel)
-//                .collect(Collectors.toList());
         return Station.builder()
                 .id(id)
                 .line(line)
@@ -55,7 +48,6 @@ public class StationEntity {
                 .stationCode(stationCode)
                 .lat(lat)
                 .lng(lng)
-//                .issueList(issueList)
                 .build();
     }
 }

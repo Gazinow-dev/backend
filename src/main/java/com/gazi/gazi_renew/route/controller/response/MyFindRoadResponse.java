@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.route.controller.response;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.domain.IssueSummary;
+import com.gazi.gazi_renew.issue.domain.dto.IssueSummary;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
@@ -81,16 +81,12 @@ public class MyFindRoadResponse {
     static public class Lane {
         private final String name; // 노선명
         private final int stationCode; //노선코드 ex:) 2
-        private final String startName; //승차 정류장
-        private final String endName; // 하차 정류장
         private final boolean direct; // 급행여부
         private List<IssueSummary> issueSummary; // 호선에서 발생한 이슈
         @Builder
-        public Lane(String name, int stationCode, String startName, String endName, boolean direct, List<IssueSummary> issueSummary) {
+        public Lane(String name, int stationCode,boolean direct, List<IssueSummary> issueSummary) {
             this.name = name;
             this.stationCode = stationCode;
-            this.startName = startName;
-            this.endName = endName;
             this.direct = direct;
             this.issueSummary = issueSummary;
         }
@@ -142,8 +138,6 @@ public class MyFindRoadResponse {
                         }
                         Lane buildLane = Lane.builder()
                                 .name(myFindRoadLane.getName())
-                                .startName(myFindRoadLane.getStartName())
-                                .endName(myFindRoadLane.getEndName())
                                 .stationCode(myFindRoadLane.getStationCode())
                                 .direct(isDirect)
                                 .build();
@@ -214,8 +208,6 @@ public class MyFindRoadResponse {
                     boolean isDirect = myFindRoadLane.getName().contains("(급행)");
                     Lane buildLane = Lane.builder()
                             .name(myFindRoadLane.getName())
-                            .startName(myFindRoadLane.getStartName())
-                            .endName(myFindRoadLane.getEndName())
                             .stationCode(myFindRoadLane.getStationCode())
                             .direct(isDirect)
                             .build();

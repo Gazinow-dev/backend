@@ -27,4 +27,6 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
 
     @Query("SELECT i FROM IssueEntity i JOIN FETCH i.stationEntities s WHERE s.id = :stationId")
     List<IssueEntity> findAllByStationId(@Param("stationId") Long stationId);
+    @Query("SELECT i FROM IssueEntity i JOIN FETCH i.lineEntities s WHERE s.id = :lineId")
+    List<IssueEntity> findByLineId(@Param("lineId") Long lineId);
 }

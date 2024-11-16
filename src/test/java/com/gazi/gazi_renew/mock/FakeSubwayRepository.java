@@ -55,7 +55,6 @@ public class FakeSubwayRepository implements SubwayRepository {
                     .lat(station.getLat())
                     .lng(station.getLng())
                     .issueStationCode(station.getStationCode())
-                    .issueList(station.getIssueList())
                     .build();
 
             data.add(createStation);

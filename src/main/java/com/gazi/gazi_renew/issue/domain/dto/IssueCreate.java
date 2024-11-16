@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.issue.domain;
+package com.gazi.gazi_renew.issue.domain.dto;
 
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
@@ -36,12 +36,19 @@ public class IssueCreate {
     }
 
     @Getter
-    @RequiredArgsConstructor
     public static class Station {
         private final String line;
         private final int startStationCode;
         private final int endStationCode;
         private final IssueKeyword keyword;
         private final SubwayDirection direction;
+        @Builder
+        public Station(String line, int startStationCode, int endStationCode, IssueKeyword keyword, SubwayDirection direction) {
+            this.line = line;
+            this.startStationCode = startStationCode;
+            this.endStationCode = endStationCode;
+            this.keyword = keyword;
+            this.direction = direction;
+        }
     }
 }
