@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface LikeJpaRepository extends JpaRepository<LikeEntity, Long> {
-    Optional<LikeEntity> findByIssueEntityAndMemberEntity(IssueEntity issueEntity, MemberEntity memberEntity);
+    Optional<LikeEntity> findByIssueEntityIdAndMemberEntityId(Long issueEntityId, Long memberEntityId);
 
-    boolean existsByIssueEntityAndMemberEntity(IssueEntity issueEntity, MemberEntity memberEntity);
+    boolean existsByIssueEntityIdAndMemberEntityId(Long issueEntityId, Long memberEntityId);
 }

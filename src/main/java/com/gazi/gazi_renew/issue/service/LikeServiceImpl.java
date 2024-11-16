@@ -36,7 +36,7 @@ public class LikeServiceImpl implements LikeService {
 
         Like like = Like.from(likeCreate, member.getId(), issue);
 
-        if(!likeRepository.existsByIssueAndMember(issue, member)){
+        if(!likeRepository.existsByIssueAndMember(issue.getId(), member.getId())){
             likeRepository.save(like);
             return issue.getId();
         }else{
@@ -53,7 +53,7 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         //이슈와 맴버를 찾는 로직추가
-        Like like = likeRepository.findByIssueAndMember(issue, member).orElseThrow(
+        Like like = likeRepository.findByIssueAndMember(issue.getId(), member.getId()).orElseThrow(
                 () -> new EntityNotFoundException("데이터를 찾지 못헀습니다.")
         );
         likeRepository.delete(like);

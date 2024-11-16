@@ -7,9 +7,9 @@ import com.gazi.gazi_renew.member.domain.Member;
 import java.util.Optional;
 
 public interface LikeRepository {
-    Optional<Like> findByIssueAndMember(Issue issue, Member member);
+    Optional<Like> findByIssueAndMember(Long issueId, Long memberId);
 
-    boolean existsByIssueAndMember(Issue issue, Member member);
+    boolean existsByIssueAndMember(Long issueId, Long memberId);
 
     Like save(Like like);
 

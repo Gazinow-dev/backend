@@ -92,7 +92,7 @@ public class IssueServiceImpl implements IssueService {
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
-        boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue, member.get());
+        boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
         return new IssueDetail(issue, isLike);
     }
     /**

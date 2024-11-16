@@ -1,11 +1,8 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
-import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.LikeJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
-import com.gazi.gazi_renew.member.domain.Member;
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -17,14 +14,14 @@ public class LikeRepositoryImpl implements LikeRepository {
     private final LikeJpaRepository likeJpaRepository;
 
     @Override
-    public Optional<Like> findByIssueAndMember(Issue issue, Member member) {
-        return likeJpaRepository.findByIssueEntityAndMemberEntity(IssueEntity.from(issue), MemberEntity.from(member))
+    public Optional<Like> findByIssueAndMember(Long issueId, Long memberId) {
+        return likeJpaRepository.findByIssueEntityIdAndMemberEntityId(issueId, memberId)
                 .map(LikeEntity::toModel);
     }
 
     @Override
-    public boolean existsByIssueAndMember(Issue issue, Member member) {
-        return likeJpaRepository.existsByIssueEntityAndMemberEntity(IssueEntity.from(issue), MemberEntity.from(member));
+    public boolean existsByIssueAndMember(Long issueId, Long memberId) {
+        return likeJpaRepository.existsByIssueEntityIdAndMemberEntityId(issueId, memberId);
     }
 
     @Override
