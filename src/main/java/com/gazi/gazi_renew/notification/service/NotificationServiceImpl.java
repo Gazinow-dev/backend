@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.notification.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
+import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
@@ -19,12 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Slf4j
-@RequiredArgsConstructor
+
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
-    private final MyFindRoadService myFindRoadService;
     private final RedisUtilService redisUtilService;
     /**
      * 알림 설정 변경 메서드
@@ -32,7 +34,7 @@ public class NotificationServiceImpl implements NotificationService {
      * 하나의 트랜잭션으로 묶기
      * @param : MyFindRoadNotificationRequest myFindRoadNotification
      */
-    @Transactional
+    @Override
     public List<Notification> saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
 
         MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId()).orElseThrow(
@@ -43,17 +45,20 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
         notificationRepository.saveAll(notificationList);
-        myFindRoadService.updateRouteNotification(myFindRoadNotificationCreate.getMyPathId(), true);
+
+        myFindRoad = myFindRoad.updateNotification(true);
+        myFindRoadPathRepository.updateNotification(myFindRoad);
+
         redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
         return notificationList;
     }
-
+    @Override
+    @Transactional(readOnly = true)
     public List<Notification> getNotificationTimes(Long myPathId) {
         List<Notification> notificationList = notificationRepository.findByMyFindRoadPathId(myPathId);
         return notificationList;
     }
-
-    @Transactional
+    @Override
     public void deleteNotificationTimes(Long myPathId) {
         MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myPathId).orElseThrow(
                 () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
@@ -65,8 +70,7 @@ public class NotificationServiceImpl implements NotificationService {
         // redis에 데이터도 삭제
         redisUtilService.deleteNotification(fieldName);
     }
-
-    @Transactional
+    @Override
     public List<Notification> updateNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
         // 요청으로 받은 경로에 대한 알림 찾기
         MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId())

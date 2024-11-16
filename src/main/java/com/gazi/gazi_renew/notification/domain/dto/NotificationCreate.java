@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.notification.domain;
+package com.gazi.gazi_renew.notification.domain.dto;
 
 import lombok.*;
 

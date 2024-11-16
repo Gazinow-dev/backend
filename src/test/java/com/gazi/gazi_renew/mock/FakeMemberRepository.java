@@ -151,4 +151,10 @@ public class FakeMemberRepository implements MemberRepository {
 
         data.add(updatedMember);
     }
+
+    @Override
+    public Optional<Member> findById(Long id) {
+        return data.stream()
+                .filter(member -> member.getId().equals(id)).findFirst();
+    }
 }

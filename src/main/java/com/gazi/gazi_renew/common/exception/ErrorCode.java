@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+import java.io.IOException;
+
 import static org.springframework.http.HttpStatus.*;
 
 @Getter
@@ -25,6 +27,7 @@ public enum ErrorCode {
     INVALID_PASSWORD(BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     INVALID_CUR_PASSWORD(BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
     DUPLICATE_ISSUE(BAD_REQUEST, "이미 해당 데이터가 존재합니다."),
+    FAILED_FCM_MESSAGE(BAD_REQUEST, "FCM 메시지 전송 실패"),
     MY_FIND_ROAD_NOT_FOUND(BAD_REQUEST, "해당 id로 존재하는 MyFindRoad가 없습니다.");
 
 
@@ -72,5 +75,9 @@ public enum ErrorCode {
     }
     public static CustomException throwMyFindRoadNotFoundException() {
         return new CustomException(MY_FIND_ROAD_NOT_FOUND);
+    }
+
+    public static CustomException throwFailedFcmMessage() {
+        return new CustomException(FAILED_FCM_MESSAGE);
     }
 }

@@ -67,4 +67,9 @@ public class MemberRepositoryImpl implements MemberRepository {
                 member.getRouteDetailNotificationEnabled(), member.getEmail());
     }
 
+    @Override
+    public Optional<Member> findById(Long id) {
+        return memberJpaRepository.findById(id).map(MemberEntity::toModel);
+    }
+
 }

@@ -24,4 +24,6 @@ public interface MemberRepository {
     void updatePassword(Member member);
 
     void updateAlertAgree(Member member);
+
+    Optional<Member> findById(Long id);
 }
