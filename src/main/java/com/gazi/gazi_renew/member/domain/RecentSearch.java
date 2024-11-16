@@ -22,20 +22,11 @@ public class RecentSearch {
         this.member = member;
         this.modifiedAt = modifiedAt;
     }
-
-    public static RecentSearch from(RecentSearchCreate recentSearchCreate, Member member) {
+    public static RecentSearch from(RecentSearchCreate recentSearchCreate, Member member, ClockHolder clockHolder) {
         return RecentSearch.builder()
                 .stationName(recentSearchCreate.getStationName())
                 .stationLine(recentSearchCreate.getStationLine())
                 .member(member)
-                .build();
-    }
-    public RecentSearch updateModifiedAt(ClockHolder clockHolder) {
-        return RecentSearch.builder()
-                .id(this.id)
-                .stationName(this.stationName)
-                .stationLine(this.stationLine)
-                .member(this.member)
                 .modifiedAt(clockHolder.now())
                 .build();
     }
