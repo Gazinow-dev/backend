@@ -1,9 +1,9 @@
 package com.gazi.gazi_renew.notification.domain;
 
+import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
@@ -41,10 +41,8 @@ class NotificationTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build()
@@ -59,19 +57,10 @@ class NotificationTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
-                .member(Member.builder()
-                        .email("mw310@naver.com")
-                        .password("encoded_tempPassword")
-                        .nickName("minu")
-                        .role(Role.ROLE_USER)
-                        .pushNotificationEnabled(false)
-                        .mySavedRouteNotificationEnabled(false)
-                        .routeDetailNotificationEnabled(false)
-                        .firebaseToken("firebaseToken")
-                        .build())
+                .memberId(1L)
                 .build();
         //when
-        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad);
+        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad.getId());
         //then
         assertThat(notificationList.size()).isEqualTo(1);
         assertThat(notificationList.get(0).getFromTime()).isEqualTo("14:00");
@@ -99,10 +88,8 @@ class NotificationTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build()
@@ -117,19 +104,10 @@ class NotificationTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
-                .member(Member.builder()
-                        .email("mw310@naver.com")
-                        .password("encoded_tempPassword")
-                        .nickName("minu")
-                        .role(Role.ROLE_USER)
-                        .pushNotificationEnabled(false)
-                        .mySavedRouteNotificationEnabled(false)
-                        .routeDetailNotificationEnabled(false)
-                        .firebaseToken("firebaseToken")
-                        .build())
+                .memberId(1L)
                 .build();
         //when
-        assertThrows(IllegalArgumentException.class, () -> Notification.from(myFindRoadNotificationCreate, myFindRoad));
+        assertThrows(CustomException.class, () -> Notification.from(myFindRoadNotificationCreate, myFindRoad.getId()));
 
     }
 

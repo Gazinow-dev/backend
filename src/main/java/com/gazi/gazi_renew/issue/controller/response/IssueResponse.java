@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.issue.controller.response;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.Line;
 import lombok.Builder;
@@ -65,30 +65,8 @@ public class IssueResponse {
 
         return formatTime;
     }
-    public static IssueResponse from(Issue issue) {
-        List<StationDto> stationDtoList = issue.getStationList().stream().map(issueStation -> {
-                return StationDto.builder()
-                    .line(issueStation.getLine())
-                    .stationName(issueStation.getName())
-                    .build();
-        }).collect(Collectors.toList());
-
-        return IssueResponse.builder()
-                .id(issue.getId())
-                .title(issue.getTitle())
-                .content(issue.getContent())
-                .agoTime(getTime(issue.getStartDate()))
-                .lines(issue.getLines().stream()
-                        .map(Line::getLineName)
-                        .collect(Collectors.toList()))
-                .likeCount(issue.getLikeCount())
-                .startDate(issue.getStartDate())
-                .expireDate(issue.getExpireDate())
-                .stationDtos(stationDtoList)
-                .build();
-    }
-    public static IssueResponse fromIssueDetail(IssueDetail issueDetail) {
-        List<StationDto> stationDtoList = issueDetail.getIssue().getStationList().stream().map(issueStation -> {
+    public static IssueResponse fromIssueDetail(IssueStationDetail issueStationDetail) {
+        List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
             return StationDto.builder()
                     .line(issueStation.getLine())
                     .stationName(issueStation.getName())
@@ -96,48 +74,49 @@ public class IssueResponse {
         }).collect(Collectors.toList());
 
         return IssueResponse.builder()
-                .id(issueDetail.getIssue().getId())
-                .title(issueDetail.getIssue().getTitle())
-                .content(issueDetail.getIssue().getContent())
-                .agoTime(getTime(issueDetail.getIssue().getStartDate()))
-                .isLike(issueDetail.isLike())
-                .lines(issueDetail.getIssue().getLines().stream()
+                .id(issueStationDetail.getIssue().getId())
+                .title(issueStationDetail.getIssue().getTitle())
+                .content(issueStationDetail.getIssue().getContent())
+                .keyword(issueStationDetail.getIssue().getKeyword())
+                .agoTime(getTime(issueStationDetail.getIssue().getStartDate()))
+                .stationDtos(stationDtoList)
+                .lines(issueStationDetail.getLineList().stream()
                         .map(Line::getLineName)
                         .collect(Collectors.toList()))
-                .likeCount(issueDetail.getIssue().getLikeCount())
-                .startDate(issueDetail.getIssue().getStartDate())
-                .expireDate(issueDetail.getIssue().getExpireDate())
-                .stationDtos(stationDtoList)
+                .likeCount(issueStationDetail.getIssue().getLikeCount())
+                .startDate(issueStationDetail.getIssue().getStartDate())
+                .expireDate(issueStationDetail.getIssue().getExpireDate())
+                .isLike(issueStationDetail.isLike())
                 .build();
     }
-    public static Page<IssueResponse> fromIssueDetailPage(Page<Issue> issuePage) {
+    public static Page<IssueResponse> fromIssueDetailPage(Page<IssueStationDetail> issueStationDetails) {
         Page<IssueResponse> issueResponsePage = new PageImpl<>(
-                issuePage.stream().map(issue -> {
-
-                    List<StationDto> stationDtoList = issue.getStationList().stream().map(issueStation -> {
+                issueStationDetails.stream().map(issueStationDetail -> {
+                    List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
                         return StationDto.builder()
                                 .line(issueStation.getLine())
                                 .stationName(issueStation.getName())
                                 .build();
                     }).collect(Collectors.toList());
-
+                    Issue issue = issueStationDetail.getIssue();
                     return IssueResponse.builder()
                             .id(issue.getId())
                             .title(issue.getTitle())
                             .content(issue.getContent())
                             .keyword(issue.getKeyword())
                             .stationDtos(stationDtoList)
-                            .lines(issue.getLines().stream()
+                            .lines(issueStationDetail.getLineList().stream()
                                     .map(Line::getLineName)
                                     .collect(Collectors.toList()))
                             .startDate(issue.getStartDate())
                             .expireDate(issue.getExpireDate())
                             .agoTime(getTime(issue.getStartDate()))
+                            .isLike(issueStationDetail.isLike())
                             .build();
 
                 }).collect(Collectors.toList()),
-                issuePage.getPageable(),
-                issuePage.getTotalElements()
+                issueStationDetails.getPageable(),
+                issueStationDetails.getTotalElements()
         );
 
         return issueResponsePage;

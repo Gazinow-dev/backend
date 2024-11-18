@@ -8,12 +8,11 @@ import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
-import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,22 +34,24 @@ public class NotificationServiceImpl implements NotificationService {
      * @param : MyFindRoadNotificationRequest myFindRoadNotification
      */
     @Override
-    public List<Notification> saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
+    public void saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
+        try {
+            MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId()).orElseThrow(
+                    () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
+            );
 
-        MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId()).orElseThrow(
-                () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
-        );
+            List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad.getId());
 
-        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad);
+            // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
+            notificationRepository.saveAll(notificationList);
 
-        // 알림 시간을 저장한 후 경로 알림 설정을 업데이트
-        notificationRepository.saveAll(notificationList);
+            myFindRoad = myFindRoad.updateNotification(true);
+            myFindRoadPathRepository.updateNotification(myFindRoad);
 
-        myFindRoad = myFindRoad.updateNotification(true);
-        myFindRoadPathRepository.updateNotification(myFindRoad);
-
-        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
-        return notificationList;
+            redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+        } catch (DataIntegrityViolationException e) {
+            throw ErrorCode.throwDuplicateNotificationForDay();
+        }
     }
     @Override
     @Transactional(readOnly = true)
@@ -65,7 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
         );
         notificationRepository.deleteByMyFindRoad(myFindRoad);
 
-        String fieldName = myFindRoad.getMember().getId().toString();
+        String fieldName = myFindRoad.getMemberId().toString();
 
         // redis에 데이터도 삭제
         redisUtilService.deleteNotification(fieldName);
@@ -77,12 +78,12 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 경로가 존재하지 않습니다."));
         //알림 모두 삭제 후 다시 저장
         deleteNotificationTimes(myFindRoadNotificationCreate.getMyPathId());
-        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad);
+        List<Notification> notificationList = Notification.from(myFindRoadNotificationCreate, myFindRoad.getId());
 
         // 알림 다시 저장
-        notificationRepository.saveAll(notificationList);
+        notificationList = notificationRepository.saveAll(notificationList);
 
-        String fieldName = myFindRoad.getMember().getId().toString();
+        String fieldName = myFindRoad.getMemberId().toString();
         // Redis의 기존 값을 삭제
         redisUtilService.deleteNotification(fieldName);
         redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
@@ -93,7 +94,7 @@ public class NotificationServiceImpl implements NotificationService {
     public Long getPathId(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
-        Long myPathId = notification.getMyFindRoad().getId();
+        Long myPathId = notification.getMyFindRoadPathId();
         return myPathId;
     }
 }

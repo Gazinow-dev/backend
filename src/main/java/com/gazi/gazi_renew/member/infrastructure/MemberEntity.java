@@ -18,10 +18,7 @@ import java.util.stream.Collectors;
 
 
 @Getter
-@Setter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "member")
 @Entity
 public class MemberEntity extends AuditingFields {
@@ -58,24 +55,9 @@ public class MemberEntity extends AuditingFields {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일시
-
-    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<RecentSearchEntity> recentSearchEntities = new LinkedList<>();
-
-    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<MyFindRoadPathEntity> myFindRoadPathEntities = new LinkedList<>();
-
-    @OneToMany(mappedBy = "memberEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<LikeEntity> likeEntities = new HashSet<>();
-
-    @Builder
-    public MemberEntity(String email, String nickname, OAuthProvider provider) {
-        this.email = email;
-        this.nickName = nickname;
-        this.provider = provider;
-    }
     public static MemberEntity from(Member member) {
         MemberEntity memberEntity = new MemberEntity();
+        memberEntity.id = member.getId();
         memberEntity.email = member.getEmail();
         memberEntity.password = member.getPassword();
         memberEntity.nickName = member.getNickName();
@@ -86,11 +68,6 @@ public class MemberEntity extends AuditingFields {
         memberEntity.routeDetailNotificationEnabled = member.getRouteDetailNotificationEnabled();
         memberEntity.firebaseToken = member.getFirebaseToken();
         memberEntity.createdAt = member.getCreatedAt();
-//        memberEntity.recentSearchEntities = Optional.ofNullable(member.getRecentSearchList())
-//                .orElse(Collections.emptyList()) // null인 경우 빈 리스트로 대체
-//                .stream()
-//                .map(RecentSearchEntity::from)
-//                .collect(Collectors.toList());
         return memberEntity;
     }
 

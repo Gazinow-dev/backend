@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.IssueLine;
+import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.issue.service.port.IssueLineRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
+import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.controller.port.FcmService;
@@ -13,10 +17,11 @@ import com.gazi.gazi_renew.notification.domain.dto.FcmMessage;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
+import com.gazi.gazi_renew.station.service.port.LineRepository;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,6 +48,9 @@ public class FcmServiceImpl implements FcmService {
     private final IssueRepository issueRepository;
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final IssueStationRepository issueStationRepository;
+    private final IssueLineRepository issueLineRepository;
+    private final LineRepository lineRepository;
 
     @Value("${push.properties.firebase-create-scoped}")
     private String fireBaseCreateScoped;
@@ -103,7 +111,7 @@ public class FcmServiceImpl implements FcmService {
     private List<FcmMessage> makeFcmDto(NotificationCreate notificationCreate) throws JsonProcessingException {
         MyFindRoad myFindRoad = myFindRoadPathRepository.findMyFindRoadPathById(notificationCreate.getMyRoadId());
 
-        Optional<Member> member = memberRepository.findById(myFindRoad.getMember().getId());
+        Optional<Member> member = memberRepository.findById(myFindRoad.getMemberId());
         if(member.isEmpty()) {
             throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
         }
@@ -111,25 +119,34 @@ public class FcmServiceImpl implements FcmService {
         String firebaseToken = member.get().getFirebaseToken();
 
         Optional<Issue> issue = issueRepository.findById(notificationCreate.getIssueId());
+
         if(issue.isEmpty()) {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
+        List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issue.get());
 
-        List<Station> stationList = issue.get().getStationList();
+        //TODO : N+1 문 확인
+        List<Station> stationList = issueStationList.stream()
+                .map(IssueStation::getStation).collect(Collectors.toList());
 
         String pathJson = om.writeValueAsString(MyFindRoadResponse.from(myFindRoad));
 
         List<String> pathLineNames = myFindRoad.getSubPaths().stream()
-                .flatMap(subPath -> subPath.getLanes().stream())
-                .map(MyFindRoadLane::getName)
+                .map(MyFindRoadSubPath::getName)
                 .distinct()
                 .collect(Collectors.toList());
 
         // 각 Line에 대해 FCM 메시지 생성
         List<FcmMessage> fcmMessages = new ArrayList<>();
-        List<Line> lineEntities = issue.get().getLines();
-        for (Line line : lineEntities) {
+        List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issue.get());
+
+        List<Line> lineList = issueLineList.stream().map(issueLine -> lineRepository.findById(issueLine.getId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        for (Line line : lineList) {
             //내가 저장한 경로의 호선과 같은 이슈만 필터링
             if (!pathLineNames.contains(line.getLineName())) {
                 continue;

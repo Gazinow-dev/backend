@@ -13,10 +13,10 @@ import java.util.Optional;
 
 @Repository
 public interface RecentSearchJpaRepository extends JpaRepository<RecentSearchEntity, Long> {
-    List<RecentSearchEntity> findAllByMemberEntityIdOrderByModifiedAtDesc(Long memberEntityId);
-    Optional<RecentSearchEntity> findByMemberEntityIdAndStationLineAndStationName(Long memberEntityId, String stationLine, String stationName);
+    List<RecentSearchEntity> findAllByMemberIdOrderByModifiedAtDesc(Long memberId);
+    Optional<RecentSearchEntity> findByMemberIdAndStationLineAndStationName(Long memberId, String stationLine, String stationName);
 
-    Optional<RecentSearchEntity> findByIdAndMemberEntityId(Long recentSearchID, Long memberEntityId);
+    Optional<RecentSearchEntity> findByIdAndMemberId(Long recentSearchID, Long memberId);
     @Modifying
     @Query("UPDATE RecentSearchEntity r SET r.modifiedAt = :modifiedAt WHERE r.id = :id")
     void updateModifiedAt(@Param("id") Long id, @Param("modifiedAt") LocalDateTime modifiedAt);

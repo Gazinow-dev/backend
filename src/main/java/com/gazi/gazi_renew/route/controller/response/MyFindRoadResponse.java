@@ -3,7 +3,6 @@ package com.gazi.gazi_renew.route.controller.response;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.dto.IssueSummary;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import lombok.Builder;
@@ -42,26 +41,23 @@ public class MyFindRoadResponse {
         private final int stationCount; // 정차하는 역 개수
         private final String way; //  방면
         private final String door; //
-        private List<MyFindRoadResponse.Lane> lanes; //
-        private List<MyFindRoadResponse.Station> stations;
-
-        public void setStations(List<Station> stations) {
-            this.stations = stations;
-        }
-
-        public void setLanes(List<Lane> lanes) {
-            this.lanes = lanes;
-        }
-
+        private final String name;
+        private final int stationCode;
+        private final boolean direct; // 급행여부
+        private final List<IssueSummary> issueSummary; // 호선에서 발생한 이슈
+        private final List<MyFindRoadResponse.Station> stations;
         @Builder
-        public SubPath(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, List<Lane> lanes, List<Station> stations) {
+        public SubPath(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, String name, int stationCode, boolean direct, List<IssueSummary> issueSummary, List<Station> stations) {
             this.trafficType = trafficType;
             this.distance = distance;
             this.sectionTime = sectionTime;
             this.stationCount = stationCount;
             this.way = way;
             this.door = door;
-            this.lanes = lanes;
+            this.name = name;
+            this.stationCode = stationCode;
+            this.direct = direct;
+            this.issueSummary = issueSummary;
             this.stations = stations;
         }
     }
@@ -74,25 +70,6 @@ public class MyFindRoadResponse {
         public TransitStation(String stationName, String line) {
             this.stationName = stationName;
             this.line = line;
-        }
-    }
-
-    @Getter
-    static public class Lane {
-        private final String name; // 노선명
-        private final int stationCode; //노선코드 ex:) 2
-        private final boolean direct; // 급행여부
-        private List<IssueSummary> issueSummary; // 호선에서 발생한 이슈
-        @Builder
-        public Lane(String name, int stationCode,boolean direct, List<IssueSummary> issueSummary) {
-            this.name = name;
-            this.stationCode = stationCode;
-            this.direct = direct;
-            this.issueSummary = issueSummary;
-        }
-
-        public void setIssueSummary(List<IssueSummary> issueSummary) {
-            this.issueSummary = issueSummary;
         }
     }
 
@@ -117,33 +94,13 @@ public class MyFindRoadResponse {
             List<SubPath> subPaths = new ArrayList<>();
             // subpathID로 lane과 station을 찾는다.
             for(MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()){
-                SubPath subPathResponse = SubPath.builder()
-                        .way(myFindRoadSubPath.getWay())
-                        .door(myFindRoadSubPath.getDoor())
-                        .trafficType(myFindRoadSubPath.getTrafficType())
-                        .stationCount(myFindRoadSubPath.getStationCount())
-                        .sectionTime(myFindRoadSubPath.getSectionTime())
-                        .distance(myFindRoadSubPath.getDistance())
-                        .build();
-
-                if(myFindRoadSubPath.getTrafficType() == 1) {
-                    List<MyFindRoadResponse.Lane> lanes = new ArrayList<>();
-                    for (MyFindRoadLane myFindRoadLane : myFindRoadSubPath.getLanes()) {
-                        // response로 가공
-                        String lineName = myFindRoadLane.getName();
-
-                        boolean isDirect = false;
-                        if (lineName.contains("(급행)")) {
-                            isDirect = true;
-                        }
-                        Lane buildLane = Lane.builder()
-                                .name(myFindRoadLane.getName())
-                                .stationCode(myFindRoadLane.getStationCode())
-                                .direct(isDirect)
-                                .build();
-
-                        lanes.add(buildLane);
-                    }
+                String lineName = myFindRoadSubPath.getName();
+                boolean isDirect = false;
+                if (lineName.contains("(급행)")) {
+                    isDirect = true;
+                }
+                SubPath subPathResponse = SubPath.builder().build();
+                if (myFindRoadSubPath.getTrafficType() == 1) {
                     List<IssueSummary> issueDtoList = new ArrayList<>();
                     List<MyFindRoadResponse.Station> stations = new ArrayList<>();
 
@@ -159,7 +116,7 @@ public class MyFindRoadResponse {
                                 }
                             }
                         }
-                        List<IssueSummary> issueSummaryDtoList =IssueSummary.getIssueSummaryDto(activeIssue);
+                        List<IssueSummary> issueSummaryDtoList = IssueSummary.getIssueSummaryDto(activeIssue);
                         MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                 .stationName(myFindRoadStation.getStationName())
                                 .index(myFindRoadStation.getIndex())
@@ -168,14 +125,20 @@ public class MyFindRoadResponse {
                         stations.add(station);
 
                         issueDtoList.addAll(issueSummaryDtoList);
-                    };
-                    subPathResponse.setLanes(lanes);
-
-                    // 호선 이슈리스트 추가 (내 길찾기 역중에서만)
-                    if(!subPathResponse.getLanes().isEmpty()) {
-                        subPathResponse.getLanes().get(0).setIssueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList));
                     }
-                    subPathResponse.setStations(stations);
+                    subPathResponse = SubPath.builder()
+                            .trafficType(myFindRoadSubPath.getTrafficType())
+                            .way(myFindRoadSubPath.getWay())
+                            .door(myFindRoadSubPath.getDoor())
+                            .stationCount(myFindRoadSubPath.getStationCount())
+                            .sectionTime(myFindRoadSubPath.getSectionTime())
+                            .distance(myFindRoadSubPath.getDistance())
+                            .name(myFindRoadSubPath.getName())
+                            .stationCode(myFindRoadSubPath.getStationCode())
+                            .direct(isDirect)
+                            .issueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList))
+                            .stations(stations)
+                            .build();
                 }
                 subPaths.add(subPathResponse);
             }
@@ -194,25 +157,9 @@ public class MyFindRoadResponse {
     public static MyFindRoadResponse from(MyFindRoad myFindRoad) {
         List<SubPath> subPaths = new ArrayList<>();
         for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
-            SubPath.SubPathBuilder subPathBuilder = SubPath.builder()
-                    .way(myFindRoadSubPath.getWay())
-                    .door(myFindRoadSubPath.getDoor())
-                    .trafficType(myFindRoadSubPath.getTrafficType())
-                    .stationCount(myFindRoadSubPath.getStationCount())
-                    .sectionTime(myFindRoadSubPath.getSectionTime())
-                    .distance(myFindRoadSubPath.getDistance());
-
+            boolean isDirect = myFindRoadSubPath.getName().contains("(급행)");
+            SubPath subPath = SubPath.builder().build();
             if (myFindRoadSubPath.getTrafficType() == 1) {
-                List<Lane> lanes = new ArrayList<>();
-                for (MyFindRoadLane myFindRoadLane : myFindRoadSubPath.getLanes()) {
-                    boolean isDirect = myFindRoadLane.getName().contains("(급행)");
-                    Lane buildLane = Lane.builder()
-                            .name(myFindRoadLane.getName())
-                            .stationCode(myFindRoadLane.getStationCode())
-                            .direct(isDirect)
-                            .build();
-                    lanes.add(buildLane);
-                }
 
                 List<IssueSummary> issueDtoList = new ArrayList<>();
                 List<Station> stations = new ArrayList<>();
@@ -236,14 +183,21 @@ public class MyFindRoadResponse {
                     stations.add(station);
                     issueDtoList.addAll(issueSummaryDtoList);
                 }
-
-                if (!lanes.isEmpty()) {
-                    lanes.get(0).setIssueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList));
-                }
-                subPathBuilder.lanes(lanes);
-                subPathBuilder.stations(stations);
+                subPath = SubPath.builder()
+                        .way(myFindRoadSubPath.getWay())
+                        .door(myFindRoadSubPath.getDoor())
+                        .trafficType(myFindRoadSubPath.getTrafficType())
+                        .stationCount(myFindRoadSubPath.getStationCount())
+                        .sectionTime(myFindRoadSubPath.getSectionTime())
+                        .distance(myFindRoadSubPath.getDistance())
+                        .name(myFindRoadSubPath.getName())
+                        .stationCode(myFindRoadSubPath.getStationCode())
+                        .direct(isDirect)
+                        .issueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList))
+                        .stations(stations)
+                        .build();
             }
-            subPaths.add(subPathBuilder.build());
+            subPaths.add(subPath);
         }
 
         return MyFindRoadResponse.builder()

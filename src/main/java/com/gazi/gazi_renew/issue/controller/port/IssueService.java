@@ -3,7 +3,7 @@ package com.gazi.gazi_renew.issue.controller.port;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.station.domain.Station;
 import org.springframework.data.domain.Page;
@@ -17,15 +17,18 @@ public interface IssueService {
     // 이슈 저장
     boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
     // 이슈 조회
-    IssueDetail getIssue(Long id);
+    IssueStationDetail getIssue(Long id);
+
+    IssueStationDetail getIssueStationDetail(Issue issue, boolean isLike);
+
     // 이슈 전체조회
-    Page<Issue> getIssues(Pageable pageable);
+    Page<IssueStationDetail> getIssues(Pageable pageable);
     // 이슈 필터조회
-    Page<Issue> getLineByIssues(String line,Pageable pageable);
+    Page<IssueStationDetail> getLineByIssues(String line, Pageable pageable);
 
     void updateIssueContent(IssueUpdate issueUpdate);
     //인기 이슈 조회
-    List<Issue> getPopularIssues();
+    List<IssueStationDetail> getPopularIssues();
 
     List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode);
 

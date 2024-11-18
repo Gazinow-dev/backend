@@ -21,4 +21,9 @@ public class LineRepositoryImpl implements LineRepository {
     public Line save(Line line) {
         return lineJpaRepository.save(LineEntity.from(line)).toModel();
     }
+
+    @Override
+    public Optional<Line> findById(Long id) {
+        return lineJpaRepository.findById(id).map(LineEntity::toModel);
+    }
 }

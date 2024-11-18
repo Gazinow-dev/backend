@@ -9,10 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LikeTest {
     @Test
@@ -42,8 +40,6 @@ class LikeTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line1))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
@@ -57,8 +53,7 @@ class LikeTest {
         //when
         Like like = Like.from(likeCreate, memberId, issue1);
         //then
-        assertThat(like.getIssue().getId()).isEqualTo(1L);
-        assertThat(like.getIssue().getTitle()).isEqualTo("서울역 대규모 행사");
+        assertThat(like.getIssueId()).isEqualTo(1L);
     }
 
 }

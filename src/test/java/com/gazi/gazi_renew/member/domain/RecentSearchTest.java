@@ -30,12 +30,10 @@ class RecentSearchTest {
                 .build();
         LocalDateTime newTime = LocalDateTime.now();
         //when
-        RecentSearch recentSearch = RecentSearch.from(recentSearchCreate, member, new TestClockHolder(newTime));
+        RecentSearch recentSearch = RecentSearch.from(recentSearchCreate, member.getId(), new TestClockHolder(newTime));
 
         //then
         assertThat(recentSearch.getStationName()).isEqualTo("삼각지");
         assertThat(recentSearch.getStationLine()).isEqualTo("수도권 6호선");
-        assertThat(recentSearch.getMember().getEmail()).isEqualTo("mw310@naver.com");
-        assertThat(recentSearch.getMember().getNickName()).isEqualTo("minu");
     }
 }

@@ -26,17 +26,8 @@ public class NotificationEntity extends AuditingFields {
     @Column(nullable = false)
     private LocalTime toTime;
 
-    @ManyToOne
-    @JoinColumn(name = "my_find_road_path_id", nullable = false)
-    @JsonBackReference
-    private MyFindRoadPathEntity myFindRoadPathEntity;
-
-    // 알림 업데이트 메서드
-    public void updateNotificationEntity(String dayOfWeek, LocalTime fromTime, LocalTime toTime) {
-        this.dayOfWeek = dayOfWeek;
-        this.fromTime = fromTime;
-        this.toTime = toTime;
-    }
+    @Column(name = "my_find_road_path_id", nullable = false)
+    private Long myFindRoadPathId;
 
     public Notification toModel() {
         return Notification.builder()
@@ -44,7 +35,7 @@ public class NotificationEntity extends AuditingFields {
                 .dayOfWeek(dayOfWeek)
                 .fromTime(fromTime)
                 .toTime(toTime)
-                .myFindRoad(myFindRoadPathEntity.toModel())
+                .myFindRoadPathId(myFindRoadPathId)
                 .build();
     }
 
@@ -53,7 +44,7 @@ public class NotificationEntity extends AuditingFields {
         notificationEntity.dayOfWeek = notification.getDayOfWeek();
         notificationEntity.fromTime = notification.getFromTime();
         notificationEntity.toTime = notification.getToTime();
-        notificationEntity.myFindRoadPathEntity = MyFindRoadPathEntity.from(notification.getMyFindRoad());
+        notificationEntity.myFindRoadPathId = notification.getMyFindRoadPathId();
 
         return notificationEntity;
     }

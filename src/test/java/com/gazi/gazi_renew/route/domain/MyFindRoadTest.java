@@ -3,17 +3,13 @@ package com.gazi.gazi_renew.route.domain;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLaneCreate;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStationCreate;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPathCreate;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class MyFindRoadTest {
     @Test
@@ -26,10 +22,8 @@ class MyFindRoadTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLaneCreate.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStationCreate.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStationCreate.builder().index(1).stationName("삼각지").build()
@@ -55,10 +49,9 @@ class MyFindRoadTest {
                 .subPaths(Arrays.asList(subPathCreate))
                 .build();
         //when
-        MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member);
+        MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member.getId());
         //then
         assertThat(myFindRoad.getRoadName()).isEqualTo("민우 출근길");
-        assertThat(myFindRoad.getMember().getNickName()).isEqualTo("minu");
         assertThat(myFindRoad.getFirstStartStation()).isEqualTo("효창공원앞");
         assertThat(myFindRoad.getLastEndStation()).isEqualTo("삼각지");
     }
@@ -88,10 +81,8 @@ class MyFindRoadTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build()
@@ -104,10 +95,8 @@ class MyFindRoadTest {
                 .stationCount(2)
                 .way("녹사평")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build(),

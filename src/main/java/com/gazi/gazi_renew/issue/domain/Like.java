@@ -7,17 +7,17 @@ import lombok.Getter;
 @Getter
 public class Like {
     private final Long id;
-    private final Issue issue;
+    private final Long issueId;
     private final Long memberId;
     @Builder
-    public Like(Long id, Issue issue, Long memberId) {
+    public Like(Long id, Long issueId, Long memberId) {
         this.id = id;
-        this.issue = issue;
+        this.issueId = issueId;
         this.memberId = memberId;
     }
     public static Like from(LikeCreate likeCreate, Long memberId, Issue issue) {
         return Like.builder()
-                .issue(issue)
+                .issueId(issue.getId())
                 .memberId(memberId)
                 .build();
     }

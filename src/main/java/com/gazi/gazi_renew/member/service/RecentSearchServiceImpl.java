@@ -39,15 +39,16 @@ public class RecentSearchServiceImpl implements RecentSearchService {
     @Override
     public RecentSearch addRecentSearch(RecentSearchCreate recentSearchCreate) {
         Member member = isUser();
-        RecentSearch recentSearch = RecentSearch.from(recentSearchCreate, member, clockHolder);
+        RecentSearch recentSearch = RecentSearch.from(recentSearchCreate, member.getId(), clockHolder);
 
         Optional<RecentSearch> optionalRecentSearch = recentSearchRepository.findByMemberAndStationLineAndStationName(member.getId(),
                 recentSearch.getStationLine(), recentSearch.getStationName());
 
         if (optionalRecentSearch.isPresent()) {
-            recentSearchRepository.updateModifiedAt(recentSearch.getId(), recentSearch.getModifiedAt());
+            recentSearchRepository.updateModifiedAt(optionalRecentSearch.get().getId(), recentSearch.getModifiedAt());
+            recentSearch = optionalRecentSearch.get();
         } else {
-            recentSearchRepository.save(recentSearch);
+            recentSearch = recentSearchRepository.save(recentSearch);
         }
         validateMaxSizeRecentSearch(member);
         return recentSearch;

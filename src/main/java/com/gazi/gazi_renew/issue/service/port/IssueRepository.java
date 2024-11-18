@@ -1,10 +1,8 @@
 package com.gazi.gazi_renew.issue.service.port;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +19,5 @@ public interface IssueRepository {
 
     void updateContent(Issue issue);
 
-    List<Issue> findByStationId(Long stationId);
-
-    List<Issue> findByLineId(Long id);
+    void updateLikeCount(Issue issue);
 }

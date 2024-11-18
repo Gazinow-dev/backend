@@ -32,23 +32,23 @@ public class NotificationResponse {
     // 다중 알림 시간 리스트를 처리하기 위한 내부 클래스
     @Getter
     public static class NotificationTime {
+        private final Long id;
         private final String dayOfWeek;
         private final LocalTime fromTime;
         private final LocalTime toTime;
         @Builder
-        public NotificationTime(String dayOfWeek, LocalTime fromTime, LocalTime toTime) {
+        public NotificationTime(Long id, String dayOfWeek, LocalTime fromTime, LocalTime toTime) {
+            this.id = id;
             this.dayOfWeek = dayOfWeek;
             this.fromTime = fromTime;
             this.toTime = toTime;
         }
     }
 
-    public static NotificationResponse fromList(List<Notification> notificationList) {
-        if (notificationList == null || notificationList.isEmpty()) {
-            throw new IllegalArgumentException("해당 알림이 존재하지 않습니다.");
+    public static NotificationResponse fromList(MyFindRoad myFindRoad, List<Notification> notificationList) {
+        if (myFindRoad == null) {
+            throw new IllegalArgumentException("해당 경로가 존재하지 않습니다.");
         }
-        MyFindRoad myFindRoad = notificationList.get(0).getMyFindRoad();
-
         NotificationResponse notificationResponse = NotificationResponse.builder()
                 .enabled(myFindRoad.getNotification())
                 .myFindRoadPathId(myFindRoad.getId())
@@ -56,7 +56,8 @@ public class NotificationResponse {
         if (notificationResponse.isEnabled()) {
             List<NotificationResponse.NotificationTime> notificationTimes = new ArrayList<>();
             for (Notification notification : notificationList) {
-                NotificationResponse.NotificationTime notificationTime = NotificationResponse.NotificationTime.builder()
+                NotificationResponse.NotificationTime notificationTime = NotificationTime.builder()
+                        .id(notification.getId())
                         .dayOfWeek(notification.getDayOfWeek())
                         .fromTime(notification.getFromTime())
                         .toTime(notification.getToTime())

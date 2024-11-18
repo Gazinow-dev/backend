@@ -15,13 +15,13 @@ public class LikeRepositoryImpl implements LikeRepository {
 
     @Override
     public Optional<Like> findByIssueAndMember(Long issueId, Long memberId) {
-        return likeJpaRepository.findByIssueEntityIdAndMemberEntityId(issueId, memberId)
+        return likeJpaRepository.findByIssueIdAndMemberId(issueId, memberId)
                 .map(LikeEntity::toModel);
     }
 
     @Override
     public boolean existsByIssueAndMember(Long issueId, Long memberId) {
-        return likeJpaRepository.existsByIssueEntityIdAndMemberEntityId(issueId, memberId);
+        return likeJpaRepository.existsByIssueIdAndMemberId(issueId, memberId);
     }
 
     @Override

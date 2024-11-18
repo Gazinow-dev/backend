@@ -17,13 +17,19 @@ public class MyFindRoadSubwayRepositoryImpl implements MyFindRoadSubwayRepositor
     private final MyFindRoadSubwayJpaRepository myFindRoadSubwayJpaRepository;
 
     @Override
-    public void save(MyFindRoadStation myFindRoadStation, MyFindRoadSubPath myFindRoadSubPath ) {
-        myFindRoadSubwayJpaRepository.save(MyFindRoadStationEntity.from(myFindRoadStation, myFindRoadSubPath));
+    public void save(MyFindRoadStation myFindRoadStation) {
+        myFindRoadSubwayJpaRepository.save(MyFindRoadStationEntity.from(myFindRoadStation));
     }
 
     @Override
-    public List<MyFindRoadStation> findAllByMyFindRoadSubPath(MyFindRoadSubPath myFindRoadSubPath) {
-        return myFindRoadSubwayJpaRepository.findAllByMyFindRoadSubPathEntityId(myFindRoadSubPath.getId())
-                .stream().map(MyFindRoadStationEntity::toModel).collect(Collectors.toList());
+    public List<MyFindRoadStation> findAllByMyFindRoadSubPathId(Long myFindRoadSubPathId) {
+        return myFindRoadSubwayJpaRepository.findAllByMyFindRoadSubPathId(myFindRoadSubPathId).stream()
+                .map(MyFindRoadStationEntity::toModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteAll(List<MyFindRoadStation> myFindRoadStationList) {
+        myFindRoadSubwayJpaRepository.deleteAll(myFindRoadStationList.stream()
+                .map(MyFindRoadStationEntity::from).collect(Collectors.toList()));
     }
 }

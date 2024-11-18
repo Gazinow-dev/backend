@@ -5,7 +5,7 @@ import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -15,7 +15,6 @@ import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import jakarta.persistence.EntityNotFoundException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -46,9 +45,12 @@ class IssueServiceImplTest {
         FakeLineRepository fakeLineRepository = new FakeLineRepository();
 
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
+        FakeIssueStationRepository fakeIssueStationRepository = new FakeIssueStationRepository();
+        FakeIssueLineRepository fakeIssueLineRepository = new FakeIssueLineRepository();
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
+
         this.issueServiceImpl = new IssueServiceImpl(fakeIssueRepository, fakeLikeRepository, fakeSubwayRepository, fakeMemberRepository
-                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil);
+                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository);
 
         Line line = Line.builder()
                 .id(1L)
@@ -94,8 +96,6 @@ class IssueServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
                 .keyword(IssueKeyword.시위)
-                .stationList(Arrays.asList(station1))
-                .lines(Arrays.asList(line))
                 .crawlingNo("1")
                 .likeCount(0)
                 .build();
@@ -105,7 +105,7 @@ class IssueServiceImplTest {
         Like like = Like.builder()
                 .id(1L)
                 .memberId(member1.getId())
-                .issue(issue)
+                .issueId(issue.getId())
                 .build();
         fakeLikeRepository.save(like);
 
@@ -218,7 +218,7 @@ class IssueServiceImplTest {
         //given
         Long id = 1L;
         //when
-        IssueDetail issue = issueServiceImpl.getIssue(id);
+        IssueStationDetail issue = issueServiceImpl.getIssue(id);
         //then
         assertThat(issue.getIssue().getId()).isEqualTo(1L);
         assertThat(issue.getIssue().getTitle()).isEqualTo("삼각지역 집회");
@@ -229,7 +229,7 @@ class IssueServiceImplTest {
         //given
         Long id = 1L;
         //when
-        IssueDetail issue = issueServiceImpl.getIssue(id);
+        IssueStationDetail issue = issueServiceImpl.getIssue(id);
         //then
         assertThat(issue.isLike()).isTrue();
     }
@@ -269,8 +269,6 @@ class IssueServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
@@ -279,13 +277,11 @@ class IssueServiceImplTest {
 
         // when
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Issue> issuePage = issueServiceImpl.getIssues(pageable);
+        Page<IssueStationDetail> issuePage = issueServiceImpl.getIssues(pageable);
 
         // then
         assertThat(issuePage).isNotNull();
         assertThat(issuePage.getTotalElements()).isEqualTo(2);
-        assertThat(issuePage.getContent()).extracting(Issue::getTitle)
-                .containsExactlyInAnyOrder("삼각지역 집회", "서울역 대규모 행사");
     }
     @Test
     void getLineByIssues는_호선별로_이슈를_조회할_수_있다() throws Exception {
@@ -314,8 +310,6 @@ class IssueServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line1))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
@@ -327,8 +321,6 @@ class IssueServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 08:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 10:00:00", formatter))
                 .keyword(IssueKeyword.사고)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line1))
                 .crawlingNo("3")
                 .likeCount(5)
                 .build();
@@ -337,12 +329,12 @@ class IssueServiceImplTest {
 
         // when
         Pageable pageable = PageRequest.of(0, 2);
-        Page<Issue> issuePage = issueServiceImpl.getLineByIssues("수도권 1호선", pageable);
+        Page<IssueStationDetail> issuePage = issueServiceImpl.getLineByIssues("수도권 1호선", pageable);
 
         // then
         assertThat(issuePage).isNotNull();
         assertThat(issuePage.getTotalElements()).isEqualTo(2);
-        assertThat(issuePage.getContent()).extracting(Issue::getTitle)
+        assertThat(issuePage.getContent()).extracting(IssueStationDetail::getIssue).extracting(Issue::getTitle)
                 .containsExactly("서울역 대규모 행사", "서울역 사고");  //정렬 순서도 체크
     }
     @Test
@@ -382,18 +374,16 @@ class IssueServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
         fakeIssueRepository.save(additionalIssue);
         //when
-        List<Issue> popularIssues = issueServiceImpl.getPopularIssues();
+        List<IssueStationDetail> popularIssues = issueServiceImpl.getPopularIssues();
         //then
         assertThat(popularIssues.size()).isEqualTo(1);
-        assertThat(popularIssues.get(0).getTitle()).isEqualTo("서울역 대규모 행사");
-        assertThat(popularIssues.get(0).getContent()).isEqualTo("서울역 대규모 행사 테스트");
+        assertThat(popularIssues.get(0).getIssue().getTitle()).isEqualTo("서울역 대규모 행사");
+        assertThat(popularIssues.get(0).getIssue().getContent()).isEqualTo("서울역 대규모 행사 테스트");
     }
     @Test
     void updateIssueContent는_Issue_내용을_업데이트할_수_있다() throws Exception{

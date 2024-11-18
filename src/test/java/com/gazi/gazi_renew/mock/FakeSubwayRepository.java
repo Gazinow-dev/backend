@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -63,5 +64,10 @@ public class FakeSubwayRepository implements SubwayRepository {
             data.removeIf(item -> Objects.equals(item.getId(), station.getId()));
             data.add(station);
         }
+    }
+
+    @Override
+    public Optional<Station> findById(Long id) {
+        return Optional.empty();
     }
 }

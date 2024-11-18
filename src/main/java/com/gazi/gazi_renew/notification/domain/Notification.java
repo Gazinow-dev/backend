@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.notification.domain;
 
+import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import lombok.Builder;
@@ -15,17 +16,17 @@ public class Notification {
     private final String dayOfWeek;
     private final LocalTime fromTime;
     private final LocalTime toTime;
-    private final MyFindRoad myFindRoad;
+    private final Long myFindRoadPathId;
     @Builder
-    public Notification(Long id, String dayOfWeek, LocalTime fromTime, LocalTime toTime, MyFindRoad myFindRoad) {
+    public Notification(Long id, String dayOfWeek, LocalTime fromTime, LocalTime toTime, Long myFindRoadPathId) {
         this.id = id;
         this.dayOfWeek = dayOfWeek;
         this.fromTime = fromTime;
         this.toTime = toTime;
-        this.myFindRoad = myFindRoad;
+        this.myFindRoadPathId = myFindRoadPathId;
     }
 
-    public static List<Notification> from(MyFindRoadNotificationCreate myFindRoadNotificationCreate, MyFindRoad myFindRoad) {
+    public static List<Notification> from(MyFindRoadNotificationCreate myFindRoadNotificationCreate, Long myFindRoadPathId) {
         List<Notification> savedTimes = new ArrayList<>();
         for (MyFindRoadNotificationCreate.DayTimeRange dayTimeRange : myFindRoadNotificationCreate.getDayTimeRanges()) {
             String day = dayTimeRange.getDay();
@@ -37,7 +38,7 @@ public class Notification {
                     .dayOfWeek(day)
                     .fromTime(fromTime)
                     .toTime(toTime)
-                    .myFindRoad(myFindRoad)
+                    .myFindRoadPathId(myFindRoadPathId)
                     .build();
             savedTimes.add(notification);
         }
@@ -47,8 +48,8 @@ public class Notification {
     // 알림 시간 검증
     private static void validateTimeOrder(LocalTime fromTime, LocalTime toTime) {
         if (fromTime.isAfter(toTime) || fromTime.equals(toTime)) {
-            throw new IllegalArgumentException("fromTime은 toTime보다 이전이어야 합니다: "
-                    + "fromTime=" + fromTime + ", toTime=" + toTime);
+            throw ErrorCode.throwInvalidTimeRange();
         }
+
     }
 }

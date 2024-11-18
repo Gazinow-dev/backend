@@ -7,4 +7,6 @@ public interface LineRepository {
     Optional<Line> findByLineName(String lineName);
 
     Line save(Line line);
+
+    Optional<Line> findById(Long id);
 }

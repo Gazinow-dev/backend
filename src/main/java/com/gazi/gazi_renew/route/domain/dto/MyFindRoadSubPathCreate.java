@@ -13,17 +13,19 @@ public class MyFindRoadSubPathCreate {
     private final int stationCount; // 정차하는 역 개수
     private final  String way; //  방면
     private final  String door; // 문
-    private final List<MyFindRoadLaneCreate> lanes; //
+    private final String name;
+    private final int stationCode;
     private final List<MyFindRoadStationCreate> stations;
     @Builder
-    public MyFindRoadSubPathCreate(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, List<MyFindRoadLaneCreate> lanes, List<MyFindRoadStationCreate> stations) {
+    public MyFindRoadSubPathCreate(int trafficType, double distance, int sectionTime, int stationCount, String way, String door, String name, int stationCode, List<MyFindRoadStationCreate> stations) {
         this.trafficType = trafficType;
         this.distance = distance;
         this.sectionTime = sectionTime;
         this.stationCount = stationCount;
         this.way = way;
         this.door = door;
-        this.lanes = lanes;
+        this.name = name;
+        this.stationCode = stationCode;
         this.stations = stations;
     }
 }

@@ -23,7 +23,7 @@ class MyFindRoadStationTest {
                 .stationCode(1)
                 .build();
         //when
-        MyFindRoadStation myFindRoadStation = MyFindRoadStation.from(myFindRoadStationCreate);
+        MyFindRoadStation myFindRoadStation = MyFindRoadStation.from(myFindRoadStationCreate, 1L);
         //then
         assertThat(myFindRoadStation.getStationName()).isEqualTo("삼각지");
         assertThat(myFindRoadStation.getIndex()).isEqualTo(1);
@@ -49,7 +49,6 @@ class MyFindRoadStationTest {
                 .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
                 .keyword(IssueKeyword.시위)
-                .stationList(Arrays.asList(station1))
                 .likeCount(0)
                 .build();
 

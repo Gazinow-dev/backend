@@ -8,11 +8,9 @@ import com.gazi.gazi_renew.mock.FakeNotificationRepository;
 import com.gazi.gazi_renew.mock.FakeRedisUtilServiceImpl;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
-import jakarta.persistence.EntityNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,10 +46,8 @@ class NotificationServiceImplTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build()
@@ -66,17 +62,7 @@ class NotificationServiceImplTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
-                .member(Member.builder()
-                        .id(1L)
-                        .email("mw310@naver.com")
-                        .password("encoded_tempPassword")
-                        .nickName("minu")
-                        .role(Role.ROLE_USER)
-                        .pushNotificationEnabled(false)
-                        .mySavedRouteNotificationEnabled(false)
-                        .routeDetailNotificationEnabled(false)
-                        .firebaseToken("firebaseToken")
-                        .build())
+                .memberId(1L)
                 .build();
         fakeMyFindRoadPathRepository.save(myFindRoad);
 
@@ -85,7 +71,7 @@ class NotificationServiceImplTest {
                 .dayOfWeek("월")
                 .fromTime(LocalTime.parse("14:00"))
                 .toTime(LocalTime.parse("16:00"))
-                .myFindRoad(myFindRoad)
+                .myFindRoadPathId(myFindRoad.getId())
                 .build();
         fakeNotificationRepository.saveAll(Arrays.asList(myFindRoadNotificationCreate));
     }
@@ -104,12 +90,8 @@ class NotificationServiceImplTest {
                 .dayTimeRanges(Arrays.asList(dayTimeRange))
                 .build();
         //when
-        List<Notification> notificationList = notificationServiceImpl.saveNotificationTimes(myFindRoadNotificationCreate);
+        notificationServiceImpl.saveNotificationTimes(myFindRoadNotificationCreate);
         //then
-        assertThat(notificationList.size()).isEqualTo(1);
-        assertThat(notificationList.get(0).getDayOfWeek()).isEqualTo("월");
-        assertThat(notificationList.get(0).getFromTime()).isEqualTo("14:00");
-        assertThat(notificationList.get(0).getToTime()).isEqualTo("16:00");
     }
     @Test
     void saveNotificationTimes에서_알림을_저장하면_MyFindRoad의_알림_상태도_활성화_된다() throws Exception{

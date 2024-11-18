@@ -58,7 +58,7 @@ public class RedisUtilServiceImpl implements RedisUtilService {
 
             notificationJsonList.add(notificationData);
 
-            String fieldName = myFindRoad.getMember().getId().toString();
+            String fieldName = myFindRoad.getMemberId().toString();
 
             String notificationJsonArray = convertListToJson(notificationJsonList);
             System.out.println(notificationJsonArray);

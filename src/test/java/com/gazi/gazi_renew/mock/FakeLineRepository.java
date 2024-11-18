@@ -35,4 +35,10 @@ public class FakeLineRepository implements LineRepository {
             return line;
         }
     }
+
+    @Override
+    public Optional<Line> findById(Long id) {
+        return data.stream()
+                .filter(line -> line.getId().equals(id)).findFirst();
+    }
 }

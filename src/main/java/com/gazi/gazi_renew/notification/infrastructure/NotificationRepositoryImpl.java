@@ -3,7 +3,6 @@ package com.gazi.gazi_renew.notification.infrastructure;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -18,23 +17,23 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public List<Notification> findByMyFindRoadPathId(Long myFindRoadPathId) {
-        return notificationJpaRepository.findByMyFindRoadPathEntityId(myFindRoadPathId).stream()
+        return notificationJpaRepository.findByMyFindRoadPathId(myFindRoadPathId).stream()
                 .map(NotificationEntity::toModel).collect(Collectors.toList());
     }
 
     public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        notificationJpaRepository.deleteByMyFindRoadPathEntityId(myFindRoad.getId());
+        notificationJpaRepository.deleteByMyFindRoadPathId(myFindRoad.getId());
         notificationJpaRepository.flush();
     }
 
     @Override
-    public void saveAll(List<Notification> notificationList) {
+    public List<Notification> saveAll(List<Notification> notificationList) {
         List<NotificationEntity> notificationEntityList = notificationList.stream().map(NotificationEntity::from)
                 .collect(Collectors.toList());
 
-        notificationJpaRepository.saveAll(notificationEntityList);
+        return notificationJpaRepository.saveAll(notificationEntityList).stream()
+                .map(NotificationEntity::toModel).collect(Collectors.toList());
     }
-
     @Override
     public Optional<Notification> findById(Long notificationId) {
         return notificationJpaRepository.findById(notificationId).map(NotificationEntity::toModel);

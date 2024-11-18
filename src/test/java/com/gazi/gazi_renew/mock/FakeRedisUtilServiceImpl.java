@@ -6,7 +6,6 @@ import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +48,7 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
             notificationJsonList.add(notificationData);
         }
 
-        String fieldName = myFindRoad.getMember().getId().toString();
+        String fieldName = myFindRoad.getMemberId().toString();
         String notificationJsonArray = convertListToJson(notificationJsonList);
 
         hashStore.computeIfAbsent("user_notifications", k -> new ConcurrentHashMap<>())

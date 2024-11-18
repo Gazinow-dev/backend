@@ -54,7 +54,7 @@ class RecentSearchServiceImplTest {
                     .id((long) i)
                     .stationName("수도권 6호선" + i)
                     .stationLine("수도권 6호선")
-                    .member(member1)
+                    .memberId(member1.getId())
                     .modifiedAt(LocalDateTime.parse("2024-04-21T00:09:"+i))
                     .build();
             fakeRecentSearchRepository.save(recentSearch);
@@ -70,7 +70,6 @@ class RecentSearchServiceImplTest {
         assertThat(recentSearchList.get(0).getId()).isEqualTo(20L);
         assertThat(recentSearchList.get(0).getStationName()).isEqualTo("수도권 6호선20");
         assertThat(recentSearchList.get(0).getStationLine()).isEqualTo("수도권 6호선");
-        assertThat(recentSearchList.get(0).getMember().getNickName()).isEqualTo("minu");
     }
     @Test
     void addRecentSearch는_최근_검색어가_10개_이상이면_가장_오래된_검색어를_지운다() throws Exception{
@@ -108,7 +107,7 @@ class RecentSearchServiceImplTest {
         List<RecentSearch> recentSearchList = fakeRecentSearchRepository.findAllByMemberOrderByModifiedAtDesc(1L);
 
         assertThat(recentSearchList.get(0).getModifiedAt()).isNotEqualTo(lastModifiedAt); //시간만 수정되어야 함
-        assertThat(recentSearchList.get(0).getStationName()).isEqualTo("수도권 6호선20");
+        assertThat(recentSearchList.get(0).getStationName()).isEqualTo("수도권 6호선11");
     }
     @Test
     void recentDelete는_최근_검색어를_지울_수_있다() throws Exception{

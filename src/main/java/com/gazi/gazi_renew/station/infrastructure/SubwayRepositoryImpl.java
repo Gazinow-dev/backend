@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -37,4 +38,11 @@ public class SubwayRepositoryImpl implements SubwayRepository {
     public void save(Station station) {
         subwayJpaRepository.save(StationEntity.from(station));
     }
+
+    @Override
+    public Optional<Station> findById(Long id) {
+        Optional<Station> station = subwayJpaRepository.findById(id).map(StationEntity::toModel);
+        return station;
+    }
+
 }

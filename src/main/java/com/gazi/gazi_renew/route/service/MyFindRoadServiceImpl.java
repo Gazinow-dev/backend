@@ -3,16 +3,18 @@ package com.gazi.gazi_renew.route.service;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
+import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
-import com.gazi.gazi_renew.route.service.port.MyFindRoadLaneRepository;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStationCreate;
+import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPathCreate;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,12 +41,11 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
-    private final MyFindRoadLaneRepository myFindRoadLaneRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final SubwayRepository subwayRepository;
     private final IssueRepository issueRepository;
     private final SecurityUtilService securityUtilService;
-
+    private final IssueStationRepository issueStationRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,24 +73,21 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         log.info("길저장 서비스 로직 진입");
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
-        MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member);
+        MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member.getId());
 
         if (myFindRoadPathRepository.existsByNameAndMember(myFindRoadCreate.getRoadName(), member)) {
             throw ErrorCode.throwDuplicateRoadName();
         }
-        myFindRoad = myFindRoadPathRepository.save(myFindRoad);
         log.info("myFindRoadPath 저장");
+        myFindRoad = myFindRoadPathRepository.save(myFindRoad);
 
-        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
-            myFindRoadSubPathRepository.save(myFindRoadSubPath);
+        for (MyFindRoadSubPathCreate myFindRoadSubPathCreate : myFindRoadCreate.getSubPaths()) {
+            MyFindRoadSubPath myFindRoadSubPath = MyFindRoadSubPath.from(myFindRoadSubPathCreate, myFindRoad);
+            myFindRoadSubPath = myFindRoadSubPathRepository.save(myFindRoadSubPath);
             log.info("myFindRoadSubPath 저장");
-            for (MyFindRoadLane myFindRoadLane: myFindRoadSubPath.getLanes()) {
-                myFindRoadLaneRepository.save(myFindRoadLane);
-                log.info("MyFindRoadLane 저장 완료");
-            }
-            for (MyFindRoadStation myFindRoadStation : myFindRoadSubPath.getStations()) {
-
-                myFindRoadSubwayRepository.save(myFindRoadStation, myFindRoadSubPath);
+            for (MyFindRoadStationCreate myFindRoadStationCreate : myFindRoadSubPathCreate.getStations()) {
+                MyFindRoadStation myFindRoadStation = MyFindRoadStation.from(myFindRoadStationCreate, myFindRoadSubPath.getId());
+                myFindRoadSubwayRepository.save(myFindRoadStation);
                 log.info("MyFindRoadSubway 저장 완료");
             }
         }
@@ -97,11 +96,21 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public void deleteRoute(Long id) {
         if (myFindRoadPathRepository.existsById(id)) {
+            // 자식 엔티티(MyFindRoadSubPath) 조회
+            List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(id);
+            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoadSubPathList) {
+                // 손자 엔티티(MyFindRoadStation) 삭제
+                List<MyFindRoadStation> myFindRoadStationList = myFindRoadSubwayRepository.findAllByMyFindRoadSubPathId(myFindRoadSubPath.getId());
+                myFindRoadSubwayRepository.deleteAll(myFindRoadStationList);
+            }
+            myFindRoadSubPathRepository.deleteAll(myFindRoadSubPathList);
+
             myFindRoadPathRepository.deleteById(id);
         } else {
             throw ErrorCode.throwMyFindRoadNotFoundException();
         }
     }
+
     @Override
     public void updateRouteNotification(Long id, Boolean enabled) {
         MyFindRoad myFindRoad = myFindRoadPathRepository.findById(id)
@@ -116,23 +125,25 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         for (MyFindRoad myFindRoad : myFindRoadList) {
             List<MyFindRoadSubPath> updatedSubPaths = new ArrayList<>();
 
-            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
-                MyFindRoadLane myFindRoadLane = myFindRoadLaneRepository.findByMyFindRoadSubPath(myFindRoadSubPath)
-                        .orElseThrow(() -> new EntityNotFoundException("lane이 존재하지 않습니다."));
+            List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(myFindRoad.getId());
+
+            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoadSubPathList) {
 
                 List<MyFindRoadStation> updatedStations = new ArrayList<>();
-
-                for (MyFindRoadStation myFindRoadStation : myFindRoadSubwayRepository.findAllByMyFindRoadSubPath(myFindRoadSubPath)) {
-                    //TODO 이전 코드랑 비교 문제 없는지
-                    String line = myFindRoadLane.getName();
-                    if(myFindRoadLane.getName().equals("수도권 9호선(급행)")){
+                // myFindRoadSubPathEntity에는 저장을 안해서 따로 조회(간접 참조)만 사용중
+                List<MyFindRoadStation> myFindRoadStationList = myFindRoadSubwayRepository.findAllByMyFindRoadSubPathId(myFindRoadSubPath.getId());
+                for (MyFindRoadStation myFindRoadStation : myFindRoadStationList) {
+                    String line = myFindRoadSubPath.getName();
+                    if(line.equals("수도권 9호선(급행)")){
                         line = "수도권 9호선";
                     }
                     List<Station> stationList = subwayRepository.findByNameContainingAndLine(myFindRoadStation.getStationName(), line);
                     Station station = Station.toFirstStation(myFindRoadStation.getStationName(), stationList);
 
                     if (station != null) {
-                        List<Issue> issueList = issueRepository.findByStationId(station.getId());
+                        List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(station.getId());
+                        List<Issue> issueList = issueStationList.stream().map(IssueStation::getIssue)
+                                .collect(Collectors.toList());
                         myFindRoadStation = myFindRoadStation.updateIssueList(issueList);  // 업데이트된 station 객체 생성
                     }
                     updatedStations.add(myFindRoadStation);  // 변경된 객체를 리스트에 추가
@@ -141,7 +152,6 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 MyFindRoadSubPath updatedSubPath = myFindRoadSubPath.updateStations(updatedStations);  // 변경된 stations 반영
                 updatedSubPaths.add(updatedSubPath);  // 변경된 subPath 리스트에 추가
             }
-
             MyFindRoad updatedRoad = myFindRoad.updateSubPaths(updatedSubPaths);  // 변경된 subPaths 반영
             updatedRoadList.add(updatedRoad);  // 변경된 road 리스트에 추가
         }

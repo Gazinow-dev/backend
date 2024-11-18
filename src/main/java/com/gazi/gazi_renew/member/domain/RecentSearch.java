@@ -12,21 +12,22 @@ public class RecentSearch {
     private final Long id;
     private final String stationName;
     private final String stationLine;
-    private final Member member;
+    private final Long memberId;
     private final LocalDateTime modifiedAt;
     @Builder
-    public RecentSearch(Long id, String stationName, String stationLine, Member member, LocalDateTime modifiedAt) {
+    public RecentSearch(Long id, String stationName, String stationLine, Long memberId, LocalDateTime modifiedAt) {
         this.id = id;
         this.stationName = stationName;
         this.stationLine = stationLine;
-        this.member = member;
+        this.memberId = memberId;
         this.modifiedAt = modifiedAt;
     }
-    public static RecentSearch from(RecentSearchCreate recentSearchCreate, Member member, ClockHolder clockHolder) {
+
+    public static RecentSearch from(RecentSearchCreate recentSearchCreate, Long memberId, ClockHolder clockHolder) {
         return RecentSearch.builder()
                 .stationName(recentSearchCreate.getStationName())
                 .stationLine(recentSearchCreate.getStationLine())
-                .member(member)
+                .memberId(memberId)
                 .modifiedAt(clockHolder.now())
                 .build();
     }

@@ -21,12 +21,10 @@ public class Issue {
     private final String secretCode;
     private final String crawlingNo;
     private final IssueKeyword keyword;
-    private final List<Line> lines;
-    private final List<Station> stationList;
     private final int latestNo;
     private final int likeCount;
     @Builder
-    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<Line> lines, List<Station> stationList, int latestNo, int likeCount) {
+    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -35,8 +33,6 @@ public class Issue {
         this.secretCode = secretCode;
         this.crawlingNo = crawlingNo;
         this.keyword = keyword;
-        this.lines = lines;
-        this.stationList = stationList;
         this.latestNo = latestNo;
         this.likeCount = likeCount;
     }
@@ -52,18 +48,12 @@ public class Issue {
                 .secretCode(this.secretCode)
                 .crawlingNo(this.crawlingNo)
                 .keyword(this.keyword)
-                .lines(this.lines)
-                .stationList(this.stationList)
                 .latestNo(this.latestNo)
                 .likeCount(this.likeCount)
                 .build();
     }
 
-    public static Issue from(IssueCreate issueCreate, List<Station> stationList) {
-        List<Line> lineList = issueCreate.getLines().stream().map(lineName -> Line.builder()
-                .lineName(lineName)
-                .build()).collect(Collectors.toList());
-
+    public static Issue from(IssueCreate issueCreate) {
         return Issue.builder()
                 .title(issueCreate.getTitle())
                 .content(issueCreate.getContent())
@@ -72,9 +62,41 @@ public class Issue {
                 .secretCode(issueCreate.getSecretCode())
                 .crawlingNo(issueCreate.getCrawlingNo())
                 .keyword(issueCreate.getKeyword())
-                .lines(lineList)
-                .stationList(stationList)
                 .latestNo(issueCreate.getLatestNo())
+                .build();
+    }
+
+    public Issue incrementLikeCount() {
+        return Issue.builder()
+                .id(this.id)
+                .title(this.title)
+                .content(this.content) // 변경된 content 반영
+                .startDate(this.startDate)
+                .expireDate(this.expireDate)
+                .secretCode(this.secretCode)
+                .crawlingNo(this.crawlingNo)
+                .keyword(this.keyword)
+                .latestNo(this.latestNo)
+                .likeCount(this.likeCount + 1)
+                .build();
+    }
+
+    public Issue decrementLikeCount() {
+        int updateLikeCount = 0;
+        if (this.likeCount > 0) {
+            updateLikeCount = this.likeCount - 1;
+        }
+        return Issue.builder()
+                .id(this.id)
+                .title(this.title)
+                .content(this.content) // 변경된 content 반영
+                .startDate(this.startDate)
+                .expireDate(this.expireDate)
+                .secretCode(this.secretCode)
+                .crawlingNo(this.crawlingNo)
+                .keyword(this.keyword)
+                .latestNo(this.latestNo)
+                .likeCount(updateLikeCount)
                 .build();
     }
 }

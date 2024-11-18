@@ -78,8 +78,6 @@ class LikeServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line1))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
@@ -90,8 +88,6 @@ class LikeServiceImplTest {
                 .startDate(LocalDateTime.parse("2024-11-16 09:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 18:00:00", formatter))
                 .keyword(IssueKeyword.행사)
-                .stationList(Arrays.asList(station2))
-                .lines(Arrays.asList(line1))
                 .crawlingNo("2")
                 .likeCount(10)
                 .build();
@@ -102,7 +98,7 @@ class LikeServiceImplTest {
 
         Like like = Like.builder()
                 .id(1L)
-                .issue(issue1)
+                .issueId(issue1.getId())
                 .memberId(1L)
                 .build();
 
@@ -150,7 +146,7 @@ class LikeServiceImplTest {
         Like like = Like.builder()
                 .id(2L)
                 .memberId(1L)
-                .issue(issue1)
+                .issueId(issue1.getId())
                 .build();
         fakeLikeRepository.save(like);
 

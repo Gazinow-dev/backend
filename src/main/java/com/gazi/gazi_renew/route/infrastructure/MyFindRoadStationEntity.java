@@ -15,14 +15,12 @@ public class MyFindRoadStationEntity {
     private Long id;
     private int index; // 정류장 순번
     private String stationName;
-    @ManyToOne
-    @JoinColumn(name = "my_find_road_sub_path_id", nullable = false)
-    private MyFindRoadSubPathEntity myFindRoadSubPathEntity;
-    public static MyFindRoadStationEntity from(MyFindRoadStation myFindRoadStation, MyFindRoadSubPath myFindRoadSubPath) {
+    private Long myFindRoadSubPathId;
+    public static MyFindRoadStationEntity from(MyFindRoadStation myFindRoadStation) {
         MyFindRoadStationEntity myFindRoadStationEntity = new MyFindRoadStationEntity();
         myFindRoadStationEntity.index= myFindRoadStation.getIndex();
         myFindRoadStationEntity.stationName = myFindRoadStation.getStationName();
-        myFindRoadStationEntity.myFindRoadSubPathEntity = MyFindRoadSubPathEntity.from(myFindRoadSubPath);
+        myFindRoadStationEntity.myFindRoadSubPathId = myFindRoadStation.getMyFindRoadSubPathId();
 
         return myFindRoadStationEntity;
     }
@@ -32,7 +30,7 @@ public class MyFindRoadStationEntity {
                 .id(id)
                 .index(index)
                 .stationName(stationName)
-                .myFindRoadSubPathId(myFindRoadSubPathEntity.getId())
+                .myFindRoadSubPathId(myFindRoadSubPathId)
                 .build();
     }
 }

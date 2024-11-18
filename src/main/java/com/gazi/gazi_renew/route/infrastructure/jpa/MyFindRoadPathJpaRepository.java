@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.route.infrastructure.jpa;
 
-import com.gazi.gazi_renew.member.infrastructure.MemberEntity;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,15 +12,15 @@ import java.util.Optional;
 
 @Repository
 public interface MyFindRoadPathJpaRepository extends JpaRepository<MyFindRoadPathEntity, Long> {
-    List<MyFindRoadPathEntity> findAllByMemberEntityIdOrderByIdDesc(Long memberEntityId);
+    List<MyFindRoadPathEntity> findAllByMemberIdOrderByIdDesc(Long memberId);
 
-    boolean existsByNameAndMemberEntity(String roadName, MemberEntity memberEntity);
+    boolean existsByNameAndMemberId(String roadName, Long memberId);
 
-    Optional<List<MyFindRoadPathEntity>> findAllByFirstStartStationAndLastEndStationAndMemberEntityAndTotalTime(String startStation, String lastStation, MemberEntity memberEntity, int totalTime);
+    Optional<List<MyFindRoadPathEntity>> findAllByFirstStartStationAndLastEndStationAndMemberIdAndTotalTime(String startStation, String lastStation, Long memberId, int totalTime);
 
     MyFindRoadPathEntity findMyFindRoadPathById(Long id);
 
-    List<MyFindRoadPathEntity> findByMemberEntityId(Long memberEntityId);
+    List<MyFindRoadPathEntity> findByMemberId(Long memberId);
 
     @Modifying
     @Query("UPDATE MyFindRoadPathEntity m SET m.notification = :notification WHERE m.id = :id")

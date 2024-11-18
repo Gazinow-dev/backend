@@ -24,10 +24,11 @@ public class MyFindRoadStation {
         this.myFindRoadSubPathId = myFindRoadSubPathId;
     }
 
-    public static MyFindRoadStation from(MyFindRoadStationCreate myFindRoadStationCreate) {
+    public static MyFindRoadStation from(MyFindRoadStationCreate myFindRoadStationCreate, Long myFindRoadSubPathId) {
         return MyFindRoadStation.builder()
                 .index(myFindRoadStationCreate.getIndex())
                 .stationName(myFindRoadStationCreate.getStationName())
+                .myFindRoadSubPathId(myFindRoadSubPathId)
                 .build();
 
     }

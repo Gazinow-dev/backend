@@ -30,16 +30,14 @@ public class RecentSearchEntity extends AuditingFields {
     @CreatedDate
     private LocalDateTime searchTime; // 생성일시
 
-    @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private MemberEntity memberEntity;
-
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
     public RecentSearch toModel() {
         return RecentSearch.builder()
                 .id(id)
                 .stationName(stationName)
                 .stationLine(stationLine)
-                .member(memberEntity.toModel())
+                .memberId(memberId)
                 .modifiedAt(getModifiedAt())
                 .build();
     }
@@ -47,7 +45,7 @@ public class RecentSearchEntity extends AuditingFields {
         RecentSearchEntity recentSearchEntity = new RecentSearchEntity();
         recentSearchEntity.stationName = recentSearch.getStationName();
         recentSearchEntity.stationLine = recentSearch.getStationLine();
-        recentSearchEntity.memberEntity = MemberEntity.from(recentSearch.getMember());
+        recentSearchEntity.memberId = recentSearch.getMemberId();
 
         return recentSearchEntity;
     }

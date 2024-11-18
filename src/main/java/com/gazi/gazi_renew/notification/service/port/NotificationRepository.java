@@ -11,7 +11,7 @@ public interface NotificationRepository {
 
     void deleteByMyFindRoad(MyFindRoad myFindRoad);
 
-    void saveAll(List<Notification> notificationList);
+    List<Notification> saveAll(List<Notification> notificationList);
 
     Optional<Notification> findById(Long notificationId);
 }

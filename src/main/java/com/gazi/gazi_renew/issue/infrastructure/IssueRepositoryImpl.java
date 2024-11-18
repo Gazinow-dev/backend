@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ public class IssueRepositoryImpl implements IssueRepository {
         List<Issue> collect = issueJpaRepository.findAll()
                 .stream()
                 .map(IssueEntity::toModel)
+                .sorted(Comparator.comparing(Issue::getStartDate).reversed())
                 .collect(Collectors.toList());
 
         int start = (int) pageable.getOffset();
@@ -58,16 +60,9 @@ public class IssueRepositoryImpl implements IssueRepository {
         issueJpaRepository.updateContent(issue.getId(), issue.getContent());
     }
 
-    @Override
-    public List<Issue> findByStationId(Long stationId) {
-        return issueJpaRepository.findAllByStationId(stationId).stream()
-                .map(IssueEntity::toModel).collect(Collectors.toList());
-    }
 
     @Override
-    public List<Issue> findByLineId(Long lineId) {
-        return issueJpaRepository.findByLineId(lineId).stream()
-                .map(IssueEntity::toModel).collect(Collectors.toList());
-
+    public void updateLikeCount(Issue issue) {
+        issueJpaRepository.updateLikeCount(issue.getId(), issue.getLikeCount());
     }
 }

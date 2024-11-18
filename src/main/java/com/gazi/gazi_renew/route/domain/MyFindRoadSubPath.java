@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 public class MyFindRoadSubPath {
@@ -14,12 +13,14 @@ public class MyFindRoadSubPath {
     private final double distance; //이동거리
     private final int sectionTime; //이동 소요 시간
     private final int stationCount; // 정차하는 역 개수
-    private final  String way; //  방면
-    private final  String door; // 문
-    private final List<MyFindRoadLane> lanes; //
-    private final List<MyFindRoadStation> stations;
+    private final String way; //  방면
+    private final String door; // 문
+    private final String name; // 노선명
+    private final int stationCode; //노선코드 ex:) 2
+    private final MyFindRoad myFindRoad;
+    private final List<MyFindRoadStation> stations; // 엔티티에는 저장 안 함
     @Builder
-    public MyFindRoadSubPath(Long id, int trafficType, double distance, int sectionTime, int stationCount, String way, String door, List<MyFindRoadLane> lanes, List<MyFindRoadStation> stations) {
+    public MyFindRoadSubPath(Long id, int trafficType, double distance, int sectionTime, int stationCount, String way, String door, String name, int stationCode, MyFindRoad myFindRoad, List<MyFindRoadStation> stations) {
         this.id = id;
         this.trafficType = trafficType;
         this.distance = distance;
@@ -27,11 +28,13 @@ public class MyFindRoadSubPath {
         this.stationCount = stationCount;
         this.way = way;
         this.door = door;
-        this.lanes = lanes;
+        this.name = name;
+        this.stationCode = stationCode;
+        this.myFindRoad = myFindRoad;
         this.stations = stations;
     }
 
-    public static MyFindRoadSubPath from(MyFindRoadSubPathCreate myFindRoadSubPathCreate) {
+    public static MyFindRoadSubPath from(MyFindRoadSubPathCreate myFindRoadSubPathCreate, MyFindRoad myFindRoad) {
         return MyFindRoadSubPath.builder()
                 .trafficType(myFindRoadSubPathCreate.getTrafficType())
                 .distance(myFindRoadSubPathCreate.getDistance())
@@ -40,11 +43,9 @@ public class MyFindRoadSubPath {
                 .stationCount(myFindRoadSubPathCreate.getStationCount())
                 .way(myFindRoadSubPathCreate.getWay())
                 .door(myFindRoadSubPathCreate.getDoor())
-                .lanes(myFindRoadSubPathCreate.getLanes().stream()
-                        .map(MyFindRoadLane::from).collect(Collectors.toList())
-                )
-                .stations(myFindRoadSubPathCreate.getStations().stream()
-                        .map(MyFindRoadStation::from).collect(Collectors.toList()))
+                .name(myFindRoadSubPathCreate.getName())
+                .stationCode(myFindRoadSubPathCreate.getStationCode())
+                .myFindRoad(myFindRoad)
                 .build();
     }
 
@@ -57,8 +58,11 @@ public class MyFindRoadSubPath {
                 .stationCount(this.stationCount)
                 .way(this.way)
                 .door(this.door)
-                .lanes(this.lanes)
+                .name(this.name)
+                .stationCode(this.stationCode)
+                .myFindRoad(this.myFindRoad)
                 .stations(updatedStations)
                 .build();
     }
+
 }

@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.dto.IssueSummary;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
+import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
@@ -34,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -44,6 +47,7 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final IssueRepository issueRepository;
+    private final IssueStationRepository issueStationRepository;
     private final SecurityUtilService securityUtilService;
     @Value("${odsay.key}")
     public String apiKey;
@@ -217,7 +221,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                             List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
                             Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
 
-                            List<Issue> issueEntities = issueRepository.findByStationId(stationName.getId());
+                            List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(stationName.getId());
+
+                            //fetch join으로 가져옴
+                            List<Issue> issueEntities = issueStationList.stream().map(IssueStation::getIssue)
+                                    .collect(Collectors.toList());
 
                             List<Issue> activeIssueEntities = new ArrayList<>();
                             // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계

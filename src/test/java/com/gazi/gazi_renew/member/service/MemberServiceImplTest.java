@@ -9,7 +9,6 @@ import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,10 +103,8 @@ class MemberServiceImplTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLane.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
                         MyFindRoadStation.builder().index(1).stationName("삼각지").build()
@@ -121,7 +118,7 @@ class MemberServiceImplTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
-                .member(member1)
+                .memberId(member1.getId())
                 .build();
         fakeMyFindRoadPathRepository.save(myFindRoad);
 
@@ -130,7 +127,7 @@ class MemberServiceImplTest {
                 .dayOfWeek("월")
                 .fromTime(LocalTime.parse("19:20:00"))
                 .toTime(LocalTime.parse("20:20:00"))
-                .myFindRoad(myFindRoad)
+                .myFindRoadPathId(myFindRoad.getId())
                 .build();
         fakeNotificationRepository.saveAll(Arrays.asList(notification));
     }

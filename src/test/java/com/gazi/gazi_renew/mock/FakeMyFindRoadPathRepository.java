@@ -15,7 +15,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
     @Override
     public List<MyFindRoad> findAllByMemberOrderByIdDesc(Member member) {
         return data.stream()
-                .filter(myFindRoad -> myFindRoad.getMember().getId().equals(member.getId()))
+                .filter(myFindRoad -> myFindRoad.getMemberId().equals(member.getId()))
                 .sorted(Comparator.comparing(MyFindRoad::getId).reversed())
                 .collect(Collectors.toList());
     }
@@ -24,7 +24,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
     public boolean existsByNameAndMember(String roadName, Member member) {
         return data.stream().anyMatch(myFindRoad ->
                 myFindRoad.getRoadName().equals(roadName) &&
-                        myFindRoad.getMember().getId().equals(member.getId()));
+                        myFindRoad.getMemberId().equals(member.getId()));
     }
 
     @Override
@@ -32,7 +32,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
         List<MyFindRoad> myFindRoadList = data.stream()
                 .filter(myFindRoad -> myFindRoad.getFirstStartStation().equals(startStation))
                 .filter(myFindRoad -> myFindRoad.getLastEndStation().equals(lastStation))
-                .filter(myFindRoad -> myFindRoad.getMember().equals(member))
+                .filter(myFindRoad -> myFindRoad.getMemberId().equals(member))
                 .filter(myFindRoad -> myFindRoad.getTotalTime() == totalTime)
                 .collect(Collectors.toList());
 
@@ -50,7 +50,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
     @Override
     public List<MyFindRoad> findByMemberId(Long memberId) {
         return data.stream()
-                .filter(myFindRoad -> myFindRoad.getMember().getId().equals(memberId))
+                .filter(myFindRoad -> myFindRoad.getMemberId().equals(memberId))
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +71,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
                     .stationTransitCount(myFindRoad.getStationTransitCount())
                     .firstStartStation(myFindRoad.getFirstStartStation())
                     .lastEndStation(myFindRoad.getLastEndStation())
-                    .member(myFindRoad.getMember())
+                    .memberId(myFindRoad.getMemberId())
                     .subPaths(myFindRoad.getSubPaths())
                     .notification(myFindRoad.getNotification())
                     .build();
@@ -106,7 +106,7 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
                 .stationTransitCount(myFindRoad.getStationTransitCount())
                 .firstStartStation(myFindRoad.getFirstStartStation())
                 .lastEndStation(myFindRoad.getLastEndStation())
-                .member(myFindRoad.getMember())
+                .memberId(myFindRoad.getMemberId())
                 .subPaths(myFindRoad.getSubPaths())
                 .notification(myFindRoad.getNotification())
                 .build();

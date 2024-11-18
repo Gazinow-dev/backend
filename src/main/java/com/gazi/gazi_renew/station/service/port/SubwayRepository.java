@@ -4,6 +4,7 @@ import com.gazi.gazi_renew.station.domain.Station;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubwayRepository {
     List<Station> findByNameStartingWith(String name);
@@ -14,4 +15,6 @@ public interface SubwayRepository {
     List<Station> findByNameContainingAndLine(String name, String line);
 
     void save(Station station);
+
+    Optional<Station> findById(Long id);
 }

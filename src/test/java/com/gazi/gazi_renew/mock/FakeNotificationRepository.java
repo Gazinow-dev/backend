@@ -16,17 +16,17 @@ public class FakeNotificationRepository implements NotificationRepository {
     @Override
     public List<Notification> findByMyFindRoadPathId(Long myFindRoadPathId) {
         return data.stream()
-                .filter(notification -> notification.getMyFindRoad().getId().equals(myFindRoadPathId))
+                .filter(notification -> notification.getMyFindRoadPathId().equals(myFindRoadPathId))
                 .collect(Collectors.toList());
     }
 
     @Override
     public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        data.removeIf(notification -> notification.getMyFindRoad().equals(myFindRoad));
+        data.removeIf(notification -> notification.getMyFindRoadPathId().equals(myFindRoad));
     }
 
     @Override
-    public void saveAll(List<Notification> notificationList) {
+    public List<Notification> saveAll(List<Notification> notificationList) {
         for (Notification notification : notificationList) {
             // ID가 없는 경우 새로운 ID를 부여하여 새로운 Notification 객체를 생성
             Notification notificationWithId = notification.getId() == null
@@ -35,12 +35,13 @@ public class FakeNotificationRepository implements NotificationRepository {
                     .dayOfWeek(notification.getDayOfWeek())
                     .fromTime(notification.getFromTime())
                     .toTime(notification.getToTime())
-                    .myFindRoad(notification.getMyFindRoad())
+                    .myFindRoadPathId(notification.getMyFindRoadPathId())
                     .build()
                     : notification;  // ID가 있는 경우 그대로 사용
 
             data.add(notificationWithId);
         }
+        return notificationList;
     }
 
     @Override

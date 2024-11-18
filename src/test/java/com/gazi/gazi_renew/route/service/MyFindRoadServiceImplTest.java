@@ -5,11 +5,9 @@ import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
-import com.gazi.gazi_renew.route.domain.MyFindRoadLane;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
-import com.gazi.gazi_renew.route.domain.dto.MyFindRoadLaneCreate;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadStationCreate;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadSubPathCreate;
 import com.gazi.gazi_renew.station.domain.Station;
@@ -32,7 +30,6 @@ class MyFindRoadServiceImplTest {
         FakeMyFindRoadPathRepository fakeMyFindRoadPathRepository = new FakeMyFindRoadPathRepository();
 
         FakeMyFindRoadSubPathRepository fakeMyFindRoadSubPathRepository = new FakeMyFindRoadSubPathRepository();
-        FakeMyFindRoadLaneRepository fakeMyFindRoadLaneRepository = new FakeMyFindRoadLaneRepository();
         FakeMyFindRoadSubwayRepository fakeMyFindRoadSubwayRepository = new FakeMyFindRoadSubwayRepository();
         FakeSubwayRepository fakeSubwayRepository = new FakeSubwayRepository();
 
@@ -43,7 +40,6 @@ class MyFindRoadServiceImplTest {
                 .memberRepository(fakeMemberRepository)
                 .myFindRoadPathRepository(fakeMyFindRoadPathRepository)
                 .myFindRoadSubPathRepository(fakeMyFindRoadSubPathRepository)
-                .myFindRoadLaneRepository(fakeMyFindRoadLaneRepository)
                 .myFindRoadSubwayRepository(fakeMyFindRoadSubwayRepository)
                 .subwayRepository(fakeSubwayRepository)
                 .issueRepository(fakeIssueRepository)
@@ -95,16 +91,6 @@ class MyFindRoadServiceImplTest {
         fakeSubwayRepository.save(station2);
         fakeSubwayRepository.save(station3);
 
-        MyFindRoadLane myFindRoadLane = MyFindRoadLane.builder()
-                .id(1L)
-                .name("수도권 6호선")
-                .stationCode(6)
-                .myFindRoadSubPathId(1L)
-                .build();
-
-        fakeMyFindRoadLaneRepository.save(myFindRoadLane);
-
-
         MyFindRoadStation myFindRoadStation1 = MyFindRoadStation.builder()
                 .id(1L)
                 .index(0)
@@ -119,7 +105,6 @@ class MyFindRoadServiceImplTest {
                 .build();
         List<MyFindRoadStation> myFindRoadStationList = Arrays.asList(myFindRoadStation2,myFindRoadStation1);
 
-
         MyFindRoadSubPath subPath = MyFindRoadSubPath.builder()
                 .id(1L)
                 .trafficType(1)
@@ -128,15 +113,13 @@ class MyFindRoadServiceImplTest {
                 .stationCount(1)
                 .way("삼각지")
                 .door("null")
-                .lanes(Collections.singletonList(myFindRoadLane))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(myFindRoadStationList)
                 .build();
 
-
-        fakeMyFindRoadSubPathRepository.save(subPath);
-
-        fakeMyFindRoadSubwayRepository.save(myFindRoadStation1, subPath);
-        fakeMyFindRoadSubwayRepository.save(myFindRoadStation2, subPath);
+        fakeMyFindRoadSubwayRepository.save(myFindRoadStation1);
+        fakeMyFindRoadSubwayRepository.save(myFindRoadStation2);
 
         MyFindRoad myFindRoad = MyFindRoad.builder()
                 .id(552L)
@@ -146,9 +129,22 @@ class MyFindRoadServiceImplTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
-                .member(member1)
+                .build();
+        subPath = MyFindRoadSubPath.builder()
+                .id(1L)
+                .trafficType(1)
+                .distance(1200)
+                .sectionTime(2)
+                .stationCount(1)
+                .way("삼각지")
+                .door("null")
+                .name("수도권 6호선")
+                .myFindRoad(myFindRoad)
+                .stationCode(6)
+                .stations(myFindRoadStationList)
                 .build();
 
+        fakeMyFindRoadSubPathRepository.save(subPath);
         fakeMyFindRoadPathRepository.save(myFindRoad);
     }
     @Test
@@ -171,7 +167,6 @@ class MyFindRoadServiceImplTest {
         //then
         assertThat(myFindRoadList.size()).isEqualTo(1);
         assertThat(myFindRoadList.get(0).getRoadName()).isEqualTo("민우테스트");
-        assertThat(myFindRoadList.get(0).getMember().getNickName()).isEqualTo("minu");
     }
     @Test
     void getRouteById를_통해_id값으로_내가_저장한_경로를_찾을_수_있다() throws Exception{
@@ -202,10 +197,8 @@ class MyFindRoadServiceImplTest {
                 .stationCount(1)
                 .way("녹사팡")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLaneCreate.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStationCreate.builder().index(0).stationName("삼각지").build(),
                         MyFindRoadStationCreate.builder().index(1).stationName("녹사평").build()
@@ -234,10 +227,8 @@ class MyFindRoadServiceImplTest {
                 .stationCount(1)
                 .way("녹사팡")
                 .door("null")
-                .lanes(Collections.singletonList(MyFindRoadLaneCreate.builder()
-                        .name("수도권 6호선")
-                        .stationCode(6)
-                        .build()))
+                .name("수도권 6호선")
+                .stationCode(6)
                 .stations(Arrays.asList(
                         MyFindRoadStationCreate.builder().index(0).stationName("삼각지").build(),
                         MyFindRoadStationCreate.builder().index(1).stationName("녹사평").build()

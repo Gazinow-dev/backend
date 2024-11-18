@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface NotificationService {
-    List<Notification> saveNotificationTimes(MyFindRoadNotificationCreate request) throws JsonProcessingException;
+    void saveNotificationTimes(MyFindRoadNotificationCreate request) throws JsonProcessingException;
 
     List<Notification> getNotificationTimes(Long myPathId);
 

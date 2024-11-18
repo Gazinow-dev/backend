@@ -47,11 +47,8 @@ public class FakeIssueRepository implements IssueRepository {
                     .expireDate(issue.getExpireDate())
                     .secretCode(issue.getSecretCode())
                     .keyword(issue.getKeyword())
-                    .lines(issue.getLines())
-                    .stationList(issue.getStationList())
                     .latestNo(issue.getLatestNo())
                     .likeCount(issue.getLikeCount())
-                    .stationList(issue.getStationList())
                     .build();
             data.add(createIssue);
             return createIssue;
@@ -90,29 +87,27 @@ public class FakeIssueRepository implements IssueRepository {
                 .expireDate(issue.getExpireDate())
                 .secretCode(issue.getSecretCode())
                 .keyword(issue.getKeyword())
-                .lines(issue.getLines())
-                .stationList(issue.getStationList())
                 .latestNo(issue.getLatestNo())
                 .likeCount(issue.getLikeCount())
-                .stationList(issue.getStationList())
                 .build();
         data.add(updatedIssue);
 
     }
-
     @Override
-    public List<Issue> findByStationId(Long stationId) {
-        return data.stream()
-                .filter(issue -> issue.getStationList().stream()
-                        .anyMatch(station -> station.getId().equals(stationId)))
-                .collect(Collectors.toList());
-    }
+    public void updateLikeCount(Issue issue) {
+        data.removeIf(existingIssue -> existingIssue.getId().equals(issue.getId()));
 
-    @Override
-    public List<Issue> findByLineId(Long id) {
-        return data.stream()
-                .filter(issue -> issue.getLines().stream()
-                        .anyMatch(line -> line.getId().equals(id)))
-                .collect(Collectors.toList());
+        Issue updatedIssue = Issue.builder()
+                .id(issue.getId())
+                .title(issue.getTitle())
+                .content(issue.getContent())
+                .startDate(issue.getStartDate())
+                .expireDate(issue.getExpireDate())
+                .secretCode(issue.getSecretCode())
+                .keyword(issue.getKeyword())
+                .latestNo(issue.getLatestNo())
+                .likeCount(issue.getLikeCount())
+                .build();
+        data.add(updatedIssue);
     }
 }

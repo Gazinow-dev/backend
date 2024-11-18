@@ -4,10 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.issue.domain.IssueLine;
+import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueDetail;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
+import com.gazi.gazi_renew.issue.service.port.IssueLineRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
+import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
@@ -20,11 +24,9 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.station.service.port.LineRepository;
 import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,9 @@ public class IssueServiceImpl implements IssueService {
     private final LineRepository lineRepository;
     private final RedisUtilService redisUtilService;
     private final SecurityUtilService securityUtilService;
+    private final IssueLineRepository issueLineRepository;
+    private final IssueStationRepository issueStationRepository;
+
     @Value("${issue.code}")
     private String secretCode;
     private static final int minStationNo = 201;
@@ -61,10 +66,20 @@ public class IssueServiceImpl implements IssueService {
         }
 
         List<Station> stationList = getStationList(issueCreate.getStations());
-        Issue issue = Issue.from(issueCreate, stationList);
-
+        Issue issue = Issue.from(issueCreate);
         issue = issueRepository.save(issue);
 
+        for (Station station : stationList) {
+            IssueStation issueStation = IssueStation.from(issueCreate, station);
+            issueStationRepository.save(issueStation);
+        }
+        List<Line> lineList = issueCreate.getLines().stream().map(lineName -> Line.builder()
+                .lineName(lineName).build()).collect(Collectors.toList());
+
+        for (Line line : lineList) {
+            IssueLine issueLine = IssueLine.from(issueCreate, line);
+            issueLineRepository.save(issueLine);
+        }
         // Redis에 이슈 추가
         addIssueToRedis(issue);
 
@@ -88,57 +103,96 @@ public class IssueServiceImpl implements IssueService {
      */
     @Override
     @Transactional(readOnly = true)
-    public IssueDetail getIssue(Long id) {
+    public IssueStationDetail getIssue(Long id) {
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
-        return new IssueDetail(issue, isLike);
+
+        return getIssueStationDetail(issue, isLike);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public IssueStationDetail getIssueStationDetail(Issue issue, boolean isLike) {
+        List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issue);
+
+        List<Station> stationList = issueStationList.stream()
+                .map(IssueStation::getStation).collect(Collectors.toList());
+
+        List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issue);
+
+        List<Line> lineList = issueLineList.stream().map(IssueLine::getLine)
+                .collect(Collectors.toList());
+
+        return IssueStationDetail.from(issue, stationList, lineList, isLike);
+    }
+
     /**
      * 이슈 전체 조회
      * @param  pageable
-     * @return Page<Issue>
+     * @return Page<IssueStationDetail>
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<Issue> getIssues(Pageable pageable) {
+    public Page<IssueStationDetail> getIssues(Pageable pageable) {
         Page<Issue> issuePage = issueRepository.findAll(pageable);
-        return issuePage;
+
+        // Page<Issue> -> Page<IssueStationDetail>로 변환
+        Page<IssueStationDetail> issueStationDetailPage = issuePage.map(issue -> {
+            // isLike 계산을 위해 현재 사용자의 좋아요 상태 확인
+            Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
+            boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
+
+            return getIssueStationDetail(issue, isLike);
+        });
+
+        return issueStationDetailPage;
     }
+
     /**
      * 호선별 이슈 조회
+     *
      * @param : String line, Pageable pageable
      * @return Page<Issue>
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<Issue> getLineByIssues(String lineName, Pageable pageable) {
+    public Page<IssueStationDetail> getLineByIssues(String lineName, Pageable pageable) {
         Line line = lineRepository.findByLineName(lineName).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 호선입니다.")
         );
-        List<Issue> issueList = issueRepository.findByLineId(line.getId());
 
-        int start = (int) pageable.getOffset();
-        int end = (start + pageable.getPageSize()) > issueList.size()? issueList.size() : (start + pageable.getPageSize());
-        List<Issue> sortedList = issueList.stream()
-                .sorted(Comparator.comparing(Issue::getStartDate).reversed()) // startDate를 기준으로 내림차순 정렬
-                .collect(Collectors.toList());
-        sortedList = sortedList.subList(start, end);
+        Page<Issue> sortedIssues = issueLineRepository.findByLineId(line.getId(), pageable);
 
-        Page<Issue> sortedIssues = new PageImpl<>(sortedList, pageable, sortedList.size());
-        return sortedIssues;
+        // Page<Issue> -> Page<IssueStationDetail>로 변환
+        Page<IssueStationDetail> issueStationDetailPage = sortedIssues.map(issue -> {
+            // isLike 계산을 위해 현재 사용자의 좋아요 상태 확인
+            Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
+            boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
+
+            return getIssueStationDetail(issue, isLike);
+        });
+
+        return issueStationDetailPage;
     }
     /**
      * 좋아요 숫자가 5개 이상인 이슈 조회
+     *
      * @param
      * @return IssueResponse
      */
     @Override
     @Transactional(readOnly = true)
-    public List<Issue> getPopularIssues() {
+    public List<IssueStationDetail> getPopularIssues() {
         List<Issue> issueList = issueRepository.findTopIssuesByLikesCount(likeCount, PageRequest.of(0, 4));
-        return issueList;
+
+        List<IssueStationDetail> issueStationDetailList = issueList.stream().map(issue -> {
+            Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
+            boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
+            return getIssueStationDetail(issue, isLike);
+        }).collect(Collectors.toList());
+
+        return issueStationDetailList;
     }
     /**
      * issue 내용 update
