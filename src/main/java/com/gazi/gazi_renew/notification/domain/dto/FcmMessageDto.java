@@ -1,24 +1,25 @@
-package com.gazi.gazi_renew.notification.domain.dto;
+package com.gazi.gazi_renew.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+
 @Getter
 @Builder
-public class FcmMessage {
+public class FcmMessageDto {
     private boolean validateOnly;
-    private FcmMessage.Message message;
+    private FcmMessageDto.Message message;
 
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private FcmMessage.Notification notification;
+        private FcmMessageDto.Notification notification;
         private String token;
-        private FcmMessage.Data data;
-        private FcmMessage.Apns apns;
+        private FcmMessageDto.Data data;
+        private FcmMessageDto.Apns apns;
     }
 
     @Builder
@@ -54,8 +55,8 @@ public class FcmMessage {
         @JsonProperty("content-available")
         private int contentAvailable;
     }
-    public static FcmMessage createMessage(String firebaseToken, String title, String body, String pathJson) {
-        return FcmMessage.builder()
+    public static FcmMessageDto createMessage(String firebaseToken, String title, String body, String pathJson) {
+        return FcmMessageDto.builder()
                 .message(Message.builder()
                         .token(firebaseToken)
                         .notification(Notification.builder()
