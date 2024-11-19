@@ -25,4 +25,6 @@ public interface MyFindRoadPathJpaRepository extends JpaRepository<MyFindRoadPat
     @Modifying
     @Query("UPDATE MyFindRoadPathEntity m SET m.notification = :notification WHERE m.id = :id")
     void updateNotification(@Param("id") Long id, @Param("notification") boolean notification);
+
+    boolean existsByFirstStartStationAndLastEndStationAndMemberId(String firstStartStation, String lastEndStation, Long memberId);
 }

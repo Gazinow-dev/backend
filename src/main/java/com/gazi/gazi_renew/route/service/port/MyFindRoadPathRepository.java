@@ -23,4 +23,8 @@ public interface MyFindRoadPathRepository {
     void deleteById(Long id);
 
     void updateNotification(MyFindRoad myFindRoad);
+
+    boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member);
+
+
 }
