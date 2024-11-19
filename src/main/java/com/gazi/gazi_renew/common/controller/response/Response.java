@@ -20,6 +20,7 @@ public class Response {
         private String message;
         private Object data;
         private Object error;
+        private String errorCodeName;
     }
 
     /**
@@ -118,6 +119,17 @@ public class Response {
                 .build();
         return new ResponseEntity<>(body, status);
     }
+    public ResponseEntity<Body> fail(Object data, String msg, HttpStatus status, String errorCodeName) {
+        Body body = Body.builder()
+                .state(status.value())
+                .data(data)
+                .result("fail")
+                .message(msg)
+                .error(Collections.emptyList())
+                .errorCodeName(errorCodeName)
+                .build();
+        return new ResponseEntity<>(body, status);
+    }
 
     /**
      * <p> 메세지를 가진 실패 응답을 반환한다. </p>
@@ -137,5 +149,25 @@ public class Response {
      */
     public ResponseEntity<Body> fail(String msg, HttpStatus status) {
         return fail(Collections.emptyList(), msg, status);
+    }
+    /**
+     * <p> 메세지를 가진 실패 응답을 반환한다. </p>
+     * <pre>
+     *     {
+     *         "state" : HttpStatus Code,
+     *         "result" : fail,
+     *         "message" : message,
+     *         "data" : [],
+     *         "error" : [{error1}, {error2}...]
+     *         "errorCodeName" : "001
+     *     }
+     * </pre>
+     *
+     * @param msg    응답 바디 message 필드에 포함될 정보
+     * @param status 응답 바디 status 필드에 포함될 응답 상태 코드
+     * @return 응답 객체
+     */
+    public ResponseEntity<Body> fail(String msg, HttpStatus status, String errorCodeName) {
+        return fail(Collections.emptyList(), msg, status, errorCodeName);
     }
 }

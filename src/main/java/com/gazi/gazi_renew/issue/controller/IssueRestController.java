@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.issue.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
-import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
 import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;

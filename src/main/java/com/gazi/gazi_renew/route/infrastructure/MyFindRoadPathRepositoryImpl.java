@@ -71,4 +71,11 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
     public void updateNotification(MyFindRoad myFindRoad) {
         myFindRoadPathJpaRepository.updateNotification(myFindRoad.getId(), myFindRoad.getNotification());
     }
+
+    @Override
+    public boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
+        return myFindRoadPathJpaRepository.existsByFirstStartStationAndLastEndStationAndMemberId(firstStation, lastEndStation, member.getId());
+
+    }
+
 }

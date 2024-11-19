@@ -2,8 +2,13 @@ package com.gazi.gazi_renew.notification.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.notification.domain.NotificationHistory;
+import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
@@ -13,6 +18,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +32,10 @@ import java.util.*;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
+    private final NotificationHistoryRepository notificationHistoryRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final MemberRepository memberRepository;
+    private final SecurityUtilService securityUtilService;
     private final RedisUtilService redisUtilService;
     /**
      * 알림 설정 변경 메서드
@@ -34,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param : MyFindRoadNotificationRequest myFindRoadNotification
      */
     @Override
-    public void saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
+        public void saveNotificationTimes(MyFindRoadNotificationCreate myFindRoadNotificationCreate) throws JsonProcessingException {
         try {
             MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myFindRoadNotificationCreate.getMyPathId()).orElseThrow(
                     () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
@@ -96,5 +106,17 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 알림이 존재하지 않습니다."));
         Long myPathId = notification.getMyFindRoadPathId();
         return myPathId;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<NotificationHistory> findAllByMemberId(Pageable pageable) {
+        Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+        return notificationHistoryRepository.findAllByMemberId(member.getId(), pageable);
+    }
+
+    @Override
+    public void markAsRead(Long notificationId) {
+        notificationHistoryRepository.updateNotificationIsRead(notificationId);
     }
 }

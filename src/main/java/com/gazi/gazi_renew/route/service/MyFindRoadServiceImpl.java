@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.route.service;
 
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.common.exception.MyFindRoadErrorCode;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
@@ -76,7 +77,10 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member.getId());
 
         if (myFindRoadPathRepository.existsByNameAndMember(myFindRoadCreate.getRoadName(), member)) {
-            throw ErrorCode.throwDuplicateRoadName();
+            throw MyFindRoadErrorCode.throwDuplicateRoadName();
+        }
+        if (myFindRoadPathRepository.existsByFirstStartStationAndLastEndStationAndMember(myFindRoad.getFirstStartStation(), myFindRoad.getLastEndStation(), member)){
+            throw MyFindRoadErrorCode.throwDuplicateRoadPath();
         }
         log.info("myFindRoadPath 저장");
         myFindRoad = myFindRoadPathRepository.save(myFindRoad);

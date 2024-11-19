@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.notification.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
 import com.gazi.gazi_renew.issue.domain.IssueStation;
@@ -13,8 +14,10 @@ import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.controller.port.FcmService;
+import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.domain.dto.FcmMessage;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
+import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
@@ -58,7 +61,8 @@ public class FcmServiceImpl implements FcmService {
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final SubwayRepository subwayRepository;
-
+    private final NotificationHistoryRepository notificationHistoryRepository;
+    private final ClockHolder clockHolder;
     @Value("${push.properties.firebase-create-scoped}")
     private String fireBaseCreateScoped;
     @Value("${push.properties.firebase-config-path}")
@@ -90,8 +94,9 @@ public class FcmServiceImpl implements FcmService {
             if (restResponse.getStatusCode() != HttpStatus.OK) {
                 throw ErrorCode.throwFailedFcmMessage();
             }
-
         }
+
+
         return messages;
     }
 
@@ -174,6 +179,10 @@ public class FcmServiceImpl implements FcmService {
                         pathJson
                 );
                 fcmMessages.add(fcmMessage);
+                //TODO; history 저장
+                NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), fcmMessage.getMessage().getNotification().getBody()
+                        , fcmMessage.getMessage().getNotification().getTitle(), clockHolder);
+                notificationHistoryRepository.save(notificationHistory);
             }
         }
         return fcmMessages;  // 각 Line에 대해 생성된 FCM 메시지 반환
