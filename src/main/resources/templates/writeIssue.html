@@ -52,7 +52,7 @@
         </select>
     </div>
     <div class="dynamicFields">
-        <div th:each="station, stationIndex : *{stations}">
+        <div th:each="stations, stationIndex : *{stations}">
             <label th:for="'line_' + ${stationIndex}">호선 : </label>
             <select name="stations[__${stationIndex.index}__].line"
                     class="selectedLine"
