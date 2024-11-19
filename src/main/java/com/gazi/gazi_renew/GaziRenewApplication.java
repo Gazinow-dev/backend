@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew;
 
-import com.gazi.gazi_renew.service.SubwayDataService;
+import com.gazi.gazi_renew.station.service.StationService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -16,7 +16,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @RequiredArgsConstructor
 public class GaziRenewApplication implements CommandLineRunner {
-    private final SubwayDataService subwayDataService;
+    private final StationService stationService;
 
     @PostConstruct
     public void started() {
