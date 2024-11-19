@@ -113,4 +113,9 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
 
         data.add(updatedMyFindRoad);
     }
+
+    @Override
+    public boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
+        return false;
+    }
 }

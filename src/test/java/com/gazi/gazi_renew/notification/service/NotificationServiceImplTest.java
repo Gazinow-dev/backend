@@ -3,10 +3,9 @@ package com.gazi.gazi_renew.notification.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.FakeMyFindRoadPathRepository;
-import com.gazi.gazi_renew.mock.FakeNotificationRepository;
-import com.gazi.gazi_renew.mock.FakeRedisUtilServiceImpl;
+import com.gazi.gazi_renew.mock.*;
 import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
@@ -14,7 +13,11 @@ import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,16 +31,19 @@ class NotificationServiceImplTest {
     private NotificationServiceImpl notificationServiceImpl;
     private FakeNotificationRepository fakeNotificationRepository;
     private FakeMyFindRoadPathRepository fakeMyFindRoadPathRepository;
+    private FakeNotificationHistoryRepository fakeNotificationHistoryRepository;
     @BeforeEach
     void setUp() {
         ObjectMapper mapper = new ObjectMapper();
 
         fakeNotificationRepository = new FakeNotificationRepository();
         fakeMyFindRoadPathRepository = new FakeMyFindRoadPathRepository();
+        fakeNotificationHistoryRepository = new FakeNotificationHistoryRepository();
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
-
-        this.notificationServiceImpl = new NotificationServiceImpl(fakeNotificationRepository, fakeMyFindRoadPathRepository
-                , fakeRedisUtilService);
+        FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
+        FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
+        this.notificationServiceImpl = new NotificationServiceImpl(fakeNotificationRepository, fakeNotificationHistoryRepository, fakeMyFindRoadPathRepository
+                ,fakeMemberRepository,fakeSecurityUtil, fakeRedisUtilService);
 
         MyFindRoadSubPath subPath = MyFindRoadSubPath.builder()
                 .trafficType(1)
@@ -74,6 +80,41 @@ class NotificationServiceImplTest {
                 .myFindRoadPathId(myFindRoad.getId())
                 .build();
         fakeNotificationRepository.saveAll(Arrays.asList(myFindRoadNotificationCreate));
+
+        Member member1 = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("encoded_tempPassword")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(false)
+                .mySavedRouteNotificationEnabled(false)
+                .routeDetailNotificationEnabled(false)
+                .firebaseToken("firebaseToken")
+                .build();
+
+        fakeMemberRepository.save(member1);
+        fakeSecurityUtil.addEmail("mw310@naver.com");
+
+        fakeNotificationHistoryRepository.save(NotificationHistory.builder()
+                .id(1L)
+                .memberId(1L)
+                .issueId(101L)
+                .notificationTitle("출근길 경로에 시위 이슈가 생겼어요")
+                .notificationBody("4호선 신용산역-사당역 방면")
+                .isRead(false)
+                .startDate(LocalDateTime.now().minusDays(1))
+                .build());
+
+        fakeNotificationHistoryRepository.save(NotificationHistory.builder()
+                .id(2L)
+                .memberId(1L)
+                .issueId(102L)
+                .notificationTitle("퇴근길 경로에 시위 이슈가 생겼어요")
+                .notificationBody("4호선 사당역-신용산역 방면")
+                .isRead(false)
+                .startDate(LocalDateTime.now())
+                .build());
     }
     @Test
     void saveNotificationTimes는_알림을_저장할_수_있다() throws Exception{
@@ -166,5 +207,37 @@ class NotificationServiceImplTest {
         Long pathId = notificationServiceImpl.getPathId(notificationId);
         //then
         assertThat(pathId).isEqualTo(1L);
+    }
+    @Test
+    void findAllByMemberId_멤버의_알림_목록을_조회한다() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        Long memberId = 1L;
+
+        // when
+        Page<NotificationHistory> result = notificationServiceImpl.findAllByMemberId(pageable);
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(2);
+
+        assertThat(result.getContent().get(0).getNotificationTitle()).isEqualTo("퇴근길 경로에 시위 이슈가 생겼어요");
+        assertThat(result.getContent().get(1).getNotificationTitle()).isEqualTo("출근길 경로에 시위 이슈가 생겼어요");
+    }
+
+    @Test
+    void markAsRead_알림을_읽음으로_처리한다() {
+        // given
+        Long notificationId = 1L;
+
+        // when
+        notificationServiceImpl.markAsRead(notificationId);
+
+        // then
+        NotificationHistory updatedNotification = fakeNotificationHistoryRepository.findAllByMemberId(1L, PageRequest.of(0, 10))
+                .getContent().stream()
+                .filter(history -> history.getId().equals(notificationId))
+                .findFirst()
+                .orElseThrow();
+        assertThat(updatedNotification.isRead()).isTrue();
     }
 }
