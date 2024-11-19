@@ -20,4 +20,6 @@ public interface IssueRepository {
     void updateContent(Issue issue);
 
     void updateLikeCount(Issue issue);
+
+    void flush();
 }

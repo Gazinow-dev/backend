@@ -22,7 +22,7 @@ public class FakeNotificationRepository implements NotificationRepository {
 
     @Override
     public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        data.removeIf(notification -> notification.getMyFindRoadPathId().equals(myFindRoad));
+        data.removeIf(notification -> notification.getMyFindRoadPathId().equals(myFindRoad.getId()));
     }
 
     @Override

@@ -76,6 +76,9 @@ public class RedisUtilServiceImpl implements RedisUtilService {
     }
     @Override
     public void addIssueToRedis(String hashKey, String issueKey, IssueRedisDto issueRedisDto) throws JsonProcessingException {
-        redisTemplate.opsForHash().put(hashKey, issueKey, issueRedisDto);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonValue = objectMapper.writeValueAsString(issueRedisDto);
+
+        redisTemplate.opsForHash().put(hashKey, issueKey, jsonValue);
     }
 }

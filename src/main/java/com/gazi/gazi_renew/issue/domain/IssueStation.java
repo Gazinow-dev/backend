@@ -18,17 +18,7 @@ public class IssueStation {
         this.station = station;
     }
 
-    public static IssueStation from(IssueCreate issueCreate, Station station) {
-        Issue issue = Issue.builder()
-                .title(issueCreate.getTitle())
-                .content(issueCreate.getContent())
-                .startDate(issueCreate.getStartDate())
-                .expireDate(issueCreate.getExpireDate())
-                .secretCode(issueCreate.getSecretCode())
-                .crawlingNo(issueCreate.getCrawlingNo())
-                .keyword(issueCreate.getKeyword())
-                .latestNo(issueCreate.getLatestNo())
-                .build();
+    public static IssueStation from(Issue issue, Station station) {
 
         return IssueStation.builder()
                 .issue(issue)

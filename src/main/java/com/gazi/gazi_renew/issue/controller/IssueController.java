@@ -23,6 +23,14 @@ public class IssueController {
     private final Response response;
     @PostMapping("/add")
     public ResponseEntity addIssue(@ModelAttribute("dto") IssueCreate issueCreate) throws JsonProcessingException {
+        System.out.println("Stations: " + issueCreate.getStations()); // 디버깅용 출력
+        issueCreate.getStations().forEach(station -> {
+            System.out.println("Line: " + station.getLine());
+            System.out.println("Start Station Code: " + station.getStartStationCode());
+            System.out.println("End Station Code: " + station.getEndStationCode());
+            System.out.println("Keyword: " + station.getKeyword());
+            System.out.println("Direction: " + station.getDirection());
+        });
         boolean isAdded = issueService.addIssue(issueCreate);
         if (isAdded) {
             return response.success("이슈가 성공적으로 추가되었습니다.");
@@ -33,18 +41,18 @@ public class IssueController {
 
 
     @GetMapping()
-    public String writeIssue(Model model, Issue dto,
-                             @RequestParam(name = "title")String title,
-                             @RequestParam(name = "content")String content,
-                             @RequestParam(name = "crawlingNo")String crawlingNo,
-                             @RequestParam(name = "latestNo")int latestNo)
-    {
+    public String writeIssue(Model model, IssueCreate issueCreate,
+                             @RequestParam(name = "title") String title,
+                             @RequestParam(name = "content") String content,
+                             @RequestParam(name = "crawlingNo") String crawlingNo,
+                             @RequestParam(name = "latestNo") int latestNo) {
+
         model.addAttribute("title", title);
         model.addAttribute("content", content);
         model.addAttribute("crawlingNo", crawlingNo);
-        model.addAttribute("dto", dto);
+        model.addAttribute("dto", issueCreate);
         model.addAttribute("keyword", IssueKeyword.values());
-        model.addAttribute("latestNo",latestNo);
+        model.addAttribute("latestNo", latestNo);
         return "writeIssue";
     }
 }

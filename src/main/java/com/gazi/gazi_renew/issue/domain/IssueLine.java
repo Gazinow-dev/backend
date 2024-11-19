@@ -17,17 +17,17 @@ public class IssueLine {
         this.issue = issue;
         this.line = line;
     }
-    public static IssueLine from(IssueCreate issueCreate, Line line) {
-        Issue issue = Issue.builder()
-                .title(issueCreate.getTitle())
-                .content(issueCreate.getContent())
-                .startDate(issueCreate.getStartDate())
-                .expireDate(issueCreate.getExpireDate())
-                .secretCode(issueCreate.getSecretCode())
-                .crawlingNo(issueCreate.getCrawlingNo())
-                .keyword(issueCreate.getKeyword())
-                .latestNo(issueCreate.getLatestNo())
-                .build();
+    public static IssueLine from(Issue issue, Line line) {
+//        Issue issue = Issue.builder()
+//                .title(issueCreate.getTitle())
+//                .content(issueCreate.getContent())
+//                .startDate(issueCreate.getStartDate())
+//                .expireDate(issueCreate.getExpireDate())
+//                .secretCode(issueCreate.getSecretCode())
+//                .crawlingNo(issueCreate.getCrawlingNo())
+//                .keyword(issueCreate.getKeyword())
+//                .latestNo(issueCreate.getLatestNo())
+//                .build();
 
         return IssueLine.builder()
                 .issue(issue)

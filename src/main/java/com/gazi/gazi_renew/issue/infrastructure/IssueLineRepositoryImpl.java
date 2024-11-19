@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.issue.infrastructure;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
+import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueLineJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueLineRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +13,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Repository
 @RequiredArgsConstructor
 public class IssueLineRepositoryImpl implements IssueLineRepository {
     private final IssueLineJpaRepository issueLineJpaRepository;
+    private final IssueJpaRepository issueJpaRepository;
     @Override
     public Page<Issue> findByLineId(Long id, Pageable pageable) {
         List<IssueLine> issueLineList = issueLineJpaRepository.findByLineEntityId(id).stream()
@@ -39,7 +42,8 @@ public class IssueLineRepositoryImpl implements IssueLineRepository {
 
     @Override
     public void save(IssueLine issueLine) {
-        issueLineJpaRepository.save(IssueLineEntity.from(issueLine));
+        Optional<IssueEntity> byId = issueJpaRepository.findById(issueLine.getIssue().getId());
+        issueLineJpaRepository.save(IssueLineEntity.from(issueLine, byId.get()));
     }
 
     @Override

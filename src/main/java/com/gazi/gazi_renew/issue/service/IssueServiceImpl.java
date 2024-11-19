@@ -64,21 +64,27 @@ public class IssueServiceImpl implements IssueService {
         if (issueRepository.existsByCrawlingNo(issueCreate.getCrawlingNo())) {
             throw ErrorCode.throwDuplicateIssueException();
         }
-
-        List<Station> stationList = getStationList(issueCreate.getStations());
         Issue issue = Issue.from(issueCreate);
         issue = issueRepository.save(issue);
+        issueRepository.flush();
+        List<Station> stationList = getStationList(issueCreate.getStations());
+
 
         for (Station station : stationList) {
-            IssueStation issueStation = IssueStation.from(issueCreate, station);
+            IssueStation issueStation = IssueStation.from(issue, station);
             issueStationRepository.save(issueStation);
+
         }
-        List<Line> lineList = issueCreate.getLines().stream().map(lineName -> Line.builder()
-                .lineName(lineName).build()).collect(Collectors.toList());
+        List<Line> lineList = issueCreate.getLines().stream()
+                .map(lineName -> lineRepository.findByLineName(lineName)
+                        .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: " + lineName))
+                )
+                .collect(Collectors.toList());
 
         for (Line line : lineList) {
-            IssueLine issueLine = IssueLine.from(issueCreate, line);
+            IssueLine issueLine = IssueLine.from(issue, line);
             issueLineRepository.save(issueLine);
+
         }
         // Redis에 이슈 추가
         addIssueToRedis(issue);

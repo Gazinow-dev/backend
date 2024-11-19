@@ -35,6 +35,7 @@ class MyFindRoadServiceImplTest {
 
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeIssueRepository fakeIssueRepository = new FakeIssueRepository();
+        FakeIssueStationRepository fakeIssueStationRepository = new FakeIssueStationRepository();
 
         this.myFindRoadServiceImpl = MyFindRoadServiceImpl.builder()
                 .memberRepository(fakeMemberRepository)
@@ -44,6 +45,7 @@ class MyFindRoadServiceImplTest {
                 .subwayRepository(fakeSubwayRepository)
                 .issueRepository(fakeIssueRepository)
                 .securityUtilService(fakeSecurityUtil)
+                .issueStationRepository(fakeIssueStationRepository)
                 .build();
 
         Member member1 = Member.builder()
@@ -129,6 +131,7 @@ class MyFindRoadServiceImplTest {
                 .lastEndStation("삼각지")
                 .subPaths(Collections.singletonList(subPath))
                 .notification(false)
+                .memberId(1L)
                 .build();
         subPath = MyFindRoadSubPath.builder()
                 .id(1L)
@@ -225,7 +228,7 @@ class MyFindRoadServiceImplTest {
                 .distance(1200)
                 .sectionTime(2)
                 .stationCount(1)
-                .way("녹사팡")
+                .way("녹사평")
                 .door("null")
                 .name("수도권 6호선")
                 .stationCode(6)

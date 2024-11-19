@@ -110,4 +110,8 @@ public class FakeIssueRepository implements IssueRepository {
                 .build();
         data.add(updatedIssue);
     }
+
+    @Override
+    public void flush() {
+    }
 }

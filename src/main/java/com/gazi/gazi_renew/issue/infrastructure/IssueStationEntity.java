@@ -23,10 +23,10 @@ public class IssueStationEntity extends AuditingFields {
     @JoinColumn(name = "station_id", nullable = false)
     private StationEntity stationEntity;
 
-    public static IssueStationEntity from(IssueStation issueStation) {
+    public static IssueStationEntity from(IssueStation issueStation, IssueEntity issueEntity) {
         IssueStationEntity issueStationEntity = new IssueStationEntity();
         issueStationEntity.id = issueStation.getId();
-        issueStationEntity.issueEntity = IssueEntity.from(issueStation.getIssue());
+        issueStationEntity.issueEntity = issueEntity;
         issueStationEntity.stationEntity = StationEntity.from(issueStation.getStation())
         ;
         return issueStationEntity;

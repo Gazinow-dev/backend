@@ -2,25 +2,25 @@ package com.gazi.gazi_renew.issue.domain.dto;
 
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class IssueCreate {
-    private final String title;
-    private final String content;
-    private final LocalDateTime startDate;
-    private final LocalDateTime expireDate;
-    private final String secretCode;
-    private final String crawlingNo;
-    private final IssueKeyword keyword;
-    private final List<String> lines;
-    private final List<Station> stations;
-    private final int latestNo;
+    private String title;
+    private String content;
+    private LocalDateTime startDate;
+    private LocalDateTime expireDate;
+    private String secretCode;
+    private String crawlingNo;
+    private IssueKeyword keyword;
+    private List<String> lines;
+    private List<Station> stations;
+    private int latestNo;
     @Builder
     public IssueCreate(String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, List<String> lines, List<Station> stations, int latestNo) {
         this.title = title;
@@ -36,12 +36,14 @@ public class IssueCreate {
     }
 
     @Getter
+    @Setter
+    @NoArgsConstructor
     public static class Station {
-        private final String line;
-        private final int startStationCode;
-        private final int endStationCode;
-        private final IssueKeyword keyword;
-        private final SubwayDirection direction;
+        private String line;
+        private int startStationCode;
+        private int endStationCode;
+        private IssueKeyword keyword;
+        private SubwayDirection direction;
         @Builder
         public Station(String line, int startStationCode, int endStationCode, IssueKeyword keyword, SubwayDirection direction) {
             this.line = line;
@@ -51,4 +53,5 @@ public class IssueCreate {
             this.direction = direction;
         }
     }
+
 }

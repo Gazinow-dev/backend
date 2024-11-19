@@ -34,7 +34,6 @@ public class IssueRepositoryImpl implements IssueRepository {
     public Issue save(Issue issue) {
         return issueJpaRepository.save(IssueEntity.from(issue)).toModel();
     }
-
     @Override
     public Page<Issue> findAll(Pageable pageable) {
         List<Issue> collect = issueJpaRepository.findAll()
@@ -64,5 +63,10 @@ public class IssueRepositoryImpl implements IssueRepository {
     @Override
     public void updateLikeCount(Issue issue) {
         issueJpaRepository.updateLikeCount(issue.getId(), issue.getLikeCount());
+    }
+
+    @Override
+    public void flush() {
+        issueJpaRepository.flush();
     }
 }

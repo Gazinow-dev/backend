@@ -17,11 +17,15 @@ import com.gazi.gazi_renew.notification.domain.dto.FcmMessage;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.service.port.LineRepository;
+import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.persistence.EntityNotFoundException;
@@ -51,6 +55,9 @@ public class FcmServiceImpl implements FcmService {
     private final IssueStationRepository issueStationRepository;
     private final IssueLineRepository issueLineRepository;
     private final LineRepository lineRepository;
+    private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
+    private final SubwayRepository subwayRepository;
 
     @Value("${push.properties.firebase-create-scoped}")
     private String fireBaseCreateScoped;
@@ -110,7 +117,7 @@ public class FcmServiceImpl implements FcmService {
 
     private List<FcmMessage> makeFcmDto(NotificationCreate notificationCreate) throws JsonProcessingException {
         MyFindRoad myFindRoad = myFindRoadPathRepository.findMyFindRoadPathById(notificationCreate.getMyRoadId());
-
+        myFindRoad = getStation(myFindRoad);
         Optional<Member> member = memberRepository.findById(myFindRoad.getMemberId());
         if(member.isEmpty()) {
             throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
@@ -126,7 +133,6 @@ public class FcmServiceImpl implements FcmService {
         ObjectMapper om = new ObjectMapper();
         List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issue.get());
 
-        //TODO : N+1 문 확인
         List<Station> stationList = issueStationList.stream()
                 .map(IssueStation::getStation).collect(Collectors.toList());
 
@@ -141,7 +147,7 @@ public class FcmServiceImpl implements FcmService {
         List<FcmMessage> fcmMessages = new ArrayList<>();
         List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issue.get());
 
-        List<Line> lineList = issueLineList.stream().map(issueLine -> lineRepository.findById(issueLine.getId()))
+        List<Line> lineList = issueLineList.stream().map(issueLine -> lineRepository.findById(issueLine.getLine().getId()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
@@ -181,4 +187,45 @@ public class FcmServiceImpl implements FcmService {
     private String makeTitle(String pathName, IssueKeyword issueType) {
         return pathName + " 경로에 [" + issueType + "] 이슈가 생겼어요";
     }
+    private MyFindRoad getStation(MyFindRoad myFindRoad) {
+        // 업데이트된 SubPath 리스트를 저장할 컬렉션
+        List<MyFindRoadSubPath> updatedSubPaths = new ArrayList<>();
+
+        // SubPath를 조회
+        List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(myFindRoad.getId());
+
+        for (MyFindRoadSubPath myFindRoadSubPath : myFindRoadSubPathList) {
+            List<MyFindRoadStation> updatedStations = new ArrayList<>();
+
+            // SubPath에 포함된 Station 조회
+            List<MyFindRoadStation> myFindRoadStationList = myFindRoadSubwayRepository.findAllByMyFindRoadSubPathId(myFindRoadSubPath.getId());
+            for (MyFindRoadStation myFindRoadStation : myFindRoadStationList) {
+                String line = myFindRoadSubPath.getName();
+                if (line.equals("수도권 9호선(급행)")) {
+                    line = "수도권 9호선";
+                }
+
+                // Station 조회
+                List<Station> stationList = subwayRepository.findByNameContainingAndLine(myFindRoadStation.getStationName(), line);
+                Station station = Station.toFirstStation(myFindRoadStation.getStationName(), stationList);
+
+                if (station != null) {
+                    // Station에 연결된 Issue 조회
+                    List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(station.getId());
+                    List<Issue> issueList = issueStationList.stream().map(IssueStation::getIssue).collect(Collectors.toList());
+                    // Issue 리스트를 업데이트한 새로운 MyFindRoadStation 객체 생성
+                    myFindRoadStation = myFindRoadStation.updateIssueList(issueList);
+                }
+                updatedStations.add(myFindRoadStation); // 변경된 Station 리스트에 추가
+            }
+
+            // 업데이트된 Stations를 반영한 SubPath 객체 생성
+            MyFindRoadSubPath updatedSubPath = myFindRoadSubPath.updateStations(updatedStations);
+            updatedSubPaths.add(updatedSubPath); // 변경된 SubPath 리스트에 추가
+        }
+
+        // 업데이트된 SubPaths를 반영한 MyFindRoad 객체 생성 및 반환
+        return myFindRoad.updateSubPaths(updatedSubPaths);
+    }
+
 }
