@@ -46,7 +46,6 @@ public class FindRoadServiceImpl implements FindRoadService {
     private final SubwayRepository subwayRepository;
     private final MemberRepository memberRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
-    private final IssueRepository issueRepository;
     private final IssueStationRepository issueStationRepository;
     private final SecurityUtilService securityUtilService;
     @Value("${odsay.key}")
@@ -143,7 +142,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                 path.setFirstStartStation(pathNode.path("info").path("firstStartStation").asText());
                 path.setLastEndStation(pathNode.path("info").path("lastEndStation").asText());
 
-                if(member.isPresent()) {
+                if (member.isPresent()) {
                     Optional<List<MyFindRoad>> myFindRoadPath = myFindRoadPathRepository.findAllByFirstStartStationAndLastEndStationAndMemberAndTotalTime(
                             pathNode.path("info").path("firstStartStation").asText(),
                             pathNode.path("info").path("lastEndStation").asText(),
@@ -152,7 +151,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                     );
                     List<Long> myPathId = new ArrayList<>();
 
-                    if (myFindRoadPath.get().size() > 0) {
+                    if (myFindRoadPath.isPresent() && !myFindRoadPath.get().isEmpty()) {
                         path.setMyPath(true);
                         for (MyFindRoad myFindRoad : myFindRoadPath.get()) {
                             myPathId.add(myFindRoad.getId());
@@ -161,9 +160,10 @@ public class FindRoadServiceImpl implements FindRoadService {
                     } else {
                         path.setMyPath(false);
                     }
-                } else{
+                } else {
                     path.setMyPath(false);
                 }
+
                 // subPaths 배열 처리
                 ArrayList<FindRoadResponse.SubPath> subPaths = new ArrayList<>();
                 JsonNode subPathArray = pathNode.path("subPath");
@@ -176,84 +176,61 @@ public class FindRoadServiceImpl implements FindRoadService {
                         subPath.setStationCount(subPathNode.path("stationCount").asInt());
                         subPath.setDoor(subPathNode.path("door").asText());
 
-                        String lineName = "";
-                        // lanes 배열 처리
-                        ArrayList<FindRoadResponse.Lane> lanes = new ArrayList<>();
+                        // `lane` 데이터를 SubPath 필드에 직접 설정
                         JsonNode laneArray = subPathNode.path("lane");
-                        for (JsonNode laneNode : laneArray) {
-                            lineName = laneNode.path("name").asText();
-                            FindRoadResponse.Lane lane = new FindRoadResponse.Lane();
-                            lane.setName(lineName);
-                            lane.setStationCode(laneNode.path("subwayCode").asInt());
-                            lane.setStartName(laneNode.path("startName").asText());
-                            lane.setEndName(laneNode.path("endName").asText());
-                            if(lineName.contains("(급행)")) {
-                                lane.setDirect(true);
-                            }else{
-                                lane.setDirect(false);
-                            }
-                            lanes.add(lane);
+                        if (laneArray.size() > 0) {
+                            JsonNode firstLane = laneArray.get(0); // 첫 번째 lane 데이터를 가져옴
+                            subPath.setName(firstLane.path("name").asText());
+                            subPath.setStationCode(firstLane.path("subwayCode").asInt());
+                            subPath.setDirect(firstLane.path("name").asText().contains("(급행)"));
                         }
-                        subPath.setLanes(lanes);
+
                         // passStopList 처리
                         JsonNode passStopListNode = subPathNode.path("passStopList");
                         ArrayList<FindRoadResponse.Station> stations = new ArrayList<>();
                         JsonNode stationArray = passStopListNode.path("stations");
 
-                        // 오디세이에서 설정한 way값이 아닌 다음역을 주는 것으로 내부적으로 변경
-                        if(stationArray.size() >= 2){
+                        // 오디세이에서 설정한 `way` 값을 `다음역`으로 설정
+                        if (stationArray.size() >= 2) {
                             subPath.setWay(stationArray.get(1).path("stationName").asText());
                         }
+
+                        // 역별 이슈 처리
                         List<IssueSummary> issueDtoList = new ArrayList<>();
                         for (JsonNode stationNode : stationArray) {
-                            System.out.println("lineName :" + lineName);
-                            if(lineName.equals("수도권 9호선(급행)")){
-                                lineName = "수도권 9호선";
-                            }
                             FindRoadResponse.Station station = new FindRoadResponse.Station();
                             station.setIndex(stationNode.path("index").asInt());
                             station.setStationName(stationNode.path("stationName").asText());
                             station.setStationCode(stationNode.path("stationID").asInt());
 
-                            System.out.println(stationNode.path("stationName").asText());
-
-                            //staion 찾고 이슈 리스트 받기
+                            // 역 이슈 조회 및 설정
+                            String lineName = subPath.getName(); // 급행 포함한 이름 그대로 사용
                             List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
                             Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
-
                             List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(stationName.getId());
-
-                            //fetch join으로 가져옴
-                            List<Issue> issueEntities = issueStationList.stream().map(IssueStation::getIssue)
+                            List<Issue> activeIssues = issueStationList.stream()
+                                    .map(IssueStation::getIssue)
+                                    .filter(issue -> {
+                                        LocalDateTime now = LocalDateTime.now();
+                                        return now.isAfter(issue.getStartDate()) && now.isBefore(issue.getExpireDate());
+                                    })
                                     .collect(Collectors.toList());
-
-                            List<Issue> activeIssueEntities = new ArrayList<>();
-                            // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
-                            LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-
-                            for (Issue issue : issueEntities) {
-                                // 만약 현재시간 시작시간 이전이고 만료시간이 현재시간 이후이면
-                                if (currentDateTime.isAfter(issue.getStartDate()) && currentDateTime.isBefore(issue.getExpireDate())) {
-                                    activeIssueEntities.add(issue);
-                                }
-                            }
-
-                            List<IssueSummary> issueSummaryDto = IssueSummary.getIssueSummaryDto(activeIssueEntities);
+                            List<IssueSummary> issueSummaryDto = IssueSummary.getIssueSummaryDto(activeIssues);
                             issueDtoList.addAll(issueSummaryDto);
-                            station.setIssueSummary(IssueSummary.getIssueSummaryDto(activeIssueEntities));
+                            station.setIssueSummary(issueSummaryDto);
                             stations.add(station);
                         }
-                        if(!subPath.getLanes().isEmpty()){
-                            subPath.getLanes().get(0).setIssueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList));
-                        }
+
+                        // 호선 이슈 설정
+                        subPath.setIssueSummary(IssueSummary.getIssueSummaryDtoByLine(issueDtoList));
                         subPath.setStations(stations);
                         subPaths.add(subPath);
                     }
-
                 }
-                if (subPaths.size() != 0) {
+
+                if (!subPaths.isEmpty()) {
                     path.setSubPaths(subPaths);
-                    path.setTransitStations(getTransitStation(path));
+                    path.setTransitStationList(getTransitStation(path));
                 }
 
                 paths.add(path);
@@ -265,7 +242,6 @@ public class FindRoadServiceImpl implements FindRoadService {
             e.printStackTrace();
             return response.fail("실패", HttpStatus.BAD_REQUEST);
         }
-
     }
 
     public ArrayList<FindRoadResponse.TransitStation> getTransitStation(FindRoadResponse.Path path) {
@@ -280,10 +256,10 @@ public class FindRoadServiceImpl implements FindRoadService {
                 if (subPath.getStations().size() != 0) {
                     transitStation = FindRoadResponse.TransitStation.builder()
                             .stationsName(subPath.getStations().get(0).getStationName()) // 지하철 역이름
-                            .line(subPath.getLanes().get(0).getName()) // 호선 이름
+                            .line(subPath.getName()) // 호선 이름
                             .build();
                     transitStations.add(transitStation);
-                    lastLine = subPath.getLanes().get(0).getName();
+                    lastLine = subPath.getName();
                 }
             }
         }

@@ -25,7 +25,7 @@ public class FindRoadResponse {
         String firstStartStation;
         String lastEndStation;
         ArrayList<SubPath> subPaths;
-        ArrayList<TransitStation> transitStations;
+        ArrayList<TransitStation> transitStationList;
         boolean myPath;
         List<Long> myPathId;
     }
@@ -41,21 +41,11 @@ public class FindRoadResponse {
 
         String way; //  방면 ( 다음역으로 수정)
         String door; //
-        ArrayList<Lane> lanes; //
-        ArrayList<Station> stations;
-    }
-
-    @Getter
-    @Setter
-    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-    static public class Lane {
         String name; // 노선명
+        boolean direct;
         int stationCode; //노선코드 ex:) 2
-        String startName; //승차 정류장
-        String endName; // 하차 정류장
-        boolean direct; //급행여부
-        List<IssueSummary> issueSummary; // 호선에서 발생한 이슈
-
+        ArrayList<Station> stations;
+        List<IssueSummary> issueSummary;
     }
     @Getter
     @Setter
