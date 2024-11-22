@@ -307,6 +307,7 @@ public class MemberServiceImpl implements MemberService {
         member = member.updateMySavedRouteNotificationEnabled(alertAgree);
         if (!memberAlertAgree.isAlertAgree()) {
             member = member.updateRouteDetailNotificationEnabled(alertAgree);
+            resetRouteNotifications(member);
         }
         memberRepository.updateAlertAgree(member);
         return member;
@@ -325,15 +326,7 @@ public class MemberServiceImpl implements MemberService {
 
         if (!memberAlertAgree.isAlertAgree()) {
             // myFindRoadService에서 경로 데이터를 가져옴
-            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
-            // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
-            for (MyFindRoad myFindRoad : myFindRoadList) {
-                // MyPathId를 넘겨서 삭제 메서드 호출
-                notificationRepository.deleteByMyFindRoad(myFindRoad);
-                myFindRoad = myFindRoad.updateNotification(false);
-
-                myFindRoadPathRepository.updateNotification(myFindRoad);
-            }
+            resetRouteNotifications(member);
         }
         member = member.updateRouteDetailNotificationEnabled(alertAgree);
         memberRepository.updateAlertAgree(member);
@@ -444,7 +437,17 @@ public class MemberServiceImpl implements MemberService {
         }
         return key.toString();
     }
+    private void resetRouteNotifications(Member member) {
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
+        // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            // MyPathId를 넘겨서 삭제 메서드 호출
+            notificationRepository.deleteByMyFindRoad(myFindRoad);
+            myFindRoad = myFindRoad.updateNotification(false);
 
+            myFindRoadPathRepository.updateNotification(myFindRoad);
+        }
+    }
     @Override
     public String sendSimpleMessage(String to) throws Exception {
         boolean checked = checkEmail(to);

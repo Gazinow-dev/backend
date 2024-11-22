@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
@@ -34,6 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationHistoryRepository notificationHistoryRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
+    private final IssueRepository issueRepository;
     private final MemberRepository memberRepository;
     private final SecurityUtilService securityUtilService;
     private final RedisUtilService redisUtilService;

@@ -171,18 +171,20 @@ public class FcmServiceImpl implements FcmService {
             if (!stationsForLine.isEmpty()) {
                 Station startStation = stationsForLine.get(0);
                 Station endStation = stationsForLine.get(stationsForLine.size() - 1);
+                String title = makeTitle(myPathName, issue.get().getKeyword());
+                String body = makeBody(line.getLineName(), startStation.getName(), endStation.getName());
 
+                NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), body
+                        , title, issue.get().getKeyword(), clockHolder);
+                NotificationHistory savedHistory = notificationHistoryRepository.save(notificationHistory);
                 FcmMessage fcmMessage = FcmMessage.createMessage(
+                        savedHistory.getId(),
                         firebaseToken,
-                        makeTitle(myPathName, issue.get().getKeyword()),
-                        makeBody(line.getLineName(), startStation.getName(), endStation.getName()),
+                        title,
+                        body,
                         pathJson
                 );
                 fcmMessages.add(fcmMessage);
-                //TODO; history 저장
-                NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), fcmMessage.getMessage().getNotification().getBody()
-                        , fcmMessage.getMessage().getNotification().getTitle(), clockHolder);
-                notificationHistoryRepository.save(notificationHistory);
             }
         }
         return fcmMessages;  // 각 Line에 대해 생성된 FCM 메시지 반환
