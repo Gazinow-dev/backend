@@ -8,6 +8,7 @@ import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.oauth.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthLoginService {
@@ -103,6 +105,7 @@ public class OAuthLoginService {
 
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
         responseToken = responseToken.login(member.getEmail(), member.getNickName());
+        log.info("access token : " + responseToken.getAccessToken());
         //redis에 refresh token 저장
         saveRefreshToken(authentication, responseToken);
 
