@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.notification.infrastructure;
 
+import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,6 +22,7 @@ public class NotificationHistoryEntity {
     private String notificationTitle;
     private String notificationBody;
     private boolean isRead;
+    private IssueKeyword issueKeyword;
     private LocalDateTime startDate;
 
     public NotificationHistory toModel() {
@@ -31,6 +33,7 @@ public class NotificationHistoryEntity {
                 .notificationTitle(notificationTitle)
                 .notificationBody(notificationBody)
                 .isRead(isRead)
+                .issueKeyword(issueKeyword)
                 .startDate(startDate)
                 .build();
     }
@@ -42,6 +45,7 @@ public class NotificationHistoryEntity {
         notificationHistoryEntity.notificationTitle = notificationHistory.getNotificationTitle();
         notificationHistoryEntity.notificationBody = notificationHistory.getNotificationBody();
         notificationHistoryEntity.isRead = notificationHistory.isRead();
+        notificationHistoryEntity.issueKeyword = notificationHistory.getIssueKeyword();
         notificationHistoryEntity.startDate = notificationHistory.getStartDate();
         return notificationHistoryEntity;
     }

@@ -34,6 +34,7 @@ public class FcmMessage {
     @Getter
     public static class Data {
         private String path;
+        private String notificationId;
     }
     @Builder
     @AllArgsConstructor
@@ -54,7 +55,7 @@ public class FcmMessage {
         @JsonProperty("content-available")
         private int contentAvailable;
     }
-    public static FcmMessage createMessage(String firebaseToken, String title, String body, String pathJson) {
+    public static FcmMessage createMessage(Long id, String firebaseToken, String title, String body, String pathJson) {
         return FcmMessage.builder()
                 .message(Message.builder()
                         .token(firebaseToken)
@@ -63,7 +64,8 @@ public class FcmMessage {
                                 .body(body)
                                 .build()
                         )
-                        .data(Data.builder().path(pathJson).build())
+                        .data(Data.builder().path(pathJson)
+                                .notificationId(id.toString()).build())
                         .apns(Apns.builder()
                                 .payload(Payload.builder()
                                         .aps(Aps.builder()

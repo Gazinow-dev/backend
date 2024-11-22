@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.notification.controller.response;
 
 
+import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,6 @@ import org.springframework.data.domain.PageImpl;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
@@ -19,14 +19,16 @@ public class NotificationHistoryResponse {
     private final String notificationTitle;
     private final String notificationBody;
     private final boolean isRead;
+    private final IssueKeyword keyword;
     private final String agoTime;
     @Builder
-    public NotificationHistoryResponse(Long id, Long issueId, String notificationTitle, String notificationBody, boolean isRead, String agoTime) {
+    public NotificationHistoryResponse(Long id, Long issueId, String notificationTitle, String notificationBody, boolean isRead, IssueKeyword keyword, String agoTime) {
         this.id = id;
         this.issueId = issueId;
         this.notificationTitle = notificationTitle;
         this.notificationBody = notificationBody;
         this.isRead = isRead;
+        this.keyword = keyword;
         this.agoTime = agoTime;
     }
 
@@ -37,6 +39,7 @@ public class NotificationHistoryResponse {
                 .notificationTitle(notificationHistory.getNotificationTitle())
                 .notificationBody(notificationHistory.getNotificationBody())
                 .isRead(notificationHistory.isRead())
+                .keyword(notificationHistory.getIssueKeyword())
                 .agoTime(getTime(notificationHistory.getStartDate()))
                 .build();
     }
