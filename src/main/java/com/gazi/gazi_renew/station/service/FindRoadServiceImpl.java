@@ -182,8 +182,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             JsonNode firstLane = laneArray.get(0); // 첫 번째 lane 데이터를 가져옴
                             subPath.setName(firstLane.path("name").asText());
                             subPath.setStationCode(firstLane.path("subwayCode").asInt());
-//                            subPath.setDirect(firstLane.path("name").asText().contains("(급행)"));
-                            if(firstLane.path("name").asText().equals("수도권 9호선(급행)")){
+                            if(firstLane.path("name").asText().equals("(급행)")){
                                 subPath.setDirect(true);
                             }
                             else {
@@ -211,6 +210,9 @@ public class FindRoadServiceImpl implements FindRoadService {
 
                             // 역 이슈 조회 및 설정
                             String lineName = subPath.getName(); // 급행 포함한 이름 그대로 사용
+                            if(lineName.equals("수도권 9호선(급행)")){
+                                lineName = "수도권 9호선";
+                            }
                             List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
                             Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
                             List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(stationName.getId());
