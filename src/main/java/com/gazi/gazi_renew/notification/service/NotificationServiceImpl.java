@@ -35,7 +35,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationHistoryRepository notificationHistoryRepository;
     private final MyFindRoadPathRepository myFindRoadPathRepository;
-    private final IssueRepository issueRepository;
     private final MemberRepository memberRepository;
     private final SecurityUtilService securityUtilService;
     private final RedisUtilService redisUtilService;

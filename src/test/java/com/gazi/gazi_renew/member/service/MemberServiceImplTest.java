@@ -72,6 +72,7 @@ class MemberServiceImplTest {
                 .build();
 
         Member member1 = Member.builder()
+                .id(1L)
                 .email("mw310@naver.com")
                 .password("encoded_tempPassword")
                 .nickName("minu")
@@ -83,6 +84,7 @@ class MemberServiceImplTest {
                 .build();
 
         Member member2 = Member.builder()
+                .id(2L)
                 .email("gazi@nater.com")
                 .password("encoded_gaziPassword2")
                 .nickName("gazi")

@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.route.service;
 
 import com.gazi.gazi_renew.common.exception.CustomException;
+import com.gazi.gazi_renew.common.exception.MyFindRoadCustomException;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
@@ -246,7 +247,7 @@ class MyFindRoadServiceImplTest {
                 .subPaths(Arrays.asList(subPathCreate))
                 .build();
         //when
-        assertThatThrownBy(() -> myFindRoadServiceImpl.addRoute(myFindRoadCreate)).isInstanceOf(CustomException.class);
+        assertThatThrownBy(() -> myFindRoadServiceImpl.addRoute(myFindRoadCreate)).isInstanceOf(MyFindRoadCustomException.class);
     }
 
     @Test
