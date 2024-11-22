@@ -116,6 +116,9 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
 
     @Override
     public boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
-        return false;
+        return data.stream().anyMatch(myFindRoad ->
+                myFindRoad.getFirstStartStation().equals(firstStation) &&
+                        myFindRoad.getLastEndStation().equals(lastEndStation) &&
+                        myFindRoad.getMemberId().equals(member.getId()));
     }
 }
