@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.oauth.service;
 
 import com.gazi.gazi_renew.common.config.AppleProperties;
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.oauth.controller.response.OAuthInfoResponse;
@@ -9,7 +10,6 @@ import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.oauth.domain.OAuthLoginParams;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -40,7 +39,7 @@ public class OAuthLoginService {
 
     private final GoogleApiClient googleApiClient;
     private final NaverApiClient naverApiClient;
-    private final RedisTemplate redisTemplate;
+    private final RedisUtilService redisUtilService;
 
     private final AppleProperties appleProperties;
     private final PasswordEncoder passwordEncoder;
@@ -107,7 +106,8 @@ public class OAuthLoginService {
         responseToken = responseToken.login(member.getEmail(), member.getNickName());
         log.info("access token : " + responseToken.getAccessToken());
         //redis에 refresh token 저장
-        saveRefreshToken(authentication, responseToken);
+        redisUtilService.setRefreshToken(authentication.getName(), responseToken.getRefreshToken(),
+                responseToken.getRefreshTokenExpirationTime());
 
         return createRedirectResponse(responseToken);
     }
@@ -136,14 +136,6 @@ public class OAuthLoginService {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(redirectUri);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
-    }
-
-    private void saveRefreshToken(Authentication authentication, ResponseToken responseToken) {
-        redisTemplate.opsForValue()
-                .set("RT:" + authentication.getName(), responseToken.getRefreshToken(),
-                        responseToken.getRefreshTokenExpirationTime(),
-                        TimeUnit.MILLISECONDS
-                );
     }
 
 }
