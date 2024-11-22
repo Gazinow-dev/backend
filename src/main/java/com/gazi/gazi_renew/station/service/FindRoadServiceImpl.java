@@ -182,7 +182,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             JsonNode firstLane = laneArray.get(0); // 첫 번째 lane 데이터를 가져옴
                             subPath.setName(firstLane.path("name").asText());
                             subPath.setStationCode(firstLane.path("subwayCode").asInt());
-                            if(firstLane.path("name").asText().equals("(급행)")){
+                            if(firstLane.path("name").asText().contains("(급행)")){
                                 subPath.setDirect(true);
                             }
                             else {
