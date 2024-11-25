@@ -216,11 +216,6 @@ public class FindRoadServiceImpl implements FindRoadService {
                                 lineName = "수도권 9호선";
                             }
                             List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
-                            log.info("길찾기 결과 stationName: " + stationNode.path("stationName").asText());
-                            log.info("길찾기 결과 lineName: " + lineName);
-                            for (Station station1 : stationList) {
-                                log.info("길찾기 결과 station: " + station1);
-                            }
                             Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
                             List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(stationName.getId());
                             List<Issue> activeIssues = issueStationList.stream()
