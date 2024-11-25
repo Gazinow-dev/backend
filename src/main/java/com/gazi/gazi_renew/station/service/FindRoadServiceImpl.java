@@ -19,6 +19,7 @@ import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -38,8 +39,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;
@@ -214,6 +216,11 @@ public class FindRoadServiceImpl implements FindRoadService {
                                 lineName = "수도권 9호선";
                             }
                             List<Station> stationList = subwayRepository.findByNameContainingAndLine(stationNode.path("stationName").asText(), lineName);
+                            log.info("길찾기 결과 stationName: " + stationNode.path("stationName").asText());
+                            log.info("길찾기 결과 lineName: " + lineName);
+                            for (Station station1 : stationList) {
+                                log.info("길찾기 결과 station: " + station1);
+                            }
                             Station stationName = Station.toFirstStation(stationNode.path("stationName").asText(), stationList);
                             List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(stationName.getId());
                             List<Issue> activeIssues = issueStationList.stream()
