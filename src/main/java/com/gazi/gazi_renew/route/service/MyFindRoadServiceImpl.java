@@ -127,8 +127,26 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 .orElseThrow(ErrorCode::throwMyFindRoadNotFoundException);
 
         myFindRoad = myFindRoad.updateNotification(enabled);
+        // false 일때 , 멤버의 경로 true가 1개밖에 없으면 나의 경로 알림 설정 비활성화
+        if (!enabled) {
+            enableMySavedRouteNotificationIfAllRoutesDisabled(myFindRoad);
+        }
         myFindRoadPathRepository.updateNotification(myFindRoad);
     }
+
+    private void enableMySavedRouteNotificationIfAllRoutesDisabled(MyFindRoad myFindRoad) {
+        // 사용자의 저장한 경로 중 알림이 활성화된 개수를 조회
+        int enabledCount = myFindRoadPathRepository.countEnabledNotificationByMemberId(myFindRoad.getMemberId());
+        // 저장된 경로 중 하나라도 활성화된 알림이 있는지 확인
+        if (enabledCount == 1) {
+            Member member = memberRepository.findById(myFindRoad.getMemberId())
+                    .orElseThrow(() -> new EntityNotFoundException("멤버가 존재하지 않습니다: "));
+            // "내가 저장한 경로 알림 설정" 비활성화
+            Member newMember = member.updateMySavedRouteNotificationEnabled(false);
+            memberRepository.updateAlertAgree(newMember);
+        }
+    }
+
     private List<MyFindRoad> getStationList(List<MyFindRoad> myFindRoadList) {
         List<MyFindRoad> updatedRoadList = new ArrayList<>();
 

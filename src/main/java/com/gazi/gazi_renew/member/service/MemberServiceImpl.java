@@ -460,6 +460,9 @@ public class MemberServiceImpl implements MemberService {
         for (MyFindRoad myFindRoad : myFindRoadList) {
             List<Notification> notificationList = Notification.initNotification(myFindRoad.getId());
             notificationRepository.saveAll(notificationList);
+
+            myFindRoad = myFindRoad.updateNotification(true);
+            myFindRoadPathRepository.updateNotification(myFindRoad);
         }
     }
     private void resetRouteNotifications(Member member) {
