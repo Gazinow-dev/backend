@@ -31,9 +31,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
     @Query("UPDATE MemberEntity m SET m.password = :password WHERE m.id = :id")
     void updatePassword(@Param("id") Long id, @Param("password") String password);
     @Modifying
-    @Query("UPDATE MemberEntity m SET m.pushNotificationEnabled = :pushNotificationEnabled, m.mySavedRouteNotificationEnabled = :mySavedRouteNotificationEnabled, m.routeDetailNotificationEnabled = :routeDetailNotificationEnabled WHERE m.email = :email")
+    @Query("UPDATE MemberEntity m SET m.pushNotificationEnabled = :pushNotificationEnabled, m.mySavedRouteNotificationEnabled = :mySavedRouteNotificationEnabled WHERE m.email = :email")
     void updateAlertAgree(@Param("pushNotificationEnabled") Boolean pushNotificationEnabled,
                          @Param("mySavedRouteNotificationEnabled") Boolean mySavedRouteNotificationEnabled,
-                         @Param("routeDetailNotificationEnabled") Boolean routeDetailNotificationEnabled,
                          @Param("email") String email);
 }

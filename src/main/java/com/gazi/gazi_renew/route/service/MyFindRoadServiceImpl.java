@@ -9,6 +9,8 @@ import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
+import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadCreate;
@@ -43,6 +45,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final MyFindRoadPathRepository myFindRoadPathRepository;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final NotificationRepository notificationRepository;
     private final SubwayRepository subwayRepository;
     private final IssueRepository issueRepository;
     private final SecurityUtilService securityUtilService;
@@ -95,6 +98,9 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                 log.info("MyFindRoadSubway 저장 완료");
             }
         }
+        //초기 알림 생성
+        notificationRepository.saveAll(Notification.initNotification(myFindRoad.getId()));
+
         return myFindRoad.getId();
         }
     @Override

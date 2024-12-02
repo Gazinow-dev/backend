@@ -27,7 +27,7 @@ public class MyFindRoad {
                 .firstStartStation(myFindRoadCreate.getFirstStartStation())
                 .lastEndStation(myFindRoadCreate.getLastEndStation())
                 .memberId(memberId)
-                .notification(false)
+                .notification(true)
                 .build();
     }
     @Builder

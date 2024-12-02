@@ -26,10 +26,4 @@ public class MemberAlertAgreeResponse {
                 .alertAgree(member.getMySavedRouteNotificationEnabled())
                 .build();
     }
-    public static MemberAlertAgreeResponse routeDetailAlertAgreeFrom(Member member) {
-        return MemberAlertAgreeResponse.builder()
-                .email(member.getEmail())
-                .alertAgree(member.getRouteDetailNotificationEnabled())
-                .build();
-    }
 }
