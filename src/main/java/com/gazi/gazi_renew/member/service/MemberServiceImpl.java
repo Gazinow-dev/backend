@@ -7,6 +7,7 @@ import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.member.domain.dto.*;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
+import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
@@ -58,7 +59,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = Member.from(memberCreate, passwordEncoder);
         validateEmail(member.getEmail());
         validateNickName(member.getNickName());
-
+        //oto
         memberRepository.save(member);
         return member;
     }
@@ -82,7 +83,7 @@ public class MemberServiceImpl implements MemberService {
         );
         // memberLogin email, password 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = memberLogin.usernamePasswordAuthenticationToken();
-            // login 시 받은 firebase token 저장
+        // login 시 받은 firebase token 저장
         member = member.saveFireBaseToken(memberLogin.getFirebaseToken());
         memberRepository.updateFireBaseToken(member);
         // 실제 검증 (사용자 비밀번호 체크)
@@ -290,12 +291,21 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         member = member.updatePushNotificationEnabled(memberAlertAgree.isAlertAgree());
+        //비활성화 시, 하위 알림 모두 비활성화
+        if (!memberAlertAgree.isAlertAgree()) {
+            resetRouteNotifications(member);
+        }
+        //활성화할 땐, 초기 러시아워 알림 설정도 같이 활성화
+        if (memberAlertAgree.isAlertAgree()) {
+            initializeRushHourNotificationSettings(member);
+        }
         memberRepository.updateAlertAgree(member);
         return member;
     }
     /**
      * 내가 저장한 경로 알림 활성/비활성 메서드
-     * 내가 저장한 경로 꺼지면 경로별 상세 설정 알림 비활성화
+     * 내가 저장한 경로 활성화하면, 월~금 러시아워시간 자동 개별 알림 등록
+     * 내가 저장한 경로 꺼지면 경로별 개별 알림 비활성화
      * @param : MemberRequest.AlertAgree alertAgreeRequest
      * @return Response.Body
      */
@@ -305,30 +315,14 @@ public class MemberServiceImpl implements MemberService {
         boolean alertAgree = memberAlertAgree.isAlertAgree();
 
         member = member.updateMySavedRouteNotificationEnabled(alertAgree);
+        //비활성화 시, 하위 알림 모두 비활성화
         if (!memberAlertAgree.isAlertAgree()) {
-            member = member.updateRouteDetailNotificationEnabled(alertAgree);
             resetRouteNotifications(member);
         }
-        memberRepository.updateAlertAgree(member);
-        return member;
-    }
-    /**
-     * 경로별 상세 설정 알림 활성/비활성 메서드
-     * 경로별 상세 설정 알림 꺼지면 나의 상세 경로 알림들 모두 비활성화
-     * @param : MemberRequest.AlertAgree alertAgreeRequest
-     * @return Response.Body
-     */
-    @Override
-    public Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree) {
-        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        boolean alertAgree = memberAlertAgree.isAlertAgree();
-
-
-        if (!memberAlertAgree.isAlertAgree()) {
-            // myFindRoadService에서 경로 데이터를 가져옴
-            resetRouteNotifications(member);
+        //활성화할 땐, 초기 러시아워 알림 설정도 같이 활성화
+        if (memberAlertAgree.isAlertAgree()) {
+            initializeRushHourNotificationSettings(member);
         }
-        member = member.updateRouteDetailNotificationEnabled(alertAgree);
         memberRepository.updateAlertAgree(member);
         return member;
     }
@@ -437,17 +431,6 @@ public class MemberServiceImpl implements MemberService {
         }
         return key.toString();
     }
-    private void resetRouteNotifications(Member member) {
-        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
-        // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
-        for (MyFindRoad myFindRoad : myFindRoadList) {
-            // MyPathId를 넘겨서 삭제 메서드 호출
-            notificationRepository.deleteByMyFindRoad(myFindRoad);
-            myFindRoad = myFindRoad.updateNotification(false);
-
-            myFindRoadPathRepository.updateNotification(myFindRoad);
-        }
-    }
     @Override
     public String sendSimpleMessage(String to) throws Exception {
         boolean checked = checkEmail(to);
@@ -472,4 +455,26 @@ public class MemberServiceImpl implements MemberService {
         }
         return keyValue;
     }
+    private void initializeRushHourNotificationSettings(Member member) {
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(member.getId());
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            List<Notification> notificationList = Notification.initNotification(myFindRoad.getId());
+            notificationRepository.saveAll(notificationList);
+
+            myFindRoad = myFindRoad.updateNotification(true);
+            myFindRoadPathRepository.updateNotification(myFindRoad);
+        }
+    }
+    private void resetRouteNotifications(Member member) {
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
+        // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            // MyPathId를 넘겨서 삭제 메서드 호출
+            notificationRepository.deleteByMyFindRoad(myFindRoad);
+            myFindRoad = myFindRoad.updateNotification(false);
+
+            myFindRoadPathRepository.updateNotification(myFindRoad);
+        }
+    }
+
 }

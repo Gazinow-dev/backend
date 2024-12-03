@@ -5,6 +5,8 @@ import com.gazi.gazi_renew.common.exception.MyFindRoadCustomException;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
+import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.notification.service.NotificationServiceImpl;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
@@ -24,6 +26,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class MyFindRoadServiceImplTest {
     private MyFindRoadServiceImpl myFindRoadServiceImpl;
+    private NotificationServiceImpl notificationServiceImpl;
     @BeforeEach
     void init() {
         FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
@@ -33,7 +36,7 @@ class MyFindRoadServiceImplTest {
         FakeMyFindRoadSubPathRepository fakeMyFindRoadSubPathRepository = new FakeMyFindRoadSubPathRepository();
         FakeMyFindRoadSubwayRepository fakeMyFindRoadSubwayRepository = new FakeMyFindRoadSubwayRepository();
         FakeSubwayRepository fakeSubwayRepository = new FakeSubwayRepository();
-
+        FakeNotificationRepository fakeNotificationRepository = new FakeNotificationRepository();
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeIssueRepository fakeIssueRepository = new FakeIssueRepository();
         FakeIssueStationRepository fakeIssueStationRepository = new FakeIssueStationRepository();
@@ -43,6 +46,7 @@ class MyFindRoadServiceImplTest {
                 .myFindRoadPathRepository(fakeMyFindRoadPathRepository)
                 .myFindRoadSubPathRepository(fakeMyFindRoadSubPathRepository)
                 .myFindRoadSubwayRepository(fakeMyFindRoadSubwayRepository)
+                .notificationRepository(fakeNotificationRepository)
                 .subwayRepository(fakeSubwayRepository)
                 .issueRepository(fakeIssueRepository)
                 .securityUtilService(fakeSecurityUtil)
@@ -57,7 +61,6 @@ class MyFindRoadServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(false)
                 .mySavedRouteNotificationEnabled(false)
-                .routeDetailNotificationEnabled(false)
                 .firebaseToken("firebaseToken")
                 .build();
 
@@ -150,6 +153,9 @@ class MyFindRoadServiceImplTest {
 
         fakeMyFindRoadSubPathRepository.save(subPath);
         fakeMyFindRoadPathRepository.save(myFindRoad);
+
+        List<Notification> notificationList = Notification.initNotification(1L);
+        fakeNotificationRepository.saveAll(notificationList);
     }
     @Test
     void getRoutes는_나의_자주_찾는_경로를_찾을_수_있다() throws Exception{

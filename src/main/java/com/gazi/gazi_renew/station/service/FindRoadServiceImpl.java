@@ -19,6 +19,7 @@ import com.gazi.gazi_renew.station.domain.dto.FindRoadRequest;
 import com.gazi.gazi_renew.station.controller.response.FindRoadResponse;
 import com.gazi.gazi_renew.station.service.port.SubwayRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -38,8 +39,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class FindRoadServiceImpl implements FindRoadService {
 
     private final Response response;

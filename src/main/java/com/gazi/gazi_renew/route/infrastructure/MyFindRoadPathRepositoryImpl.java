@@ -78,4 +78,9 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
 
     }
 
+    @Override
+    public int countEnabledNotificationByMemberId(Long memberId) {
+        return myFindRoadPathJpaRepository.countByMemberIdAndNotificationTrue(memberId);
+    }
+
 }

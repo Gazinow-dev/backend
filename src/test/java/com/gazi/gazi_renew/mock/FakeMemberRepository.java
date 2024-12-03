@@ -50,7 +50,6 @@ public class FakeMemberRepository implements MemberRepository {
                     .role(member.getRole())
                     .pushNotificationEnabled(member.getPushNotificationEnabled())
                     .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
-                    .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                     .firebaseToken(member.getFirebaseToken())
                     .build();
             data.add(createMember);
@@ -81,7 +80,6 @@ public class FakeMemberRepository implements MemberRepository {
                 .role(member.getRole())
                 .pushNotificationEnabled(member.getPushNotificationEnabled())
                 .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
-                .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                 .firebaseToken(member.getFirebaseToken()) // 업데이트된 Firebase 토큰
                 .createdAt(member.getCreatedAt())
                 .build();
@@ -102,7 +100,6 @@ public class FakeMemberRepository implements MemberRepository {
                 .role(member.getRole())
                 .pushNotificationEnabled(member.getPushNotificationEnabled())
                 .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
-                .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                 .firebaseToken(member.getFirebaseToken())
                 .createdAt(member.getCreatedAt())
                 .build();
@@ -123,7 +120,6 @@ public class FakeMemberRepository implements MemberRepository {
                 .role(member.getRole())
                 .pushNotificationEnabled(member.getPushNotificationEnabled())
                 .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
-                .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                 .firebaseToken(member.getFirebaseToken())
                 .createdAt(member.getCreatedAt())
                 .build();
@@ -144,7 +140,6 @@ public class FakeMemberRepository implements MemberRepository {
                 .role(member.getRole())
                 .pushNotificationEnabled(member.getPushNotificationEnabled())
                 .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
-                .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                 .firebaseToken(member.getFirebaseToken())
                 .createdAt(member.getCreatedAt())
                 .build();

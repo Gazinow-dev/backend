@@ -36,7 +36,6 @@ class MyFindRoadTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
-                .routeDetailNotificationEnabled(true)
                 .firebaseToken("temp")
                 .build();
 

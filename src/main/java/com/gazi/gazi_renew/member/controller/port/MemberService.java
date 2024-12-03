@@ -54,8 +54,6 @@ public interface MemberService {
 
     Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree);
 
-    Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree);
-
     Member getPushNotificationStatus(String email);
 
     Member getMySavedRouteNotificationStatus(String email);
