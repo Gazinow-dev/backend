@@ -338,12 +338,6 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
     }
-    @Override
-    @Transactional(readOnly = true)
-    public Member getRouteDetailNotificationStatus(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-    }
     /**
      * 소셜로그인시 푸시알림을 위해 토큰 저장할 메서드
      * @param : MemberRequest.FcmTokenRequest fcmTokenRequest
