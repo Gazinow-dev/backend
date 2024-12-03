@@ -47,8 +47,6 @@ public class MemberEntity extends AuditingFields {
 
     private Boolean mySavedRouteNotificationEnabled; // 내가 저장한 경로 알림 여부
 
-    private Boolean routeDetailNotificationEnabled; // 경로 상세 설정 알림 여부
-
     private String firebaseToken;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -65,7 +63,6 @@ public class MemberEntity extends AuditingFields {
         memberEntity.role = member.getRole();
         memberEntity.pushNotificationEnabled = member.getPushNotificationEnabled();
         memberEntity.mySavedRouteNotificationEnabled = member.getMySavedRouteNotificationEnabled();
-        memberEntity.routeDetailNotificationEnabled = member.getRouteDetailNotificationEnabled();
         memberEntity.firebaseToken = member.getFirebaseToken();
         memberEntity.createdAt = member.getCreatedAt();
         return memberEntity;
@@ -81,7 +78,6 @@ public class MemberEntity extends AuditingFields {
                 .role(role)
                 .pushNotificationEnabled(pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .createdAt(createdAt)
                 .build();

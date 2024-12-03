@@ -8,6 +8,7 @@ import lombok.Getter;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -51,5 +52,25 @@ public class Notification {
             throw ErrorCode.throwInvalidTimeRange();
         }
 
+    }
+
+    //초기 알림 저장
+    public static List<Notification> initNotification(Long myFindRoadPathId) {
+        List<Notification> savedTimes = new ArrayList<>();
+        List<String> dayList = Arrays.asList("월", "화", "수", "목", "금");
+
+        for (String day : dayList) {
+            LocalTime fromTime = LocalTime.parse("07:00");
+            LocalTime toTime = LocalTime.parse("09:00");
+
+            Notification notification = Notification.builder()
+                    .dayOfWeek(day)
+                    .fromTime(fromTime)
+                    .toTime(toTime)
+                    .myFindRoadPathId(myFindRoadPathId)
+                    .build();
+            savedTimes.add(notification);
+        }
+        return savedTimes;
     }
 }

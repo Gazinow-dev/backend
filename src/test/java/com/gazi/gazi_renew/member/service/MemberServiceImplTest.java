@@ -79,7 +79,6 @@ class MemberServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(false)
                 .mySavedRouteNotificationEnabled(false)
-                .routeDetailNotificationEnabled(false)
                 .firebaseToken("firebaseToken")
                 .build();
 
@@ -91,7 +90,6 @@ class MemberServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
-                .routeDetailNotificationEnabled(true)
                 .firebaseToken("firebaseToken")
                 .build();
         fakeMemberRepository.save(member1);
@@ -377,7 +375,6 @@ class MemberServiceImplTest {
         Member member = memberServiceImpl.updatePushNotificationStatus(memberAlertAgree);
         //then
         assertThat(member.getMySavedRouteNotificationEnabled()).isTrue();
-        assertThat(member.getRouteDetailNotificationEnabled()).isTrue();
     }
     @Test
     void updateMySavedRouteNotificationStatus는_멤버의_내가_저장한_경로_알림을_활성화할_수_있다() throws Exception{
@@ -402,19 +399,7 @@ class MemberServiceImplTest {
         //when
         Member member = memberServiceImpl.updateMySavedRouteNotificationStatus(memberAlertAgree);
         //then
-        assertThat(member.getRouteDetailNotificationEnabled()).isFalse();
-    }
-    @Test
-    void updateRouteDetailNotificationStatus는_멤버의_경로별_상세_설정_알림을_활성화할_수_있다() throws Exception{
-        //given
-        MemberAlertAgree memberAlertAgree = MemberAlertAgree.builder()
-                .email("mw310@naver.com")
-                .alertAgree(true)
-                .build();
-        //when
-        Member member = memberServiceImpl.updateRouteDetailNotificationStatus(memberAlertAgree);
-        //then
-        assertThat(member.getRouteDetailNotificationEnabled()).isTrue();
+        assertThat(member.getMySavedRouteNotificationEnabled()).isFalse();
     }
     @Test
     void getPushNotificationStatus는_멤버의_푸시_알림을_조회할_수_있다() throws Exception{
@@ -433,15 +418,6 @@ class MemberServiceImplTest {
         Member member = memberServiceImpl.getMySavedRouteNotificationStatus(email);
         //then
         assertThat(member.getMySavedRouteNotificationEnabled()).isFalse();
-    }
-    @Test
-    void getRouteDetailNotificationStatus는_멤버의_경로별_상세_설정_알림을_조회할_수_있다() throws Exception{
-        //given
-        String email = "mw310@naver.com";
-        //when
-        Member member = memberServiceImpl.getRouteDetailNotificationStatus(email);
-        //then
-        assertThat(member.getRouteDetailNotificationEnabled()).isFalse();
     }
     @Test
     void saveFcmTokens는_멤버의_FCM토큰을_저장할_수_있다() throws Exception{

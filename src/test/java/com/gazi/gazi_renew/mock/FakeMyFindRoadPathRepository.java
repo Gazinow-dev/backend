@@ -121,4 +121,11 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
                         myFindRoad.getLastEndStation().equals(lastEndStation) &&
                         myFindRoad.getMemberId().equals(member.getId()));
     }
+    @Override
+    public int countEnabledNotificationByMemberId(Long memberId) {
+        return (int) data.stream()
+                .filter(myFindRoad -> myFindRoad.getMemberId().equals(memberId))
+                .filter(MyFindRoad::getNotification)
+                .count(); // 리스트로 수집하지 않고 직접 카운트
+    }
 }

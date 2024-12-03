@@ -89,7 +89,6 @@ class NotificationServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(false)
                 .mySavedRouteNotificationEnabled(false)
-                .routeDetailNotificationEnabled(false)
                 .firebaseToken("firebaseToken")
                 .build();
 

@@ -21,11 +21,10 @@ public class Member {
     private final Role role;
     private final Boolean pushNotificationEnabled;
     private final Boolean mySavedRouteNotificationEnabled;
-    private final Boolean routeDetailNotificationEnabled;
     private final String firebaseToken;
     private final LocalDateTime createdAt;
     @Builder
-    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean routeDetailNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
+    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -34,7 +33,6 @@ public class Member {
         this.role = role;
         this.pushNotificationEnabled = pushNotificationEnabled;
         this.mySavedRouteNotificationEnabled = mySavedRouteNotificationEnabled;
-        this.routeDetailNotificationEnabled = routeDetailNotificationEnabled;
         this.firebaseToken = firebaseToken;
         this.createdAt = createdAt;
     }
@@ -50,7 +48,6 @@ public class Member {
         return Member.builder()
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
-                .routeDetailNotificationEnabled(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))
@@ -66,7 +63,6 @@ public class Member {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
-                .routeDetailNotificationEnabled(true)
                 .firebaseToken(memberCreate.getFirebaseToken())
                 .build();
     }
@@ -79,7 +75,6 @@ public class Member {
                 .role(role)
                 .pushNotificationEnabled(pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .build();
     }
@@ -93,7 +88,6 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -106,7 +100,6 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -120,7 +113,6 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(alertAgree)
                 .mySavedRouteNotificationEnabled(alertAgree)
-                .routeDetailNotificationEnabled(alertAgree)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -133,20 +125,6 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(alertAgree)
-                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
-                .firebaseToken(this.firebaseToken)
-                .build();
-    }
-    public Member updateRouteDetailNotificationEnabled(boolean alertAgree) {
-        return Member.builder()
-                .id(this.id)
-                .email(this.email)
-                .password(this.password)
-                .nickName(this.nickName)
-                .role(this.role)
-                .pushNotificationEnabled(this.pushNotificationEnabled)
-                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
-                .routeDetailNotificationEnabled(alertAgree)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
