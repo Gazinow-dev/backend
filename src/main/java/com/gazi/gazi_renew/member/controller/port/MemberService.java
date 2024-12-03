@@ -58,7 +58,5 @@ public interface MemberService {
 
     Member getMySavedRouteNotificationStatus(String email);
 
-    Member getRouteDetailNotificationStatus(String email);
-
     Member saveFcmToken(MemberFcmToken memberFcmToken);
 }
