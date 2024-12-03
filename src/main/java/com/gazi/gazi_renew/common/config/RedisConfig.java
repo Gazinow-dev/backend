@@ -19,9 +19,15 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
-    }
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
 
+        // 비밀번호 설정
+        if (redisProperties.getPassword() != null) {
+            lettuceConnectionFactory.setPassword(redisProperties.getPassword());
+        }
+
+        return lettuceConnectionFactory;
+    }
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
