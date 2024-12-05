@@ -56,9 +56,9 @@ public class IssueRestController extends BaseController {
     }
 
 
-    @PostMapping("/update_content")
+    @PatchMapping("")
     public ResponseEntity<Response.Body> updateContent(@RequestBody IssueUpdate issueUpdate){
-        issueService.updateIssueContent(issueUpdate);
-        return response.success(" 내용 수정 성공");
+        issueService.updateIssue(issueUpdate);
+        return response.success(" 이슈 수정 성공");
     }
 }

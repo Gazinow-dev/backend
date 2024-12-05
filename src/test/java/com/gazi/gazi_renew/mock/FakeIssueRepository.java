@@ -76,7 +76,7 @@ public class FakeIssueRepository implements IssueRepository {
     }
 
     @Override
-    public void updateContent(Issue issue) {
+    public void updateIssue(Issue issue) {
         data.removeIf(existingIssue -> existingIssue.getId().equals(issue.getId()));
 
         Issue updatedIssue = Issue.builder()

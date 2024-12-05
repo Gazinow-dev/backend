@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.*;
 
 class MyFindRoadServiceImplTest {
     private MyFindRoadServiceImpl myFindRoadServiceImpl;
-    private NotificationServiceImpl notificationServiceImpl;
     @BeforeEach
     void init() {
         FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
@@ -128,7 +127,7 @@ class MyFindRoadServiceImplTest {
         fakeMyFindRoadSubwayRepository.save(myFindRoadStation2);
 
         MyFindRoad myFindRoad = MyFindRoad.builder()
-                .id(552L)
+                .id(1L)
                 .roadName("민우테스트")
                 .totalTime(6)
                 .firstStartStation("효창공원앞")
@@ -181,7 +180,7 @@ class MyFindRoadServiceImplTest {
     @Test
     void getRouteById를_통해_id값으로_내가_저장한_경로를_찾을_수_있다() throws Exception{
         //given
-        Long id = 552L;
+        Long id = 1L;
         //when
         MyFindRoad myFindRoad = myFindRoadServiceImpl.getRouteById(id);
         //then
@@ -255,6 +254,34 @@ class MyFindRoadServiceImplTest {
         //when
         assertThatThrownBy(() -> myFindRoadServiceImpl.addRoute(myFindRoadCreate)).isInstanceOf(MyFindRoadCustomException.class);
     }
+    @Test
+    void addRoute는_이미_있는_경로의_예외를_터트릴_때_중간_경로가_다_같아야_한다() throws Exception{
+        //given
+        MyFindRoadSubPathCreate subPathCreate = MyFindRoadSubPathCreate.builder()
+                .trafficType(1)
+                .distance(1200)
+                .sectionTime(2)
+                .stationCount(1)
+                .way("삼각지")
+                .door("null")
+                .name("수도권 6호선")
+                .stationCode(6)
+                .stations(Arrays.asList(
+                        MyFindRoadStationCreate.builder().index(0).stationName("삼각지").build(),
+                        MyFindRoadStationCreate.builder().index(1).stationName("녹사평").build()
+                ))
+                .build();
+        MyFindRoadCreate myFindRoadCreate = MyFindRoadCreate.builder()
+                .roadName("경로일치여부테스트")
+                .totalTime(12)
+                .stationTransitCount(1)
+                .firstStartStation("효창공원앞")
+                .lastEndStation("삼각지")
+                .subPaths(Arrays.asList(subPathCreate))
+                .build();
+        //when
+        assertThatThrownBy(() -> myFindRoadServiceImpl.addRoute(myFindRoadCreate)).isInstanceOf(MyFindRoadCustomException.class);
+    }
 
     @Test
     void deleteRoute는_존재하지_않는_경로의_id가_들어올_경우_예외를_터트린다() throws Exception{
@@ -266,13 +293,13 @@ class MyFindRoadServiceImplTest {
     @Test
     void updateRouteNotification는_각각의_경로_푸시_알림_설정을_업데이트할_수_있다() throws Exception{
         //given
-        Long myFindRoadId = 552L;
+        Long myFindRoadId = 1L;
         Boolean enabled = true;
         //when
         myFindRoadServiceImpl.updateRouteNotification(myFindRoadId, enabled);
         MyFindRoad myFindRoad = myFindRoadServiceImpl.getRouteById(myFindRoadId);
         //then
-        assertThat(myFindRoad.getId()).isEqualTo(552L);
+        assertThat(myFindRoad.getId()).isEqualTo(1L);
         assertThat(myFindRoad.getNotification()).isTrue();
     }
 }
