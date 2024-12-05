@@ -62,11 +62,9 @@ class IssueTest {
         //then
         assertThat(issue.getTitle()).isEqualTo("삼각지역 집회");
         assertThat(issue.getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
-//        assertThat(issue.getStationList().get(0).getName()).isEqualTo("삼각지");
-//        assertThat(issue.getStationList().get(1).getName()).isEqualTo("효창공원앞");
     }
     @Test
-    void Issue_내용을_업데이트할_수_있다() throws Exception{
+    void Issue_내용과_제못을_업데이트할_수_있다() throws Exception{
         //given
         Station station1 = Station.builder()
                 .id(1L)
@@ -107,6 +105,7 @@ class IssueTest {
                 .latestNo(2)
                 .build();
         IssueUpdate issueUpdate = IssueUpdate.builder()
+                .title("숙대입구역으로 변경")
                 .content("가는길 지금")
                 .build();
         Issue issue = Issue.from(issueCreate);
@@ -114,10 +113,6 @@ class IssueTest {
         Issue resultIssue = issue.update(issueUpdate);
         //then
         assertThat(resultIssue.getContent()).isEqualTo("가는길 지금");
-        //다른 값은 달라지면 안됨
-        assertThat(issue.getTitle()).isEqualTo("삼각지역 집회");
-//        assertThat(resultIssue.getStationList().get(0).getName()).isEqualTo("삼각지");
-//        assertThat(resultIssue.getStationList().get(1).getName()).isEqualTo("효창공원앞");
-
+        assertThat(resultIssue.getTitle()).isEqualTo("숙대입구역으로 변경");
     }
 }

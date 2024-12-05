@@ -55,8 +55,8 @@ public class IssueRepositoryImpl implements IssueRepository {
     }
 
     @Override
-    public void updateContent(Issue issue) {
-        issueJpaRepository.updateContent(issue.getId(), issue.getContent());
+    public void updateIssue(Issue issue) {
+        issueJpaRepository.updateContentAndTitle(issue.getId(), issue.getTitle(), issue.getContent());
     }
 
 

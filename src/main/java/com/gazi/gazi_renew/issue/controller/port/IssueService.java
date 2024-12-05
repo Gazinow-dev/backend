@@ -26,7 +26,7 @@ public interface IssueService {
     // 이슈 필터조회
     Page<IssueStationDetail> getLineByIssues(String line, Pageable pageable);
 
-    void updateIssueContent(IssueUpdate issueUpdate);
+    void updateIssue(IssueUpdate issueUpdate);
     //인기 이슈 조회
     List<IssueStationDetail> getPopularIssues();
 

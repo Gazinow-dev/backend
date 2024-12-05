@@ -115,11 +115,12 @@ public class FakeMyFindRoadPathRepository implements MyFindRoadPathRepository {
     }
 
     @Override
-    public boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
-        return data.stream().anyMatch(myFindRoad ->
-                myFindRoad.getFirstStartStation().equals(firstStation) &&
-                        myFindRoad.getLastEndStation().equals(lastEndStation) &&
-                        myFindRoad.getMemberId().equals(member.getId()));
+    public List<MyFindRoad> findByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
+        return data.stream()
+                .filter(myFindRoad -> myFindRoad.getFirstStartStation().equals(firstStation))
+                .filter(myFindRoad -> myFindRoad.getLastEndStation().equals(lastEndStation))
+                .filter(myFindRoad -> myFindRoad.getMemberId().equals(member.getId()))
+                .collect(Collectors.toList());
     }
     @Override
     public int countEnabledNotificationByMemberId(Long memberId) {

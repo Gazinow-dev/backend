@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.route.infrastructure.jpa;
 
+import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.infrastructure.MyFindRoadPathEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,6 +27,6 @@ public interface MyFindRoadPathJpaRepository extends JpaRepository<MyFindRoadPat
     @Query("UPDATE MyFindRoadPathEntity m SET m.notification = :notification WHERE m.id = :id")
     void updateNotification(@Param("id") Long id, @Param("notification") boolean notification);
 
-    boolean existsByFirstStartStationAndLastEndStationAndMemberId(String firstStartStation, String lastEndStation, Long memberId);
+    List<MyFindRoadPathEntity> findByFirstStartStationAndLastEndStationAndMemberId(String firstStartStation, String lastEndStation, Long memberId);
     int countByMemberIdAndNotificationTrue(Long memberId);
 }

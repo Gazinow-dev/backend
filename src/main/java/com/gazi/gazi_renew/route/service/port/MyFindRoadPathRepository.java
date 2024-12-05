@@ -24,7 +24,7 @@ public interface MyFindRoadPathRepository {
 
     void updateNotification(MyFindRoad myFindRoad);
 
-    boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member);
+    List<MyFindRoad> findByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member);
 
 
     int countEnabledNotificationByMemberId(Long memberId);
