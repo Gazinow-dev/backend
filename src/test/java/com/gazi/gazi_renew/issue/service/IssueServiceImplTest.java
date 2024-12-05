@@ -324,16 +324,18 @@ class IssueServiceImplTest {
         assertThat(popularIssues.get(1).getIssue().getContent()).isEqualTo("서울역 사고 테스트");
     }
     @Test
-    void updateIssueContent는_Issue_내용을_업데이트할_수_있다() throws Exception{
+    void updateIssue는_Issue_내용과_제목을_업데이트할_수_있다() throws Exception{
         //given
         IssueUpdate issueUpdate = IssueUpdate.builder()
+                .title("updateTest")
                 .id(1L)
                 .content("삼각지에서 효창공원 시위로 변경")
                 .build();
         //when
-        issueServiceImpl.updateIssueContent(issueUpdate);
+        issueServiceImpl.updateIssue(issueUpdate);
         //then
         Optional<Issue> result = fakeIssueRepository.findById(1L);
+        assertThat(result.get().getTitle()).isEqualTo("updateTest");
         assertThat(result.get().getContent()).isEqualTo("삼각지에서 효창공원 시위로 변경");
         assertThat(result.get().getId()).isEqualTo(1L);
     }

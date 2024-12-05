@@ -41,7 +41,7 @@ public class Issue {
     public Issue update(IssueUpdate issueUpdate) {
         return Issue.builder()
                 .id(this.id)
-                .title(this.title)
+                .title(issueUpdate.getTitle())
                 .content(issueUpdate.getContent()) // 변경된 content 반영
                 .startDate(this.startDate)
                 .expireDate(this.expireDate)

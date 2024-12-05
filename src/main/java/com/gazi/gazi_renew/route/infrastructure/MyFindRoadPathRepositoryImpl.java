@@ -73,8 +73,9 @@ public class MyFindRoadPathRepositoryImpl implements MyFindRoadPathRepository {
     }
 
     @Override
-    public boolean existsByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
-        return myFindRoadPathJpaRepository.existsByFirstStartStationAndLastEndStationAndMemberId(firstStation, lastEndStation, member.getId());
+    public List<MyFindRoad> findByFirstStartStationAndLastEndStationAndMember(String firstStation, String lastEndStation, Member member) {
+        return myFindRoadPathJpaRepository.findByFirstStartStationAndLastEndStationAndMemberId(firstStation, lastEndStation, member.getId())
+                .stream().map(MyFindRoadPathEntity::toModel).collect(Collectors.toList());
 
     }
 

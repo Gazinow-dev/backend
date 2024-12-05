@@ -17,7 +17,7 @@ public interface IssueRepository {
 
     Optional<Issue> findById(Long id);
 
-    void updateContent(Issue issue);
+    void updateIssue(Issue issue);
 
     void updateLikeCount(Issue issue);
 

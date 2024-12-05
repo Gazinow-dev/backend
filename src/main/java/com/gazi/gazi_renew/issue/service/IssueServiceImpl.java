@@ -207,12 +207,12 @@ public class IssueServiceImpl implements IssueService {
      */
     @Override
     @Transactional
-    public void updateIssueContent(IssueUpdate issueUpdate){
+    public void updateIssue(IssueUpdate issueUpdate){
         Issue issue = issueRepository.findById(issueUpdate.getId()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
         );
         issue = issue.update(issueUpdate);
-        issueRepository.updateContent(issue);
+        issueRepository.updateIssue(issue);
     }
     public List<Station> getStationList(List<IssueCreate.Station> issueStations) {
         List<Station> stationEntityResponse = new ArrayList<>();

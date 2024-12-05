@@ -82,9 +82,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         if (myFindRoadPathRepository.existsByNameAndMember(myFindRoadCreate.getRoadName(), member)) {
             throw MyFindRoadErrorCode.throwDuplicateRoadName();
         }
-        if (myFindRoadPathRepository.existsByFirstStartStationAndLastEndStationAndMember(myFindRoad.getFirstStartStation(), myFindRoad.getLastEndStation(), member)){
-            throw MyFindRoadErrorCode.throwDuplicateRoadPath();
-        }
+        validateDuplicateRoadPath(myFindRoad, myFindRoadCreate.getSubPaths(), member);
+
         log.info("myFindRoadPath 저장");
         myFindRoad = myFindRoadPathRepository.save(myFindRoad);
 
@@ -186,6 +185,34 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
         return updatedRoadList;
     }
+    private void validateDuplicateRoadPath(MyFindRoad myFindRoad, List<MyFindRoadSubPathCreate> subPaths, Member member) {
+        // 동일한 출발역, 도착역, 회원 정보로 이미 존재하는 경로를 찾음
+        List<MyFindRoad> myFindRoadList = myFindRoadPathRepository
+                .findByFirstStartStationAndLastEndStationAndMember(myFindRoad.getFirstStartStation(), myFindRoad.getLastEndStation(), member);
 
+        if (!myFindRoadList.isEmpty()) {
+            // 각 MyFindRoad에 대해 중복 여부 확인
+            for (MyFindRoad existingRoad : myFindRoadList) {
+                // 기존 경로의 서브패스를 가져옴
+                List<MyFindRoadSubPath> existingSubPaths = myFindRoadSubPathRepository.findByMyFindRoadPathId(existingRoad.getId());
 
+                // 출발역, 도착역, 중간 경로가 모두 동일한 경우 중복 처리
+                boolean isDuplicate = existingSubPaths.size() == subPaths.size() &&
+                        existingSubPaths.stream()
+                                .allMatch(existingSubPath -> subPaths.stream()
+                                        .anyMatch(newSubPath -> areSubPathsEqual(newSubPath, existingSubPath)));
+
+                // 중복되는 경로가 있으면 예외 발생
+                if (isDuplicate) {
+                    throw MyFindRoadErrorCode.throwDuplicateRoadPath();
+                }
+            }
+        }
+    }
+
+    private boolean areSubPathsEqual(MyFindRoadSubPathCreate newSubPath, MyFindRoadSubPath existingSubPath) {
+        // 중간 경로 일치 여부는 ~~행 , O호선으로 판단
+        return newSubPath.getWay().equals(existingSubPath.getWay()) &&
+                newSubPath.getStationCode() == existingSubPath.getStationCode();
+    }
 }

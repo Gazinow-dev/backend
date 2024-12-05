@@ -7,7 +7,9 @@ import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -20,11 +22,13 @@ public class MyFindRoadSubPathRepositoryImpl implements MyFindRoadSubPathReposit
         return result;
 
     }
-
     @Override
     public List<MyFindRoadSubPath> findByMyFindRoadPathId(Long myFindRoadPathId) {
-        return myFindRoadSubPathJpaRepository.findAllByMyFindRoadPathEntityId(myFindRoadPathId).stream()
-                .map(MyFindRoadSubPathEntity::toModel).collect(Collectors.toList());
+        return Optional.ofNullable(myFindRoadSubPathJpaRepository.findAllByMyFindRoadPathEntityId(myFindRoadPathId))
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(MyFindRoadSubPathEntity::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override
