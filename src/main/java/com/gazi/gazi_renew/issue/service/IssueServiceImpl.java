@@ -319,5 +319,14 @@ public class IssueServiceImpl implements IssueService {
         return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
     }
 
+    @Override
+    @Transactional
+    public void deleteIssue(Long issueId) {
+        issueStationRepository.deleteIssueStationByIssueId(issueId);
+        issueLineRepository.deleteIssueLineByIssueId(issueId);
+        issueRepository.deleteIssue(issueId);
+
+    }
+
 
 }

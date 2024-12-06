@@ -43,4 +43,9 @@ public class FakeIssueStationRepository implements IssueStationRepository {
                 .collect(Collectors.toList());
 
     }
+
+    @Override
+    public void deleteIssueStationByIssueId(Long issueId) {
+        data.removeIf(issueStation -> issueStation.getIssue().getId().equals(issueId));
+    }
 }

@@ -60,4 +60,9 @@ public class FakeIssueLineRepository implements IssueLineRepository {
         return data.stream().filter(issueLine -> issueLine.getIssue().getId().equals(issue.getId()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteIssueLineByIssueId(Long issueId) {
+        data.removeIf(issueLine -> issueLine.getIssue().getId().equals(issueId));
+    }
 }
