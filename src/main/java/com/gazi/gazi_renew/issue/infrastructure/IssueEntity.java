@@ -28,7 +28,7 @@ public class IssueEntity extends AuditingFields {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-//    @Lob
+    @Lob
     private String content;
     private String line;
     private String crawlingNo;
