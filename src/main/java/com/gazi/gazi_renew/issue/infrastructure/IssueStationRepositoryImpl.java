@@ -35,4 +35,9 @@ public class IssueStationRepositoryImpl implements IssueStationRepository {
                 .stream().map(IssueStationEntity::toModel).collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteIssueStationByIssueId(Long issueId) {
+        issueStationJpaRepository.deleteByIssueEntityId(issueId);
+    }
+
 }

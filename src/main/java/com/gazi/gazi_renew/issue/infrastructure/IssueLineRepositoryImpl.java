@@ -51,4 +51,9 @@ public class IssueLineRepositoryImpl implements IssueLineRepository {
         return issueLineJpaRepository.findByIssueEntityId(issue.getId())
                 .stream().map(IssueLineEntity::toModel).collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteIssueLineByIssueId(Long issueId) {
+        issueLineJpaRepository.deleteByIssueEntityId(issueId);
+    }
 }

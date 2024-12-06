@@ -54,11 +54,14 @@ public class IssueRestController extends BaseController {
 
         return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);
     }
-
-
     @PatchMapping("")
-    public ResponseEntity<Response.Body> updateContent(@RequestBody IssueUpdate issueUpdate){
+    public ResponseEntity<Response.Body> updateIssue(@RequestBody IssueUpdate issueUpdate){
         issueService.updateIssue(issueUpdate);
         return response.success(" 이슈 수정 성공");
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Response.Body> deleteIssue(@PathVariable Long id){
+        issueService.deleteIssue(id);
+        return response.success(" 이슈 삭제 성공");
     }
 }

@@ -40,4 +40,5 @@ public interface IssueService {
 
     List<Station> findStationsForOtherLines(int startStationCode, int endStationCode);
 
+    void deleteIssue(Long id);
 }

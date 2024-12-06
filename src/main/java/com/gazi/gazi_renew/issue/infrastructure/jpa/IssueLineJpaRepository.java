@@ -13,4 +13,6 @@ public interface IssueLineJpaRepository extends JpaRepository<IssueLineEntity, L
 
     @Query("SELECT i FROM IssueLineEntity i JOIN FETCH i.issueEntity WHERE i.issueEntity.id = :issueEntityId")
     List<IssueLineEntity> findByIssueEntityId(@Param("issueEntityId") Long issueEntityId);
+
+    void deleteByIssueEntityId(Long issueEntityId);
 }

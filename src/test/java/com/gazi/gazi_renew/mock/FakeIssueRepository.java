@@ -114,4 +114,9 @@ public class FakeIssueRepository implements IssueRepository {
     @Override
     public void flush() {
     }
+
+    @Override
+    public void deleteIssue(Long id) {
+        data.removeIf(issue -> issue.getId().equals(id));
+    }
 }
