@@ -19,7 +19,7 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
     List<IssueEntity> findTopIssuesByLikesCount(@Param("likesCount") int likesCount, Pageable pageable);
     @Modifying
     @Query("UPDATE IssueEntity i SET i.content = :content, i.title = :title WHERE i.id = :id")
-    void updateContentAndTitle(@Param("id") Long id, @Param("content") String content, @Param("title") String title);
+    void updateContentAndTitle(@Param("id") Long id, @Param("title") String title, @Param("content") String content);
 
 //    @Query("SELECT i FROM IssueEntity i JOIN FETCH i.lineEntities s WHERE s.id = :lineId")
 //    List<IssueEntity> findByLineId(@Param("lineId") Long lineId);
