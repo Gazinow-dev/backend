@@ -69,4 +69,9 @@ public class IssueRepositoryImpl implements IssueRepository {
     public void flush() {
         issueJpaRepository.flush();
     }
+
+    @Override
+    public void deleteIssue(Long id) {
+        issueJpaRepository.deleteById(id);
+    }
 }

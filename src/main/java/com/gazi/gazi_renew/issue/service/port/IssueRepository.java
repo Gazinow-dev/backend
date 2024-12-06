@@ -22,4 +22,6 @@ public interface IssueRepository {
     void updateLikeCount(Issue issue);
 
     void flush();
+
+    void deleteIssue(Long id);
 }
