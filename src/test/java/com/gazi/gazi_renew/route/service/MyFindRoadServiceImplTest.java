@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.route.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.common.exception.MyFindRoadCustomException;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -40,6 +41,9 @@ class MyFindRoadServiceImplTest {
         FakeIssueRepository fakeIssueRepository = new FakeIssueRepository();
         FakeIssueStationRepository fakeIssueStationRepository = new FakeIssueStationRepository();
 
+        ObjectMapper mapper = new ObjectMapper();
+        FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
+
         this.myFindRoadServiceImpl = MyFindRoadServiceImpl.builder()
                 .memberRepository(fakeMemberRepository)
                 .myFindRoadPathRepository(fakeMyFindRoadPathRepository)
@@ -50,6 +54,7 @@ class MyFindRoadServiceImplTest {
                 .issueRepository(fakeIssueRepository)
                 .securityUtilService(fakeSecurityUtil)
                 .issueStationRepository(fakeIssueStationRepository)
+                .redisUtilService(fakeRedisUtilService)
                 .build();
 
         Member member1 = Member.builder()

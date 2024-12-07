@@ -63,7 +63,7 @@ public class MyFindRoadController extends BaseController {
             )
     })
     @PostMapping("/add_route")
-    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadCreate myFindRoadCreate) {
+    public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadCreate myFindRoadCreate) throws JsonProcessingException {
         Long id = myFindRoadService.addRoute(myFindRoadCreate);
         return response.success(id, "데이터 저장완료", HttpStatus.CREATED);
     }

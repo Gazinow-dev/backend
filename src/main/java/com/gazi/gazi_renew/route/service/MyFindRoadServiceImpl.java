@@ -1,5 +1,7 @@
 package com.gazi.gazi_renew.route.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.common.exception.MyFindRoadErrorCode;
@@ -50,7 +52,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     private final IssueRepository issueRepository;
     private final SecurityUtilService securityUtilService;
     private final IssueStationRepository issueStationRepository;
-
+    private final RedisUtilService redisUtilService;
     @Override
     @Transactional(readOnly = true)
     public  List<MyFindRoad> getRoutes() {
@@ -73,7 +75,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
 
     @Override
-    public Long addRoute(MyFindRoadCreate myFindRoadCreate) {
+    public Long addRoute(MyFindRoadCreate myFindRoadCreate) throws JsonProcessingException {
         log.info("길저장 서비스 로직 진입");
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
@@ -98,7 +100,9 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
             }
         }
         //초기 알림 생성
-        notificationRepository.saveAll(Notification.initNotification(myFindRoad.getId()));
+        List<Notification> notificationList = Notification.initNotification(myFindRoad.getId());
+        notificationRepository.saveAll(notificationList);
+        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
 
         return myFindRoad.getId();
         }
