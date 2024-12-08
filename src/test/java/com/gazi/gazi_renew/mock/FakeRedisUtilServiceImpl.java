@@ -38,7 +38,8 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
         keyValueStore.put(token, "logout");
     }
 
-    public void saveNotificationTimes(List<Notification> notificationList, MyFindRoad myFindRoad) throws JsonProcessingException {
+    @Override
+    public void saveNotificationTimes(List<Notification> notificationList, Long myFindRoadPathId) throws JsonProcessingException {
         List<Map<String, Object>> notificationJsonList = new ArrayList<>();
         for (Notification notification : notificationList) {
             Map<String, Object> notificationData = new HashMap<>();
@@ -48,7 +49,7 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
             notificationJsonList.add(notificationData);
         }
 
-        String fieldName = myFindRoad.getMemberId().toString();
+        String fieldName = myFindRoadPathId.toString();
         String notificationJsonArray = convertListToJson(notificationJsonList);
 
         hashStore.computeIfAbsent("user_notifications", k -> new ConcurrentHashMap<>())
@@ -70,6 +71,11 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
 
         hashStore.computeIfAbsent(hashKey, k -> new ConcurrentHashMap<>())
                 .put(issueKey, issueValueAsString);
+    }
+
+    @Override
+    public Map<String, List<Map<String, Object>>> getAllUserNotifications() throws JsonProcessingException {
+        return null;
     }
 
 }

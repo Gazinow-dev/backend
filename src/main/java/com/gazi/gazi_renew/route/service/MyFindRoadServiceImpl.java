@@ -102,7 +102,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         //초기 알림 생성
         List<Notification> notificationList = Notification.initNotification(myFindRoad.getId());
         notificationRepository.saveAll(notificationList);
-        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+        redisUtilService.saveNotificationTimes(notificationList, myFindRoad.getId());
 
         return myFindRoad.getId();
         }

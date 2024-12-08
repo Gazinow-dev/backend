@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.controller.port;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.common.controller.response.Response.Body;
@@ -50,9 +51,9 @@ public interface MemberService {
 
     boolean checkNickName(String nickName);
 
-    Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgreee);
+    Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgreee) throws JsonProcessingException;
 
-    Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree);
+    Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree) throws JsonProcessingException;
 
     Member getPushNotificationStatus(String email);
 

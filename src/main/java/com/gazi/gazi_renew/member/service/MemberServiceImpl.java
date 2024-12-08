@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.member.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.config.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
@@ -286,7 +287,7 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgree) {
+    public Member updatePushNotificationStatus(MemberAlertAgree memberAlertAgree) throws JsonProcessingException {
         Member member = memberRepository.findByEmail(memberAlertAgree.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
@@ -310,7 +311,7 @@ public class MemberServiceImpl implements MemberService {
      * @return Response.Body
      */
     @Override
-    public Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree) {
+    public Member updateMySavedRouteNotificationStatus(MemberAlertAgree memberAlertAgree) throws JsonProcessingException {
         Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         boolean alertAgree = memberAlertAgree.isAlertAgree();
 
@@ -449,11 +450,13 @@ public class MemberServiceImpl implements MemberService {
         }
         return keyValue;
     }
-    private void initializeRushHourNotificationSettings(Member member) {
+    private void initializeRushHourNotificationSettings(Member member) throws JsonProcessingException {
         List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(member.getId());
         for (MyFindRoad myFindRoad : myFindRoadList) {
             List<Notification> notificationList = Notification.initNotification(myFindRoad.getId());
+
             notificationRepository.saveAll(notificationList);
+            redisUtilService.saveNotificationTimes(notificationList, myFindRoad.getId());
 
             myFindRoad = myFindRoad.updateNotification(true);
             myFindRoadPathRepository.updateNotification(myFindRoad);
@@ -468,6 +471,7 @@ public class MemberServiceImpl implements MemberService {
             myFindRoad = myFindRoad.updateNotification(false);
 
             myFindRoadPathRepository.updateNotification(myFindRoad);
+            redisUtilService.deleteNotification(myFindRoad.getId().toString());
         }
     }
 
