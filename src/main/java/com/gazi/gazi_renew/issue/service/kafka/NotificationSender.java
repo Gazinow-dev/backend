@@ -1,0 +1,120 @@
+package com.gazi.gazi_renew.issue.service.kafka;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.common.controller.port.KafkaSender;
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
+import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.enums.KoreanDayOfWeek;
+import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
+import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
+import com.gazi.gazi_renew.station.domain.Line;
+import com.gazi.gazi_renew.station.domain.Station;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Builder
+@Component
+@RequiredArgsConstructor
+public class NotificationSender implements KafkaSender {
+    private final KafkaTemplate<String, NotificationCreate> kafkaTemplate;
+    private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
+    private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final RedisUtilService redisUtilService;
+
+    public void sendNotification(Issue issue, List<Line> lineList, List<Station> stationList) throws JsonProcessingException {
+        // 현재 사용자 정보 조회
+        Map<String, List<Map<String, Object>>> allUserNotifications = redisUtilService.getAllUserNotifications();
+        for (String myFindRoadPathId : allUserNotifications.keySet()) {
+            // 사용자의 알림 조건 조회
+            List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(Long.parseLong(myFindRoadPathId));
+            List<Map<String, Object>> notificationsByMyFindRoadPathId = allUserNotifications.get(myFindRoadPathId);
+
+            // 알림 조건에 따른 필터링
+            if (matchesRoute(myFindRoadSubPathList, lineList, stationList) && matchesNotificationConditions(notificationsByMyFindRoadPathId, issue)) {
+                // 알림 생성
+                NotificationCreate notificationCreate = NotificationCreate.builder()
+                        .myRoadId(Long.parseLong(myFindRoadPathId))
+                        .issueId(issue.getId())
+                        .build();
+                // Kafka로 알림 전송
+                kafkaTemplate.send("notification", notificationCreate);
+                log.info("Kafka 토픽 'notification'에 알림 전송 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
+            }
+        }
+
+    }
+    public boolean matchesRoute(List<MyFindRoadSubPath> myFindRoadSubPathList, List<Line> lineList, List<Station> stationList) {
+        HashSet<String> myFindRoadStationList = new HashSet<>();
+        HashSet<String> myFindRoadLineList = new HashSet<>();
+
+        List<String> lineNameList = lineList.stream()
+                .map(Line::getLineName)
+                .collect(Collectors.toList());
+        List<String> stationNameList = stationList.stream()
+                .map(Station::getName)
+                .collect(Collectors.toList());
+
+        for (MyFindRoadSubPath subPath : myFindRoadSubPathList) {
+            myFindRoadLineList.add(subPath.getName());
+            List<MyFindRoadStation> stations = myFindRoadSubwayRepository.findAllByMyFindRoadSubPathId(subPath.getId());
+            for (MyFindRoadStation station : stations) {
+                myFindRoadStationList.add(station.getStationName());
+            }
+        }
+        // 내 경로와 이슈 호선이 겹치는지 확인
+        if (Collections.disjoint(myFindRoadLineList, lineNameList)) {
+            return false;
+        }
+        // 내 경로와 이슈 지하철역이 겹치는지 확인
+        if (Collections.disjoint(myFindRoadStationList, stationNameList)) {
+            return false;
+        }
+        // 둘 다 겹치면 true 반환
+        return true;
+    }
+    private boolean matchesNotificationConditions(List<Map<String, Object>> notificationsByMyFindRoadPathId ,Issue issue) throws JsonProcessingException {
+        // 현재 시간과 요일 가져오기
+        LocalDateTime now = LocalDateTime.now();
+        DayOfWeek currentDay = now.getDayOfWeek();
+        String currentDayInKorean = KoreanDayOfWeek.toKorean(currentDay);
+        if (!issue.getStartDate().toLocalTime().isAfter(now.toLocalTime()) &&
+                !issue.getExpireDate().toLocalTime().isBefore(now.toLocalTime())) {
+            for (Map<String, Object> notification : notificationsByMyFindRoadPathId) {
+                // 알림 조건 추출
+                String day = (String) notification.get("day");// 요일 조건 리스트
+                LocalTime fromTime = LocalTime.parse((String) notification.get("from_time")); // 알림 시작 시간
+                LocalTime toTime = LocalTime.parse((String) notification.get("to_time")); // 알림 종료 시간
+
+                // 현재 요일 조건 확인
+                if (day.equals(currentDayInKorean)) {
+                    // 알림 시간 조건이 이슈 기간에 포함되는지 확인
+                    boolean isFromTimeValid = !fromTime.isAfter(now.toLocalTime());
+                    boolean isToTimeValid = !toTime.isBefore(now.toLocalTime());
+
+                    if (isFromTimeValid && isToTimeValid) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+}

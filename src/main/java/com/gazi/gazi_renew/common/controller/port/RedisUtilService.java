@@ -6,6 +6,7 @@ import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 
 import java.util.List;
+import java.util.Map;
 
 public interface RedisUtilService {
     String getData(String key);
@@ -18,9 +19,11 @@ public interface RedisUtilService {
 
     void addToBlacklist(String token, long expiration);
 
-    void saveNotificationTimes(List<Notification> notificationList, MyFindRoad myFindRoad) throws JsonProcessingException;
+    void saveNotificationTimes(List<Notification> notificationList, Long myFindRoadPathId) throws JsonProcessingException;
 
     void deleteNotification(String fieldName);
 
     void addIssueToRedis(String key, String hashKey, IssueRedisDto issueRedisDto) throws JsonProcessingException;
+
+    Map<String, List<Map<String, Object>>> getAllUserNotifications() throws JsonProcessingException;
 }

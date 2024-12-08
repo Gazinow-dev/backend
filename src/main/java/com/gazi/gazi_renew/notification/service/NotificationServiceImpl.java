@@ -59,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
             myFindRoad = myFindRoad.updateNotification(true);
             myFindRoadPathRepository.updateNotification(myFindRoad);
 
-            redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+            redisUtilService.saveNotificationTimes(notificationList, myFindRoad.getId());
         } catch (DataIntegrityViolationException e) {
             throw ErrorCode.throwDuplicateNotificationForDay();
         }
@@ -77,7 +77,7 @@ public class NotificationServiceImpl implements NotificationService {
         );
         notificationRepository.deleteByMyFindRoad(myFindRoad);
 
-        String fieldName = myFindRoad.getMemberId().toString();
+        String fieldName = myFindRoad.getId().toString();
 
         // redis에 데이터도 삭제
         redisUtilService.deleteNotification(fieldName);
@@ -94,10 +94,10 @@ public class NotificationServiceImpl implements NotificationService {
         // 알림 다시 저장
         notificationList = notificationRepository.saveAll(notificationList);
 
-        String fieldName = myFindRoad.getMemberId().toString();
+        String fieldName = myFindRoad.getId().toString();
         // Redis의 기존 값을 삭제
         redisUtilService.deleteNotification(fieldName);
-        redisUtilService.saveNotificationTimes(notificationList, myFindRoad);
+        redisUtilService.saveNotificationTimes(notificationList, myFindRoad.getId());
         return notificationList;
     }
 

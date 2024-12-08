@@ -10,6 +10,7 @@ import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.issue.service.kafka.NotificationSender;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
@@ -52,9 +53,10 @@ class IssueServiceImplTest {
         fakeIssueStationRepository = new FakeIssueStationRepository();
         fakeIssueLineRepository = new FakeIssueLineRepository();
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
+        FakeKafkaSender fakeKafkaSender = new FakeKafkaSender();
 
         this.issueServiceImpl = new IssueServiceImpl(fakeIssueRepository, fakeLikeRepository, fakeSubwayRepository, fakeMemberRepository
-                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository);
+                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeKafkaSender);
 
         Line line = Line.builder()
                 .id(1L)
