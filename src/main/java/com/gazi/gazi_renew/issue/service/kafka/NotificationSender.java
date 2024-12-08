@@ -77,12 +77,15 @@ public class NotificationSender implements KafkaSender {
                 myFindRoadStationList.add(station.getStationName());
             }
         }
+        log.info("내 경로의 호선 리스트: {}, 이슈의 호선 리스트: {}", myFindRoadLineList, lineNameList);
         // 내 경로와 이슈 호선이 겹치는지 확인
         if (Collections.disjoint(myFindRoadLineList, lineNameList)) {
+            log.warn("내 경로와 이슈의 호선이 겹치지 않습니다.");
             return false;
         }
         // 내 경로와 이슈 지하철역이 겹치는지 확인
         if (Collections.disjoint(myFindRoadStationList, stationNameList)) {
+            log.warn("내 경로와 이슈의 지하철역이 겹치지 않습니다.");
             return false;
         }
         // 둘 다 겹치면 true 반환
@@ -93,6 +96,7 @@ public class NotificationSender implements KafkaSender {
         LocalDateTime now = LocalDateTime.now();
         DayOfWeek currentDay = now.getDayOfWeek();
         String currentDayInKorean = KoreanDayOfWeek.toKorean(currentDay);
+        log.info("현재 요일: {}, 현재 시간: {}", currentDayInKorean, now.toLocalTime());
         if (!issue.getStartDate().toLocalTime().isAfter(now.toLocalTime()) &&
                 !issue.getExpireDate().toLocalTime().isBefore(now.toLocalTime())) {
             for (Map<String, Object> notification : notificationsByMyFindRoadPathId) {
@@ -100,12 +104,18 @@ public class NotificationSender implements KafkaSender {
                 String day = (String) notification.get("day");// 요일 조건 리스트
                 LocalTime fromTime = LocalTime.parse((String) notification.get("from_time")); // 알림 시작 시간
                 LocalTime toTime = LocalTime.parse((String) notification.get("to_time")); // 알림 종료 시간
-
+                log.info("알림 조건 - 요일: {}, 시작 시간: {}, 종료 시간: {}", day, fromTime, toTime);
                 // 현재 요일 조건 확인
                 if (day.equals(currentDayInKorean)) {
                     // 알림 시간 조건이 이슈 기간에 포함되는지 확인
                     boolean isFromTimeValid = !fromTime.isAfter(now.toLocalTime());
                     boolean isToTimeValid = !toTime.isBefore(now.toLocalTime());
+                    if (!isFromTimeValid) {
+                        log.warn("현재 시간이 알림 시작 시간보다 이전입니다.");
+                    }
+                    if (!isToTimeValid) {
+                        log.warn("현재 시간이 알림 종료 시간보다 이후입니다.");
+                    }
 
                     if (isFromTimeValid && isToTimeValid) {
                         return true;
