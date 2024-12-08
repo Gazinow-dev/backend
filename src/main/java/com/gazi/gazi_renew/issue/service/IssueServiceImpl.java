@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.common.controller.port.KafkaSender;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
@@ -9,6 +10,7 @@ import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
+import com.gazi.gazi_renew.issue.service.kafka.NotificationSender;
 import com.gazi.gazi_renew.issue.service.port.IssueLineRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
@@ -47,6 +49,7 @@ public class IssueServiceImpl implements IssueService {
     private final SecurityUtilService securityUtilService;
     private final IssueLineRepository issueLineRepository;
     private final IssueStationRepository issueStationRepository;
+    private final KafkaSender kafkaSender;
 
     @Value("${issue.code}")
     private String secretCode;
@@ -88,7 +91,7 @@ public class IssueServiceImpl implements IssueService {
         }
         // Redis에 이슈 추가
         addIssueToRedis(issue);
-
+        kafkaSender.sendNotification(issue, lineList, stationList);
         return true;
     }
     /**
