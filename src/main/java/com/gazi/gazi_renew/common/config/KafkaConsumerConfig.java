@@ -23,7 +23,7 @@ import java.util.Map;
 public class KafkaConsumerConfig {
     @Value("${kafka.url}")
     private String kafkaServerUrl;
-    @Bean(name = "notificationListenerContainerFactory")
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, NotificationCreate> notificationListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, NotificationCreate> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(notificationConsumerFactory());
@@ -45,4 +45,3 @@ public class KafkaConsumerConfig {
     }
 
 }
-
