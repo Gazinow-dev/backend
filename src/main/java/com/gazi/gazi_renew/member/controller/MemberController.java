@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.member.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
@@ -185,7 +186,7 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "200", description = "푸시 알림 수신 설정이 저장되었습니다."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
-    public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) {
+    public ResponseEntity<Body> updatePushNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) throws JsonProcessingException {
         memberService.updatePushNotificationStatus(memberAlertAgree);
         return response.success("푸시 알림 수신 설정이 저장되었습니다.");
     }
@@ -203,7 +204,7 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "200", description = "내가 저장한 경로 알림 수신 설정이 저장되었습니다."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
-    public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) {
+    public ResponseEntity<Body> updateMySavedRouteNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) throws JsonProcessingException {
         memberService.updateMySavedRouteNotificationStatus(memberAlertAgree);
         return response.success("내가 저장한 경로 알림 수신 설정이 저장되었습니다.");
     }
