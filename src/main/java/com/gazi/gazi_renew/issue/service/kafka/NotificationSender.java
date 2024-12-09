@@ -97,8 +97,7 @@ public class NotificationSender implements KafkaSender {
         DayOfWeek currentDay = now.getDayOfWeek();
         String currentDayInKorean = KoreanDayOfWeek.toKorean(currentDay);
         log.info("현재 요일: {}, 현재 시간: {}", currentDayInKorean, now.toLocalTime());
-        if (!issue.getStartDate().toLocalTime().isAfter(now.toLocalTime()) &&
-                !issue.getExpireDate().toLocalTime().isBefore(now.toLocalTime())) {
+        if (!issue.getStartDate().isAfter(now) && !issue.getExpireDate().isBefore(now)) {
             for (Map<String, Object> notification : notificationsByMyFindRoadPathId) {
                 // 알림 조건 추출
                 String day = (String) notification.get("day");// 요일 조건 리스트
