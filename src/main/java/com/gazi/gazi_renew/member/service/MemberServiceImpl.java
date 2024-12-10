@@ -8,10 +8,12 @@ import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.member.domain.dto.*;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
+import com.gazi.gazi_renew.member.service.port.RecentSearchRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
+import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.mail.Message;
@@ -54,7 +56,8 @@ public class MemberServiceImpl implements MemberService {
     private final RedisUtilService redisUtilService;
     private final SecurityUtilService securityUtilService;
     private final NotificationRepository notificationRepository;
-
+    private final RecentSearchRepository recentSearchRepository;
+    private final MyFindRoadService myFindRoadService;
     @Override
     public Member signUp(@Valid MemberCreate memberCreate, Errors errors) {
         Member member = Member.from(memberCreate, passwordEncoder);
@@ -233,7 +236,13 @@ public class MemberServiceImpl implements MemberService {
         String email = securityUtilService.getCurrentUserEmail();
         Member member = memberRepository.getReferenceByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
-        memberRepository.delete(member);
+        recentSearchRepository.deleteByMemberId(member.getId());
+
+        List<MyFindRoad> myFindRoadList = myFindRoadService.getRoutes();
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            myFindRoadService.deleteRoute(myFindRoad.getId());
+            redisUtilService.deleteNotification(myFindRoad.getId().toString());
+        }
         // Redis 에서 해당 Member email 로 저장된 Access Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
         if (redisUtilService.getData("AT:" + email) != null) {
             // Refresh Token 삭제
@@ -244,6 +253,7 @@ public class MemberServiceImpl implements MemberService {
             // Refresh Token 삭제
             redisUtilService.deleteToken("RT:" + email);
         }
+        memberRepository.delete(member);
         return member;
     }
 
@@ -467,7 +477,7 @@ public class MemberServiceImpl implements MemberService {
         // 경로 리스트에서 MyPathId를 추출하여 notificationService에 전달
         for (MyFindRoad myFindRoad : myFindRoadList) {
             // MyPathId를 넘겨서 삭제 메서드 호출
-            notificationRepository.deleteByMyFindRoad(myFindRoad);
+            notificationRepository.deleteByMyFindRoadId(myFindRoad.getId());
             myFindRoad = myFindRoad.updateNotification(false);
 
             myFindRoadPathRepository.updateNotification(myFindRoad);

@@ -8,6 +8,7 @@ import com.gazi.gazi_renew.member.domain.dto.*;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
 import com.gazi.gazi_renew.notification.domain.Notification;
+import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
@@ -42,6 +43,8 @@ class MemberServiceImplTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
+    @Mock
+    private MyFindRoadService myFindRoadService;
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
@@ -69,6 +72,7 @@ class MemberServiceImplTest {
                 .redisUtilService(fakeRedisUtilService)
                 .notificationRepository(fakeNotificationRepository)
                 .securityUtilService(fakeSecurityUtil)
+                .myFindRoadService(myFindRoadService)
                 .build();
 
         Member member1 = Member.builder()
