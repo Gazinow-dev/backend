@@ -24,17 +24,55 @@ class NotificationSenderTest {
     void init() {
         FakeMyFindRoadSubPathRepository fakeMyFindRoadSubPathRepository = new FakeMyFindRoadSubPathRepository();
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(new ObjectMapper());
+        FakeMyFindRoadSubwayRepository fakeMyFindRoadSubwayRepository = new FakeMyFindRoadSubwayRepository();
 
         this.notificationSender = NotificationSender.builder()
                 .myFindRoadSubPathRepository(fakeMyFindRoadSubPathRepository)
+                .myFindRoadSubwayRepository(fakeMyFindRoadSubwayRepository)
                 .redisUtilService(fakeRedisUtilService)
                 .build();
+
+        MyFindRoadSubPath subPath = MyFindRoadSubPath.builder()
+                .id(1L)
+                .trafficType(1)
+                .distance(1200)
+                .sectionTime(2)
+                .stationCount(1)
+                .way("삼각지")
+                .door("null")
+                .name("수도권 6호선")
+                .stationCode(6)
+                .stations(Arrays.asList(
+                        MyFindRoadStation.builder().index(0).stationName("효창공원앞").build(),
+                        MyFindRoadStation.builder().index(1).stationName("삼각지").build()
+                ))
+                .build();
+        fakeMyFindRoadSubPathRepository.save(subPath);
+
+
+        MyFindRoadStation myFindRoadStation1 = MyFindRoadStation.builder()
+                .id(1L)
+                .index(0)
+                .stationName("효창공원앞")
+                .myFindRoadSubPathId(1L)
+                .build();
+        MyFindRoadStation myFindRoadStation2 = MyFindRoadStation.builder()
+                .id(2L)
+                .index(1)
+                .stationName("삼각지")
+                .myFindRoadSubPathId(1L)
+                .build();
+
+        fakeMyFindRoadSubwayRepository.save(myFindRoadStation1);
+        fakeMyFindRoadSubwayRepository.save(myFindRoadStation2);
+
     }
 
     @Test
     void matchesRoute는_내_경로의_호선과_이슈의_연관된_호선이_겹칠때만_true를_반환한다() throws Exception{
         //given
         MyFindRoadSubPath subPath = MyFindRoadSubPath.builder()
+                .id(1L)
                 .trafficType(1)
                 .distance(1200)
                 .sectionTime(2)
@@ -155,6 +193,7 @@ class NotificationSenderTest {
     void matchesRoute는_내_경로의_지하철역과_이슈의_연관된_지하철역이_하나라도_겹치면_true를_반환한다() throws Exception{
         //given
         MyFindRoadSubPath subPath = MyFindRoadSubPath.builder()
+                .id(1L)
                 .trafficType(1)
                 .distance(1200)
                 .sectionTime(2)

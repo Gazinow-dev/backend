@@ -39,6 +39,11 @@ public class RecentSearchRepositoryImpl implements RecentSearchRepository {
     }
 
     @Override
+    public void deleteByMemberId(Long memberId) {
+        recentSearchJpaRepository.deleteByMemberId(memberId);
+    }
+
+    @Override
     public RecentSearch save(RecentSearch recentSearch) {
         return recentSearchJpaRepository.save(RecentSearchEntity.from(recentSearch)).toModel();
     }

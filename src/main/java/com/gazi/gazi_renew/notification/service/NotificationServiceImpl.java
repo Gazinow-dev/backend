@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
-import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
@@ -75,7 +74,7 @@ public class NotificationServiceImpl implements NotificationService {
         MyFindRoad myFindRoad = myFindRoadPathRepository.findById(myPathId).orElseThrow(
                 () -> new EntityNotFoundException("해당 경로가 존재하지 않습니다.")
         );
-        notificationRepository.deleteByMyFindRoad(myFindRoad);
+        notificationRepository.deleteByMyFindRoadId(myFindRoad.getId());
 
         String fieldName = myFindRoad.getId().toString();
 

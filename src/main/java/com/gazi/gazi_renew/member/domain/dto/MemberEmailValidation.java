@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.member.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
@@ -12,6 +13,7 @@ public class MemberEmailValidation {
     // 7글자 수정 영어 소문자, 대문자,번호, 한글(ㄱ,ㄴ,ㄷ 같은형식 입력불가능)
     private final String email;
     @Builder
+    @JsonCreator
     public MemberEmailValidation(String email) {
         this.email = email;
     }

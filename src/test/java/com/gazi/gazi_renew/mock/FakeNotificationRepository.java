@@ -21,8 +21,8 @@ public class FakeNotificationRepository implements NotificationRepository {
     }
 
     @Override
-    public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        data.removeIf(notification -> notification.getMyFindRoadPathId().equals(myFindRoad.getId()));
+    public void deleteByMyFindRoadId(Long myFindRoadId) {
+        data.removeIf(notification -> notification.getMyFindRoadPathId().equals(myFindRoadId));
     }
 
     @Override
