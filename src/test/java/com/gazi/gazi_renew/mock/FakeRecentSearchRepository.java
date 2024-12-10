@@ -46,6 +46,11 @@ public class FakeRecentSearchRepository implements RecentSearchRepository {
     }
 
     @Override
+    public void deleteByMemberId(Long memberId) {
+        data.removeIf(recentSearch -> recentSearch.getMemberId().equals(memberId));
+    }
+
+    @Override
     public RecentSearch save(RecentSearch recentSearch) {
         if (recentSearch.getId() == null) {
             recentSearch = RecentSearch.builder()

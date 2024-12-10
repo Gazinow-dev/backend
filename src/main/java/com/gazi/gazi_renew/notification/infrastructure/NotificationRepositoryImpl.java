@@ -21,8 +21,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .map(NotificationEntity::toModel).collect(Collectors.toList());
     }
 
-    public void deleteByMyFindRoad(MyFindRoad myFindRoad) {
-        notificationJpaRepository.deleteByMyFindRoadPathId(myFindRoad.getId());
+    public void deleteByMyFindRoadId(Long myFindRoadId) {
+        notificationJpaRepository.deleteByMyFindRoadPathId(myFindRoadId);
         notificationJpaRepository.flush();
     }
 

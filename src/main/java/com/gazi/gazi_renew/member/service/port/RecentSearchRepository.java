@@ -17,6 +17,7 @@ public interface RecentSearchRepository {
     Optional<RecentSearch> findByIdAndMember(Long recentSearchID, Long memberId);
 
     void delete(RecentSearch recentSearch);
+    void deleteByMemberId(Long memberId);
 
     RecentSearch save(RecentSearch recentSearch);
 

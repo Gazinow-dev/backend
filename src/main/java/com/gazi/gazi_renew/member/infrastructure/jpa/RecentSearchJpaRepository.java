@@ -20,4 +20,6 @@ public interface RecentSearchJpaRepository extends JpaRepository<RecentSearchEnt
     @Modifying
     @Query("UPDATE RecentSearchEntity r SET r.modifiedAt = :modifiedAt WHERE r.id = :id")
     void updateModifiedAt(@Param("id") Long id, @Param("modifiedAt") LocalDateTime modifiedAt);
+
+    void deleteByMemberId(Long memberId);
 }

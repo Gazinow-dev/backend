@@ -109,6 +109,7 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Override
     public void deleteRoute(Long id) {
         if (myFindRoadPathRepository.existsById(id)) {
+            notificationRepository.deleteByMyFindRoadId(id);
             // 자식 엔티티(MyFindRoadSubPath) 조회
             List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(id);
             for (MyFindRoadSubPath myFindRoadSubPath : myFindRoadSubPathList) {
