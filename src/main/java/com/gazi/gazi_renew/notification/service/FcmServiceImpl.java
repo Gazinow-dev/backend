@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class FcmServiceImpl implements FcmService {
     private final IssueRepository issueRepository;
@@ -71,7 +72,6 @@ public class FcmServiceImpl implements FcmService {
     private String API_URL;
 
     @Override
-    @Transactional
     public List<FcmMessage> sendMessageTo(NotificationCreate notificationCreate) throws IOException {
         // FCM 메시지를 리스트로 받음 (각 호선에 대해 개별 메시지 생성)
         List<FcmMessage> messages = makeFcmDto(notificationCreate);
