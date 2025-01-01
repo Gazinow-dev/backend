@@ -2,7 +2,10 @@ package com.gazi.gazi_renew.issue.domain.enums;
 
 import java.time.DayOfWeek;
 
-public enum KoreanDayOfWeek {
+public enum
+
+
+KoreanDayOfWeek {
     MONDAY("월"),
     TUESDAY("화"),
     WEDNESDAY("수"),
