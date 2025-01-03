@@ -1,14 +1,8 @@
 package com.gazi.gazi_renew.station.infrastructure;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.infrastructure.IssueEntity;
 import com.gazi.gazi_renew.station.domain.Station;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

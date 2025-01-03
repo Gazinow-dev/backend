@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.infrastructure.entity.IssueEntity;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import lombok.RequiredArgsConstructor;

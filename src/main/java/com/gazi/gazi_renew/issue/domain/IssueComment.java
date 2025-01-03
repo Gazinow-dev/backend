@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.issue.domain;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
+import com.gazi.gazi_renew.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -36,12 +37,13 @@ public class IssueComment {
                 .createdAt(clockHolder.now())
                 .build();
     }
-    public static IssueComment from(IssueCommentCreate issueCommentCreate, Long memberId, String createdBy, ClockHolder clockHolder) {
+
+    public static IssueComment from(IssueCommentCreate issueCommentCreate, Member member, ClockHolder clockHolder) {
         return IssueComment.builder()
                 .issueId(issueCommentCreate.getIssueId())
-                .memberId(memberId)
+                .memberId(member.getId())
                 .issueCommentContent(issueCommentCreate.getIssueCommentContent())
-                .createdBy(createdBy)
+                .createdBy(member.getNickName())
                 .createdAt(clockHolder.now())
                 .build();
     }

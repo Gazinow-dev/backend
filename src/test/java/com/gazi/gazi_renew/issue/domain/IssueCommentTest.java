@@ -2,6 +2,8 @@ package com.gazi.gazi_renew.issue.domain;
 
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
+import com.gazi.gazi_renew.member.domain.Member;
+import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.TestClockHolder;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -29,9 +31,19 @@ class IssueCommentTest {
                 .issueId(1L)
                 .issueCommentContent("이슈 댓글 테스트")
                 .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
         LocalDateTime newTime = LocalDateTime.now();
         //when
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, 1L, "민우", new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
         //then
         assertThat(issueComment.getIssueCommentContent()).isEqualTo("이슈 댓글 테스트");
         assertThat(issueComment.getCreatedAt()).isEqualTo(newTime);
@@ -43,8 +55,18 @@ class IssueCommentTest {
                 .issueId(1L)
                 .issueCommentContent("이슈 댓글 테스트")
                 .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
         LocalDateTime newTime = LocalDateTime.now();
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, 1L, "민우", new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
 
         LocalDateTime updatedTime = LocalDateTime.now();
         IssueCommentUpdate issueCommentUpdate = IssueCommentUpdate.builder()
