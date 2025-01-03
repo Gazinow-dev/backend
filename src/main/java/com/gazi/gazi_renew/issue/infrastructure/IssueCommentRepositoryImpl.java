@@ -25,8 +25,8 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
                 .map(IssueCommentEntity::toModel).collect(Collectors.toList());
     }
     @Override
-    public IssueComment updateIssueComment(IssueComment issueComment) {
-        return issueCommentJpaRepository.updateIssueCommentEntityContent(issueComment.getIssueCommentId(), issueComment.getIssueCommentContent()).toModel();
+    public void updateIssueComment(IssueComment issueComment) {
+        issueCommentJpaRepository.updateIssueCommentEntityContent(issueComment.getIssueCommentId(), issueComment.getIssueCommentContent());
     }
     @Override
     public void deleteComment(Long issueCommentId) {

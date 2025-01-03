@@ -10,7 +10,7 @@ public interface IssueCommentRepository {
 
     List<IssueComment> getIssueComments(Long memberId);
 
-    IssueComment updateIssueComment(IssueComment issueComment);
+    void updateIssueComment(IssueComment issueComment);
 
     void deleteComment(Long issueCommentId);
 

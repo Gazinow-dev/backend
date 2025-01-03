@@ -40,7 +40,7 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
     }
 
     @Override
-    public IssueComment updateIssueComment(IssueComment issueComment) {
+    public void updateIssueComment(IssueComment issueComment) {
         data.removeIf(existingIssueComment -> Objects.equals(existingIssueComment.getIssueCommentId(), issueComment.getIssueCommentId()));
 
         IssueComment result = IssueComment.builder()
@@ -53,7 +53,6 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
                 .build();
 
         data.add(result);
-        return result;
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.gazi.gazi_renew.issue.service;
 
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueCommentDelete;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
@@ -10,8 +9,6 @@ import com.gazi.gazi_renew.mock.FakeIssueCommentRepository;
 import com.gazi.gazi_renew.mock.FakeMemberRepository;
 import com.gazi.gazi_renew.mock.FakeSecurityUtil;
 import com.gazi.gazi_renew.mock.TestClockHolder;
-import lombok.RequiredArgsConstructor;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+
 class IssueCommentServiceImplTest {
     private IssueCommentServiceImpl issueCommentServiceImpl;
     @BeforeEach
@@ -91,12 +88,8 @@ class IssueCommentServiceImplTest {
     }
     @Test
     void 댓글은_deleteComment_메서드를_통해_삭제할_수_있다() throws Exception{
-        //given
-        IssueCommentDelete issueCommentDelete = IssueCommentDelete.builder()
-                .issueCommentId(1L)
-                .build();
         //when
-        issueCommentServiceImpl.deleteComment(issueCommentDelete);
+        issueCommentServiceImpl.deleteComment(1L);
         List<IssueComment> issueComments = issueCommentServiceImpl.getIssueComments();
         //then
         assertThat(issueComments.size()).isEqualTo(0);

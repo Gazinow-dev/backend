@@ -8,7 +8,6 @@ import com.gazi.gazi_renew.mock.TestClockHolder;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +131,7 @@ class IssueCommentTest {
         IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
 
         //when
-        String result = issueComment.getTime(issueComment.getCreatedAt());
+        String result = issueComment.formatTime();
         //then
         assertThat(result).isEqualTo("지금");
     }
@@ -157,7 +156,7 @@ class IssueCommentTest {
         LocalDateTime newTime = LocalDateTime.now().minusMinutes(5); // 5분 전 생성
         IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.getTime(issueComment.getCreatedAt());
+        String result = issueComment.formatTime();
         //then
         assertThat(result).isEqualTo("5분 전");
     }
@@ -184,7 +183,7 @@ class IssueCommentTest {
 
         IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.getTime(issueComment.getCreatedAt());
+        String result = issueComment.formatTime();
         //then
         String expectedTime = "오전 08:30"; // 예상 결과값
         assertThat(result).isEqualTo(expectedTime);
@@ -210,7 +209,7 @@ class IssueCommentTest {
         LocalDateTime newTime = LocalDateTime.now().minusDays(2); // 2일 전 생성
         IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.getTime(issueComment.getCreatedAt());
+        String result = issueComment.formatTime();
         //then
         assertThat(result).isEqualTo("2일 전");
     }

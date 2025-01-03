@@ -5,7 +5,6 @@ import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.controller.port.IssueCommentService;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueCommentDelete;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
 import com.gazi.gazi_renew.issue.service.port.IssueCommentRepository;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -14,11 +13,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueCommentServiceImpl implements IssueCommentService {
     private final IssueCommentRepository issueCommentRepository;
@@ -35,6 +36,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<IssueComment> getIssueComments() {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
@@ -47,12 +49,12 @@ public class IssueCommentServiceImpl implements IssueCommentService {
         IssueComment issueComment = issueCommentRepository.findByIssueCommentId(issueCommentUpdate.getIssueCommentId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
         issueComment = issueComment.update(issueCommentUpdate, clockHolder);
-
-        return issueCommentRepository.updateIssueComment(issueComment);
+        issueCommentRepository.updateIssueComment(issueComment);
+        return issueComment;
     }
 
     @Override
-    public void deleteComment(IssueCommentDelete issueCommentDelete) {
-        issueCommentRepository.deleteComment(issueCommentDelete.getIssueCommentId());
+    public void deleteComment(Long issueCommentId) {
+        issueCommentRepository.deleteComment(issueCommentId);
     }
 }

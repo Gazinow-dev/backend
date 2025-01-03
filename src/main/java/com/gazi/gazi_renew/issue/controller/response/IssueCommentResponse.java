@@ -4,7 +4,8 @@ import com.gazi.gazi_renew.issue.domain.IssueComment;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class IssueCommentResponse {
@@ -20,7 +21,23 @@ public class IssueCommentResponse {
         this.agoTime = agoTime;
     }
 
-//    public static IssueCommentResponse from(IssueComment issueComment) {
-//
-//    }
+    public static IssueCommentResponse from(IssueComment issueComment) {
+        return IssueCommentResponse.builder()
+                .issueCommentId(issueComment.getIssueCommentId())
+                .issueCommentContent(issueComment.getIssueCommentContent())
+                .createdBy(issueComment.getCreatedBy())
+                .agoTime(issueComment.formatTime())
+                .build();
+    }
+    public static List<IssueCommentResponse> fromList(List<IssueComment> issueCommentList) {
+        return issueCommentList.stream()
+                .map(issueComment -> IssueCommentResponse.builder()
+                        .issueCommentId(issueComment.getIssueCommentId())
+                        .issueCommentContent(issueComment.getIssueCommentContent())
+                        .createdBy(issueComment.getCreatedBy())
+                        .agoTime(issueComment.formatTime())
+                        .build()
+                )
+                .collect(Collectors.toList());
+    }
 }

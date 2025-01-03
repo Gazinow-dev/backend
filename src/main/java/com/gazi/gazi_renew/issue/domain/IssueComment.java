@@ -51,9 +51,10 @@ public class IssueComment {
                 .build();
     }
     // 시간 구하기 로직
-    public String getTime(LocalDateTime createdAt) {
+    public String formatTime() {
+
         LocalDateTime nowDate = LocalDateTime.now();
-        Duration duration = Duration.between(createdAt, nowDate);
+        Duration duration = Duration.between(this.createdAt, nowDate);
         Long time = duration.getSeconds();
         String formatTime;
         if (time <= 60) {
@@ -65,7 +66,7 @@ public class IssueComment {
         } else if (time > 3600 && time < 86400) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("a hh:mm")
                     .withLocale(Locale.forLanguageTag("ko"));
-            formatTime = createdAt.format(formatter);
+            formatTime = this.createdAt.format(formatter);
         } else {
             time = time / 86400;
             formatTime = time + "일 전";

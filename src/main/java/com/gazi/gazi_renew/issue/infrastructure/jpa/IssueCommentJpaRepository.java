@@ -15,5 +15,5 @@ public interface IssueCommentJpaRepository extends JpaRepository<IssueCommentEnt
     List<IssueCommentEntity> findByMemberId(Long memberId);
     @Modifying
     @Query("UPDATE IssueCommentEntity c SET c.issueCommentContent=:issueCommentContent WHERE c.id=:issueCommentId")
-    IssueCommentEntity updateIssueCommentEntityContent(Long issueCommentId, String issueCommentContent);
+    void updateIssueCommentEntityContent(Long issueCommentId, String issueCommentContent);
 }
