@@ -110,4 +110,109 @@ class IssueCommentTest {
         //then
         assertThat(violations).isEmpty(); // 제약 조건 위반이 없어야 한다.
     }
+    @Test
+    void getTime_테스트_getTime_테스트_댓글_단지_1분_미만은_지금으로_표현() {
+        //given
+        IssueCommentCreate issueCommentCreate = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("이슈 댓글 테스트")
+                .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
+
+        LocalDateTime newTime = LocalDateTime.now().minusSeconds(35); // 35초 전 생성
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+
+        //when
+        String result = issueComment.getTime(issueComment.getCreatedAt());
+        //then
+        assertThat(result).isEqualTo("지금");
+    }
+    @Test
+    void getTime_테스트_댓글_단지_1분_이상에서_1시간_미만은_몇분전으로() {
+        //given
+        IssueCommentCreate issueCommentCreate = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("이슈 댓글 테스트")
+                .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
+
+        LocalDateTime newTime = LocalDateTime.now().minusMinutes(5); // 5분 전 생성
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        //when
+        String result = issueComment.getTime(issueComment.getCreatedAt());
+        //then
+        assertThat(result).isEqualTo("5분 전");
+    }
+    @Test
+    void getTime_테스트_댓글_단지_1시간_이상에서_1일_미만은_작성된_시간() {
+        //given
+        IssueCommentCreate issueCommentCreate = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("이슈 댓글 테스트")
+                .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
+
+        LocalDateTime fixedNow = LocalDateTime.of(2025, 1, 3, 10, 30);
+        LocalDateTime newTime = fixedNow.minusHours(2);
+
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        //when
+        String result = issueComment.getTime(issueComment.getCreatedAt());
+        //then
+        String expectedTime = "오전 08:30"; // 예상 결과값
+        assertThat(result).isEqualTo(expectedTime);
+    }
+    @Test
+    void getTime_테스트_댓글_단지_1일_이상은_몇일_전으로() {
+        //given
+        IssueCommentCreate issueCommentCreate = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("이슈 댓글 테스트")
+                .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
+
+        LocalDateTime newTime = LocalDateTime.now().minusDays(2); // 2일 전 생성
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        //when
+        String result = issueComment.getTime(issueComment.getCreatedAt());
+        //then
+        assertThat(result).isEqualTo("2일 전");
+    }
 }
+

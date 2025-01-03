@@ -7,7 +7,10 @@ import com.gazi.gazi_renew.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Getter
 public class IssueComment {
@@ -46,5 +49,28 @@ public class IssueComment {
                 .createdBy(member.getNickName())
                 .createdAt(clockHolder.now())
                 .build();
+    }
+    // 시간 구하기 로직
+    public String getTime(LocalDateTime createdAt) {
+        LocalDateTime nowDate = LocalDateTime.now();
+        Duration duration = Duration.between(createdAt, nowDate);
+        Long time = duration.getSeconds();
+        String formatTime;
+        if (time <= 60) {
+            formatTime = "지금";
+        } else if (time > 60 && time < 3600) {
+            // 분
+            time = time / 60;
+            formatTime = time + "분 전";
+        } else if (time > 3600 && time < 86400) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("a hh:mm")
+                    .withLocale(Locale.forLanguageTag("ko"));
+            formatTime = createdAt.format(formatter);
+        } else {
+            time = time / 86400;
+            formatTime = time + "일 전";
+        }
+
+        return formatTime;
     }
 }
