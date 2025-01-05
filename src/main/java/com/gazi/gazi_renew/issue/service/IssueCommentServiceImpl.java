@@ -15,11 +15,10 @@ import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,19 +42,17 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     }
     @Override
     @Transactional(readOnly = true)
-    public List<MyCommentSummary> getIssueCommentsByMemberId() {
+    public Page<MyCommentSummary> getIssueCommentsByMemberId(Pageable pageable) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
         //TODO : N+1 확인
-        List<IssueComment> issueComments = issueCommentRepository.getIssueCommentsOrderByCreatedAt(member.getId());
-        List<MyCommentSummary> summaries = issueComments.stream()
-                .map(issueComment -> {
-                    Long issueId = issueComment.getIssue().getId();
-                    int cnt = issueCommentRepository.countByIssueId(issueId);
-                    return MyCommentSummary.from(issueComment, cnt, clockHolder);
-                })
-                .collect(Collectors.toList());
-        return summaries;
+        Page<IssueComment> issueComments = issueCommentRepository.getIssueComments(pageable, member.getId());
+
+        return issueComments.map(issueComment -> {
+            Long issueId = issueComment.getIssue().getId();
+            int cnt = issueCommentRepository.countByIssueId(issueId);
+            return MyCommentSummary.from(issueComment, cnt, clockHolder);
+        });
     }
     @Override
     public IssueComment updateIssueComment(IssueCommentUpdate issueCommentUpdate) {
@@ -71,8 +68,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     }
     @Override
     @Transactional(readOnly = true)
-    public List<IssueComment> getIssueCommentByIssueId(Long issueId) {
-        return issueCommentRepository.getIssueCommentByIssueIdOrderByCreatedAt(issueId);
+    public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
+        return issueCommentRepository.getIssueCommentByIssueId(pageable, issueId);
     }
-
 }

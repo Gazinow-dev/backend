@@ -19,11 +19,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -52,9 +54,9 @@ public class IssueCommentController extends BaseController {
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = IssueCommentResponse.class)))})
     @GetMapping
-    public ResponseEntity<Response.Body> getIssueCommentsByMemberId() {
-        List<MyCommentSummary> issueComments = issueCommentService.getIssueCommentsByMemberId();
-        return response.success(MyCommentSummaryResponse.fromList(issueComments), "내가 작성한 댓글 조회 완료", HttpStatus.OK);
+    public ResponseEntity<Response.Body> getIssueCommentsByMemberId(@PageableDefault(page = 0, size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MyCommentSummary> issueComments = issueCommentService.getIssueCommentsByMemberId(pageable);
+        return response.success(MyCommentSummaryResponse.fromPage(issueComments), "내가 작성한 댓글 조회 완료", HttpStatus.OK);
     }
     @Operation(summary = "이슈에 달린 댓글 조회 API")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "내가 작성한 댓글 조회 완료",
@@ -62,9 +64,9 @@ public class IssueCommentController extends BaseController {
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = IssueCommentResponse.class)))})
     @GetMapping("/{issueId}")
-    public ResponseEntity<Response.Body> getIssueCommentsByIssueId(@PathVariable Long issueId) {
-        List<IssueComment> issueCommentList = issueCommentService.getIssueCommentByIssueId(issueId);
-        return response.success(IssueCommentResponse.fromList(issueCommentList, clockHolder), "이슈에 달린 댓글 조회 완료", HttpStatus.OK);
+    public ResponseEntity<Response.Body> getIssueCommentsByIssueId(@PageableDefault(page = 0, size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long issueId) {
+        Page<IssueComment> issueCommentList = issueCommentService.getIssueCommentByIssueId(pageable, issueId);
+        return response.success(IssueCommentResponse.fromPage(issueCommentList, clockHolder), "이슈에 달린 댓글 조회 완료", HttpStatus.OK);
     }
 
     @Operation(summary = "댓글 수정 API")

@@ -5,11 +5,11 @@ import com.gazi.gazi_renew.issue.infrastructure.entity.IssueCommentEntity;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueCommentJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueCommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,9 +20,9 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
         return issueCommentJpaRepository.save(IssueCommentEntity.from(issueComment)).toModel();
     }
     @Override
-    public List<IssueComment> getIssueCommentsOrderByCreatedAt(Long memberId) {
-        return issueCommentJpaRepository.findByMemberIdOrderByCreatedAt(memberId).stream()
-                .map(IssueCommentEntity::toModel).collect(Collectors.toList());
+    public Page<IssueComment> getIssueComments(Pageable pageable, Long memberId) {
+        return issueCommentJpaRepository.findByMemberId(memberId, pageable)
+                .map(IssueCommentEntity::toModel);
     }
     @Override
     public void updateIssueComment(IssueComment issueComment) {
@@ -43,8 +43,8 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
     }
 
     @Override
-    public List<IssueComment> getIssueCommentByIssueIdOrderByCreatedAt(Long issueId) {
-        return issueCommentJpaRepository.findByIssueEntityIdOrderByCreatedAt(issueId).stream()
-                .map(IssueCommentEntity::toModel).collect(Collectors.toList());
+    public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
+        return issueCommentJpaRepository.findByIssueEntityId(issueId, pageable)
+                .map(IssueCommentEntity::toModel);
     }
 }

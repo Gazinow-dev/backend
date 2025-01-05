@@ -1,7 +1,11 @@
 package com.gazi.gazi_renew.mock;
 
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.service.port.IssueCommentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,11 +35,18 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
     }
 
     @Override
-    public List<IssueComment> getIssueCommentsOrderByCreatedAt(Long memberId) {
-        return data.stream()
+    public Page<IssueComment> getIssueComments(Pageable pageable, Long memberId) {
+        List<IssueComment> collect = data.stream()
                 .filter(issueComment -> issueComment.getMemberId().equals(memberId))
                 .sorted(Comparator.comparing(IssueComment::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), data.size());
+
+        List<IssueComment> pagedIssues = collect.subList(start, end);
+
+        return new PageImpl<>(pagedIssues, pageable, data.size());
     }
 
     @Override
@@ -71,10 +82,16 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
                 .collect(Collectors.toList()).size();
     }
     @Override
-    public List<IssueComment> getIssueCommentByIssueIdOrderByCreatedAt(Long issueId) {
-        return data.stream()
+    public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
+        List<IssueComment> collect = data.stream()
                 .filter(issueComment -> issueComment.getIssue().getId().equals(issueId))
                 .sorted(Comparator.comparing(IssueComment::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), data.size());
+        List<IssueComment> pagedIssues = collect.subList(start, end);
+
+        return new PageImpl<>(pagedIssues, pageable, data.size());
     }
 }
