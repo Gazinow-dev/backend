@@ -8,11 +8,15 @@ import java.util.Optional;
 public interface IssueCommentRepository {
     IssueComment saveComment(IssueComment issueComment);
 
-    List<IssueComment> getIssueComments(Long memberId);
+    List<IssueComment> getIssueCommentsOrderByCreatedAt(Long memberId);
 
     void updateIssueComment(IssueComment issueComment);
 
     void deleteComment(Long issueCommentId);
 
     Optional<IssueComment> findByIssueCommentId(Long issueCommentId);
+
+    int countByIssueId(Long issueId);
+
+    List<IssueComment> getIssueCommentByIssueIdOrderByCreatedAt(Long issueId);
 }

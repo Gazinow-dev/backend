@@ -15,16 +15,16 @@ import java.util.Locale;
 @Getter
 public class IssueComment {
     private final Long issueCommentId;
-    private final Long issueId;
+    private final Issue issue;
     private final Long memberId;
     private final String issueCommentContent;
     private final String createdBy;
     private final LocalDateTime createdAt;
 
     @Builder
-    public IssueComment(Long issueCommentId, Long issueId, Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt) {
+    public IssueComment(Long issueCommentId, Issue issue,Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt) {
         this.issueCommentId = issueCommentId;
-        this.issueId = issueId;
+        this.issue = issue;
         this.memberId = memberId;
         this.issueCommentContent = issueCommentContent;
         this.createdBy = createdBy;
@@ -33,7 +33,7 @@ public class IssueComment {
     public IssueComment update(IssueCommentUpdate issueCommentUpdate, ClockHolder clockHolder) {
         return IssueComment.builder()
                 .issueCommentId(this.issueCommentId)
-                .issueId(this.issueId)
+                .issue(this.issue)
                 .memberId(this.memberId)
                 .issueCommentContent(issueCommentUpdate.getIssueCommentContent())
                 .createdBy(this.createdBy)
@@ -41,9 +41,9 @@ public class IssueComment {
                 .build();
     }
 
-    public static IssueComment from(IssueCommentCreate issueCommentCreate, Member member, ClockHolder clockHolder) {
+    public static IssueComment from(IssueCommentCreate issueCommentCreate, Issue issue, Member member, ClockHolder clockHolder) {
         return IssueComment.builder()
-                .issueId(issueCommentCreate.getIssueId())
+                .issue(issue)
                 .memberId(member.getId())
                 .issueCommentContent(issueCommentCreate.getIssueCommentContent())
                 .createdBy(member.getNickName())
@@ -51,9 +51,9 @@ public class IssueComment {
                 .build();
     }
     // 시간 구하기 로직
-    public String formatTime() {
+    public String formatTime(ClockHolder clockHolder) {
 
-        LocalDateTime nowDate = LocalDateTime.now();
+        LocalDateTime nowDate = clockHolder.now();
         Duration duration = Duration.between(this.createdAt, nowDate);
         Long time = duration.getSeconds();
         String formatTime;

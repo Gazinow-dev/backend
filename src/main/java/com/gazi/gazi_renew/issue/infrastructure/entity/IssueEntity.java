@@ -31,6 +31,7 @@ public class IssueEntity extends AuditingFields {
 
     public static IssueEntity from(Issue issue) {
         IssueEntity issueEntity = new IssueEntity();
+        issueEntity.id = issue.getId();
         issueEntity.crawlingNo = issue.getCrawlingNo();
         issueEntity.startDate = issue.getStartDate().withSecond(0).withNano(0);
         issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);

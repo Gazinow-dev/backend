@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.issue.domain;
 
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
+import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.TestClockHolder;
@@ -12,15 +13,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class IssueCommentTest {
     private Validator validator;
+    private Issue issue;
     @BeforeEach
     void setUp() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        issue = Issue.builder()
+                .id(1L)
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .keyword(IssueKeyword.시위)
+                .crawlingNo("1")
+                .likeCount(10)
+                .build();
+
     }
 
     @Test
@@ -30,6 +46,7 @@ class IssueCommentTest {
                 .issueId(1L)
                 .issueCommentContent("이슈 댓글 테스트")
                 .build();
+
         Member member = Member.builder()
                 .id(1L)
                 .email("mw310@naver.com")
@@ -42,7 +59,7 @@ class IssueCommentTest {
                 .build();
         LocalDateTime newTime = LocalDateTime.now();
         //when
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
         //then
         assertThat(issueComment.getIssueCommentContent()).isEqualTo("이슈 댓글 테스트");
         assertThat(issueComment.getCreatedAt()).isEqualTo(newTime);
@@ -65,7 +82,7 @@ class IssueCommentTest {
                 .firebaseToken("temp")
                 .build();
         LocalDateTime newTime = LocalDateTime.now();
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
 
         LocalDateTime updatedTime = LocalDateTime.now();
         IssueCommentUpdate issueCommentUpdate = IssueCommentUpdate.builder()
@@ -128,10 +145,10 @@ class IssueCommentTest {
                 .build();
 
         LocalDateTime newTime = LocalDateTime.now().minusSeconds(35); // 35초 전 생성
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
 
         //when
-        String result = issueComment.formatTime();
+        String result = issueComment.formatTime(new TestClockHolder(LocalDateTime.now()));
         //then
         assertThat(result).isEqualTo("지금");
     }
@@ -154,9 +171,9 @@ class IssueCommentTest {
                 .build();
 
         LocalDateTime newTime = LocalDateTime.now().minusMinutes(5); // 5분 전 생성
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.formatTime();
+        String result = issueComment.formatTime(new TestClockHolder(LocalDateTime.now()));
         //then
         assertThat(result).isEqualTo("5분 전");
     }
@@ -181,9 +198,9 @@ class IssueCommentTest {
         LocalDateTime fixedNow = LocalDateTime.of(2025, 1, 3, 10, 30);
         LocalDateTime newTime = fixedNow.minusHours(2);
 
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.formatTime();
+        String result = issueComment.formatTime(new TestClockHolder(fixedNow));
         //then
         String expectedTime = "오전 08:30"; // 예상 결과값
         assertThat(result).isEqualTo(expectedTime);
@@ -207,9 +224,9 @@ class IssueCommentTest {
                 .build();
 
         LocalDateTime newTime = LocalDateTime.now().minusDays(2); // 2일 전 생성
-        IssueComment issueComment = IssueComment.from(issueCommentCreate, member, new TestClockHolder(newTime));
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
         //when
-        String result = issueComment.formatTime();
+        String result = issueComment.formatTime(new TestClockHolder(LocalDateTime.now()));
         //then
         assertThat(result).isEqualTo("2일 전");
     }

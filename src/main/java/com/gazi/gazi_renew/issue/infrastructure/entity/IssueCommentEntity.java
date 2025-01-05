@@ -17,7 +17,9 @@ public class IssueCommentEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long memberId;
-    private Long issueId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issue_id")
+    private IssueEntity issueEntity;
     private String issueCommentContent;
     private String createdBy;
     private LocalDateTime createdAt;
@@ -26,7 +28,7 @@ public class IssueCommentEntity{
         IssueCommentEntity issueCommentEntity = new IssueCommentEntity();
         issueCommentEntity.id = issueComment.getIssueCommentId();
         issueCommentEntity.memberId = issueComment.getMemberId();
-        issueCommentEntity.issueId = issueComment.getIssueId();
+        issueCommentEntity.issueEntity = IssueEntity.from(issueComment.getIssue());
         issueCommentEntity.issueCommentContent = issueComment.getIssueCommentContent();
         issueCommentEntity.createdBy = issueComment.getCreatedBy();
         issueCommentEntity.createdAt = issueComment.getCreatedAt();
@@ -37,7 +39,7 @@ public class IssueCommentEntity{
         return IssueComment.builder()
                 .issueCommentId(id)
                 .memberId(memberId)
-                .issueId(issueId)
+                .issue(issueEntity.toModel())
                 .issueCommentContent(issueCommentContent)
                 .createdBy(createdBy)
                 .createdAt(createdAt)

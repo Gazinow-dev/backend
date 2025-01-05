@@ -20,8 +20,8 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
         return issueCommentJpaRepository.save(IssueCommentEntity.from(issueComment)).toModel();
     }
     @Override
-    public List<IssueComment> getIssueComments(Long memberId) {
-        return issueCommentJpaRepository.findByMemberId(memberId).stream()
+    public List<IssueComment> getIssueCommentsOrderByCreatedAt(Long memberId) {
+        return issueCommentJpaRepository.findByMemberIdOrderByCreatedAt(memberId).stream()
                 .map(IssueCommentEntity::toModel).collect(Collectors.toList());
     }
     @Override
@@ -35,5 +35,16 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
     @Override
     public Optional<IssueComment> findByIssueCommentId(Long issueCommentId) {
         return issueCommentJpaRepository.findById(issueCommentId).map(IssueCommentEntity::toModel);
+    }
+
+    @Override
+    public int countByIssueId(Long issueId) {
+        return issueCommentJpaRepository.countByIssueEntityId(issueId);
+    }
+
+    @Override
+    public List<IssueComment> getIssueCommentByIssueIdOrderByCreatedAt(Long issueId) {
+        return issueCommentJpaRepository.findByIssueEntityIdOrderByCreatedAt(issueId).stream()
+                .map(IssueCommentEntity::toModel).collect(Collectors.toList());
     }
 }

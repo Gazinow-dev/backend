@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.issue.controller.response;
 
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,21 +22,21 @@ public class IssueCommentResponse {
         this.agoTime = agoTime;
     }
 
-    public static IssueCommentResponse from(IssueComment issueComment) {
+    public static IssueCommentResponse from(IssueComment issueComment, ClockHolder clockHolder) {
         return IssueCommentResponse.builder()
                 .issueCommentId(issueComment.getIssueCommentId())
                 .issueCommentContent(issueComment.getIssueCommentContent())
                 .createdBy(issueComment.getCreatedBy())
-                .agoTime(issueComment.formatTime())
+                .agoTime(issueComment.formatTime(clockHolder))
                 .build();
     }
-    public static List<IssueCommentResponse> fromList(List<IssueComment> issueCommentList) {
+    public static List<IssueCommentResponse> fromList(List<IssueComment> issueCommentList, ClockHolder clockHolder) {
         return issueCommentList.stream()
                 .map(issueComment -> IssueCommentResponse.builder()
                         .issueCommentId(issueComment.getIssueCommentId())
                         .issueCommentContent(issueComment.getIssueCommentContent())
                         .createdBy(issueComment.getCreatedBy())
-                        .agoTime(issueComment.formatTime())
+                        .agoTime(issueComment.formatTime(clockHolder))
                         .build()
                 )
                 .collect(Collectors.toList());
