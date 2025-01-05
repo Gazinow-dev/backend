@@ -1,14 +1,15 @@
 package com.gazi.gazi_renew.issue.service.port;
 
 import com.gazi.gazi_renew.issue.domain.IssueComment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface IssueCommentRepository {
     IssueComment saveComment(IssueComment issueComment);
 
-    List<IssueComment> getIssueCommentsOrderByCreatedAt(Long memberId);
+    Page<IssueComment> getIssueComments(Pageable pageable, Long memberId);
 
     void updateIssueComment(IssueComment issueComment);
 
@@ -18,5 +19,5 @@ public interface IssueCommentRepository {
 
     int countByIssueId(Long issueId);
 
-    List<IssueComment> getIssueCommentByIssueIdOrderByCreatedAt(Long issueId);
+    Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId);
 }

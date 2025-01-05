@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .formLogin(formLogin -> formLogin.disable()) // 폼 로그인 사용 X
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers("/api/v1/comments/{issueId}").permitAll()
                                 .requestMatchers("/api/v1/like", "/api/v1/member/logout", "/api/v1/member/change_nickname", "/api/v1/member/change_password"
                                         , "/api/v1/member/delete_member", "/api/v1/my_find_road/*", "/api/v1/recentSearch", "/api/v1/recentSearch/**",
                                         "/api/v1/notification/**",  "/api/v1/member/fcm-token", "/api/v1/member/notifications/**", "/api/v1/comments/**").authenticated() // 요청에 대해 인증 필요

@@ -11,6 +11,10 @@ import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -94,19 +98,24 @@ class IssueCommentServiceImplTest {
     }
     @Test
     void 나의_정보에서_내가_쓴_댓글은_댓글을_단_시간_최신순으로_정렬된다() throws Exception{
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
         //when
-        List<MyCommentSummary> issueComments = issueCommentServiceImpl.getIssueCommentsByMemberId();
+        Page<MyCommentSummary> issueComments = issueCommentServiceImpl.getIssueCommentsByMemberId(pageable);
         //then
-        assertThat(issueComments.size()).isEqualTo(2);
-        assertThat(issueComments.get(0).getIssueCommentContent()).isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다");
+        assertThat(issueComments.getTotalElements()).isEqualTo(2); // 전체 데이터 수 검증
+        assertThat(issueComments.getTotalPages()).isEqualTo(1);    // 전체 페이지 수 검증
+        assertThat(issueComments.getContent().size()).isEqualTo(2); // 현재 페이지 데이터 크기 검증
+        assertThat(issueComments.getContent().get(0).getIssueCommentContent())
+                .isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다"); // 첫 번째 댓글 내용 검증
     }
     @Test
     void 이슈_id를_통해_이슈에_달린_댓글을_조회할_수_있고_최신순으로_정렬된다() throws Exception{
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
         //when
-        List<IssueComment> issueCommentByIssueId = issueCommentServiceImpl.getIssueCommentByIssueId(1L);
+        Page<IssueComment> issueCommentByIssueId = issueCommentServiceImpl.getIssueCommentByIssueId(pageable, 1L);
         //then
-        assertThat(issueCommentByIssueId.size()).isEqualTo(2);
-        assertThat(issueCommentByIssueId.get(0).getIssueCommentContent()).isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다");
+        assertThat(issueCommentByIssueId.getTotalElements()).isEqualTo(2);
+        assertThat(issueCommentByIssueId.getContent().get(0).getIssueCommentContent()).isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다");
     }
     @Test
     void 댓글은_updateIssueComment_메서드를_통해_수정할_수_있다() throws Exception{
@@ -122,11 +131,12 @@ class IssueCommentServiceImplTest {
     }
     @Test
     void 댓글은_deleteComment_메서드를_통해_삭제할_수_있다() throws Exception{
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
         //when
         issueCommentServiceImpl.deleteComment(1L);
-        List<MyCommentSummary> issueComments = issueCommentServiceImpl.getIssueCommentsByMemberId();
+        Page<MyCommentSummary> issueComments = issueCommentServiceImpl.getIssueCommentsByMemberId(pageable);
         //then
-        assertThat(issueComments.size()).isEqualTo(1);
+        assertThat(issueComments.getTotalElements()).isEqualTo(1);
     }
 
 }

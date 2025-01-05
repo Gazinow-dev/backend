@@ -4,8 +4,8 @@ import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
@@ -30,15 +30,12 @@ public class IssueCommentResponse {
                 .agoTime(issueComment.formatTime(clockHolder))
                 .build();
     }
-    public static List<IssueCommentResponse> fromList(List<IssueComment> issueCommentList, ClockHolder clockHolder) {
-        return issueCommentList.stream()
-                .map(issueComment -> IssueCommentResponse.builder()
-                        .issueCommentId(issueComment.getIssueCommentId())
-                        .issueCommentContent(issueComment.getIssueCommentContent())
-                        .createdBy(issueComment.getCreatedBy())
-                        .agoTime(issueComment.formatTime(clockHolder))
-                        .build()
-                )
-                .collect(Collectors.toList());
+    public static Page<IssueCommentResponse> fromPage(Page<IssueComment> issueCommentList, ClockHolder clockHolder) {
+        return issueCommentList.map(issueComment -> IssueCommentResponse.builder()
+                .issueCommentId(issueComment.getIssueCommentId())
+                .issueCommentContent(issueComment.getIssueCommentContent())
+                .createdBy(issueComment.getCreatedBy())
+                .agoTime(issueComment.formatTime(clockHolder))
+                .build());
     }
 }
