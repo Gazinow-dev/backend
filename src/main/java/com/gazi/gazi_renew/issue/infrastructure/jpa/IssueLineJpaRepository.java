@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.issue.infrastructure.jpa;
 
-import com.gazi.gazi_renew.issue.infrastructure.IssueLineEntity;
+import com.gazi.gazi_renew.issue.infrastructure.entity.IssueLineEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

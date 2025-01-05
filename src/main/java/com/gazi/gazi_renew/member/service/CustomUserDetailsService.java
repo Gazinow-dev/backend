@@ -18,7 +18,6 @@ import java.util.Collections;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
     private final MemberJpaRepository memberJpaRepository;
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return memberJpaRepository.findByEmail(username)
