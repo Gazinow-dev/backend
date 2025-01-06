@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.issue.service;
 
+import com.gazi.gazi_renew.issue.domain.CommentLikes;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.MyCommentSummary;
@@ -32,9 +33,10 @@ class IssueCommentServiceImplTest {
         LocalDateTime newTime = LocalDateTime.now();
         TestClockHolder testClockHolder = new TestClockHolder(newTime);
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
+        FakeCommentLikesRepository fakeCommentLikesRepository = new FakeCommentLikesRepository();
 
         this.issueCommentServiceImpl = new IssueCommentServiceImpl(fakeIssueCommentRepository, fakeMemberRepository
-                , testClockHolder, fakeSecurityUtil, fakeIssueRepository);
+                , testClockHolder, fakeSecurityUtil, fakeIssueRepository, fakeCommentLikesRepository);
         Member member1 = Member.builder()
                 .id(1L)
                 .email("mw310@naver.com")
@@ -80,6 +82,13 @@ class IssueCommentServiceImplTest {
         fakeSecurityUtil.addEmail("mw310@naver.com");
         fakeMemberRepository.save(member1);
 
+        CommentLikes commentLikes = CommentLikes.builder()
+                .commentLikesId(1L)
+                .issueComment(issueComment)
+                .memberId(1L)
+                .build();
+        fakeCommentLikesRepository.save(commentLikes);
+
         fakeIssueCommentRepository.saveComment(issueComment);
         fakeIssueCommentRepository.saveComment(issueComment2);
     }
@@ -116,6 +125,17 @@ class IssueCommentServiceImplTest {
         //then
         assertThat(issueCommentByIssueId.getTotalElements()).isEqualTo(2);
         assertThat(issueCommentByIssueId.getContent().get(0).getIssueCommentContent()).isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다");
+    }
+    @Test
+    void getIssueCommentByIssueId_메서드는_좋아요_갯수_및_상태까지_가져온다() throws Exception{
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
+        //when
+        Page<IssueComment> issueCommentByIssueId = issueCommentServiceImpl.getIssueCommentByIssueId(pageable, 1L);
+        //then
+        assertThat(issueCommentByIssueId.getContent().get(1).getLikesCount()).isEqualTo(1);
+        assertThat(issueCommentByIssueId.getContent().get(1).isMine()).isEqualTo(true);
+        assertThat(issueCommentByIssueId.getContent().get(1).isLiked()).isEqualTo(true);
+
     }
     @Test
     void 댓글은_updateIssueComment_메서드를_통해_수정할_수_있다() throws Exception{

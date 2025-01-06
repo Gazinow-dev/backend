@@ -20,15 +20,20 @@ public class IssueComment {
     private final String issueCommentContent;
     private final String createdBy;
     private final LocalDateTime createdAt;
-
+    private final boolean isMine;
+    private final boolean isLiked;
+    private final int likesCount;
     @Builder
-    public IssueComment(Long issueCommentId, Issue issue,Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt) {
+    public IssueComment(Long issueCommentId, Issue issue, Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt, boolean isMine, boolean isLiked, int likesCount) {
         this.issueCommentId = issueCommentId;
         this.issue = issue;
         this.memberId = memberId;
         this.issueCommentContent = issueCommentContent;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
+        this.isMine = isMine;
+        this.isLiked = isLiked;
+        this.likesCount = likesCount;
     }
     public IssueComment update(IssueCommentUpdate issueCommentUpdate, ClockHolder clockHolder) {
         return IssueComment.builder()
@@ -40,7 +45,19 @@ public class IssueComment {
                 .createdAt(clockHolder.now())
                 .build();
     }
-
+    public IssueComment fromCommentLikes(boolean isMine, int likesCount, boolean isLiked) {
+        return IssueComment.builder()
+                .issueCommentId(this.issueCommentId)
+                .issue(this.issue)
+                .memberId(this.memberId)
+                .issueCommentContent(this.issueCommentContent)
+                .createdBy(this.createdBy)
+                .createdAt(this.createdAt)
+                .isMine(isMine)
+                .likesCount(likesCount)
+                .isLiked(isLiked)
+                .build();
+    }
     public static IssueComment from(IssueCommentCreate issueCommentCreate, Issue issue, Member member, ClockHolder clockHolder) {
         return IssueComment.builder()
                 .issue(issue)

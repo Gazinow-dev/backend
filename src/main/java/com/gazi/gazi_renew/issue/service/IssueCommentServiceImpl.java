@@ -8,6 +8,7 @@ import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.MyCommentSummary;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
+import com.gazi.gazi_renew.issue.service.port.CommentLikesRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueCommentRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -30,6 +31,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     private final ClockHolder clockHolder;
     private final SecurityUtilService securityUtilService;
     private final IssueRepository issueRepository;
+    private final CommentLikesRepository commentLikesRepository;
     @Override
     public IssueComment saveComment(IssueCommentCreate issueCommentCreate) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
@@ -69,6 +71,21 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     @Override
     @Transactional(readOnly = true)
     public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
-        return issueCommentRepository.getIssueCommentByIssueId(pageable, issueId);
+        Page<IssueComment> issueCommentList = issueCommentRepository.getIssueCommentByIssueId(pageable, issueId);
+        String currentUserEmail = securityUtilService.getCurrentUserEmail();
+        if (currentUserEmail.equals("anonymousUser") || currentUserEmail.isEmpty()){
+            return issueCommentList;
+        }else{
+            Member curMember = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
+                    .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
+
+            return issueCommentList
+                    .map(issueComment -> {
+                        boolean isMineStatus = issueComment.getMemberId().equals(curMember.getId());
+                        int likesCount = commentLikesRepository.countByIssueCommentId(issueComment.getIssueCommentId());
+                        boolean isLikesStatus = commentLikesRepository.existByIssueCommentAndMemberId(issueComment, curMember.getId());
+                        return issueComment.fromCommentLikes(isMineStatus, likesCount, isLikesStatus);
+                    });
+        }
     }
 }
