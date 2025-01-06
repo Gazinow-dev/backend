@@ -85,7 +85,7 @@ public class IssueCommentController extends BaseController {
     @PatchMapping
     public ResponseEntity<Response.Body> updateIssueComment(@Valid @RequestBody IssueCommentUpdate issueCommentUpdate) {
         IssueComment issueComment = issueCommentService.updateIssueComment(issueCommentUpdate);
-        return response.success(IssueCommentResponse.from(issueComment, clockHolder), "댓글 수정 완료", HttpStatus.OK);
+        return response.success(IssueCommentResponse.from(issueComment, clockHolder), "댓글 수정 완료", HttpStatus.CREATED);
     }
     @Operation(summary = "댓글 삭제 API")
     @ApiResponses(value = {

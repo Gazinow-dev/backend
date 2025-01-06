@@ -36,7 +36,6 @@ class IssueCommentTest {
                 .crawlingNo("1")
                 .likeCount(10)
                 .build();
-
     }
 
     @Test
