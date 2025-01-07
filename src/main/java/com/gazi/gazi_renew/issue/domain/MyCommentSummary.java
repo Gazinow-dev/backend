@@ -18,8 +18,9 @@ public class MyCommentSummary {
     private final String issueKeyword;
     private final int commentsCount;
     private final int issueLikeCount;
+    private final int commentLikesCount;
     @Builder
-    public MyCommentSummary(Long issueCommentId, Long issueId, String issueCommentContent, String createdBy, String agoTime, String issueTitle, String issueKeyword, int commentsCount, int issueLikeCount) {
+    public MyCommentSummary(Long issueCommentId, Long issueId, String issueCommentContent, String createdBy, String agoTime, String issueTitle, String issueKeyword, int commentsCount, int issueLikeCount, int commentLikesCount) {
         this.issueCommentId = issueCommentId;
         this.issueId = issueId;
         this.issueCommentContent = issueCommentContent;
@@ -29,9 +30,9 @@ public class MyCommentSummary {
         this.issueKeyword = issueKeyword;
         this.commentsCount = commentsCount;
         this.issueLikeCount = issueLikeCount;
+        this.commentLikesCount = commentLikesCount;
     }
-
-    public static MyCommentSummary from(IssueComment issueComment, int commentCount, ClockHolder clockHolder) {
+    public static MyCommentSummary from(IssueComment issueComment, int commentCount, int likesCount, ClockHolder clockHolder) {
         return MyCommentSummary.builder()
                 .issueCommentId(issueComment.getIssueCommentId())
                 .issueId(issueComment.getIssue().getId())
@@ -39,6 +40,7 @@ public class MyCommentSummary {
                 .createdBy(issueComment.getCreatedBy())
                 .agoTime(issueComment.formatTime(clockHolder))
                 .commentsCount(commentCount)
+                .commentLikesCount(likesCount)
                 .issueTitle(issueComment.getIssue().getTitle())
                 .issueKeyword(issueComment.getIssue().getKeyword().toString())
                 .issueLikeCount(issueComment.getIssue().getLikeCount())
