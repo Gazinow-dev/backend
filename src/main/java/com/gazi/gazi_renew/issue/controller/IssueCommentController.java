@@ -74,7 +74,6 @@ public class IssueCommentController extends BaseController {
         Page<IssueComment> issueCommentList = issueCommentService.getIssueCommentByIssueId(pageable, issueId);
         return response.success(IssueCommentResponse.fromPage(issueCommentList, clockHolder), "이슈에 달린 댓글 조회 완료", HttpStatus.OK);
     }
-
     @Operation(summary = "댓글 수정 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "댓글 수정 완료",
