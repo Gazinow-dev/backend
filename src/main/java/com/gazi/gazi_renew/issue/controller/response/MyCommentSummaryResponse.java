@@ -26,8 +26,10 @@ public class MyCommentSummaryResponse {
     private final int commentsCount;
     @Schema(description = "이슈 도움돼요 갯수", example = "2")
     private final int issueLikesCount;
+    @Schema(description = "댓글 좋아요 갯수", example = "2")
+    private final int commentLikesCount;
     @Builder
-    public MyCommentSummaryResponse(Long issueCommentId, Long issueId, String issueCommentContent, String createdBy, String agoTime, String issueTitle, String issueKeyword, int commentsCount, int issueLikesCount) {
+    public MyCommentSummaryResponse(Long issueCommentId, Long issueId, String issueCommentContent, String createdBy, String agoTime, String issueTitle, String issueKeyword, int commentsCount, int issueLikesCount, int commentLikesCount) {
         this.issueCommentId = issueCommentId;
         this.issueId = issueId;
         this.issueCommentContent = issueCommentContent;
@@ -37,7 +39,9 @@ public class MyCommentSummaryResponse {
         this.issueKeyword = issueKeyword;
         this.commentsCount = commentsCount;
         this.issueLikesCount = issueLikesCount;
+        this.commentLikesCount = commentLikesCount;
     }
+
     public static Page<MyCommentSummaryResponse> fromPage(Page<MyCommentSummary> myCommentSummaryList) {
         return myCommentSummaryList.map(myCommentSummary -> MyCommentSummaryResponse.builder()
                 .issueCommentId(myCommentSummary.getIssueCommentId())
@@ -49,6 +53,7 @@ public class MyCommentSummaryResponse {
                 .issueKeyword(myCommentSummary.getIssueKeyword())
                 .commentsCount(myCommentSummary.getCommentsCount())
                 .issueLikesCount(myCommentSummary.getIssueLikeCount())
+                .commentLikesCount(myCommentSummary.getCommentLikesCount())
                 .build()
         );
     }

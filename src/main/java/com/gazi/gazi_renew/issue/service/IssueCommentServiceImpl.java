@@ -53,7 +53,8 @@ public class IssueCommentServiceImpl implements IssueCommentService {
         return issueComments.map(issueComment -> {
             Long issueId = issueComment.getIssue().getId();
             int cnt = issueCommentRepository.countByIssueId(issueId);
-            return MyCommentSummary.from(issueComment, cnt, clockHolder);
+            int likesCount = commentLikesRepository.countByIssueCommentId(issueComment.getIssueCommentId());
+            return MyCommentSummary.from(issueComment, cnt, likesCount, clockHolder);
         });
     }
     @Override
