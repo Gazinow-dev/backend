@@ -10,29 +10,28 @@ import java.time.LocalDateTime;
 @Getter
 public class Report {
     private final Long reportId;
-    private final Long reporterId;
     private final Long reportedMemberId;
+    private final Long reporterMemberId;
     private final Long issueCommentId;
     private final ReportReason reportReason;
     private final String reasonDescription;
-    private final String reporterNickname;
     private final LocalDateTime reportedAt;
     private final ReportStatus reportStatus;
+
     @Builder
-    public Report(Long reportId, Long reporterId, Long reportedMemberId, Long issueCommentId, ReportReason reportReason, String reasonDescription, String reporterNickname, LocalDateTime reportedAt, ReportStatus reportStatus) {
+    public Report(Long reportId, Long reporterMemberId, Long reportedMemberId, Long issueCommentId, ReportReason reportReason, String reasonDescription, LocalDateTime reportedAt, ReportStatus reportStatus) {
         this.reportId = reportId;
-        this.reporterId = reporterId;
+        this.reporterMemberId = reporterMemberId;
         this.reportedMemberId = reportedMemberId;
         this.issueCommentId = issueCommentId;
         this.reportReason = reportReason;
         this.reasonDescription = reasonDescription;
-        this.reporterNickname = reporterNickname;
         this.reportedAt = reportedAt;
         this.reportStatus = reportStatus;
     }
     public static Report create(ReportCreate reportCreate, Long reporterId, Long reportedId, ClockHolder clockHolder) {
         return Report.builder()
-                .reporterId(reporterId)
+                .reporterMemberId(reporterId)
                 .reportedMemberId(reportedId)
                 .issueCommentId(reportCreate.getReportedCommentId())
                 .reportReason(ReportReason.valueOf(reportCreate.getReason()))
@@ -63,11 +62,10 @@ public class Report {
         // 신고 상태를 APPROVED로 변경
         return Report.builder()
                 .reportId(reportId)
-                .reporterId(reporterId)
+                .reporterMemberId(reporterMemberId)
                 .reportedMemberId(reportedMemberId)
                 .issueCommentId(issueCommentId)
                 .reasonDescription(reasonDescription)
-                .reporterNickname(reporterNickname)
                 .reportedAt(reportedAt)
                 .reportStatus(ReportStatus.APPROVED)
                 .build();
@@ -75,12 +73,11 @@ public class Report {
     public Report rejectReport() {
         return Report.builder()
                 .reportId(reportId)
-                .reporterId(reporterId)
+                .reporterMemberId(reporterMemberId)
                 .reportedMemberId(reportedMemberId)
                 .issueCommentId(issueCommentId)
                 .reportReason(reportReason)
                 .reasonDescription(reasonDescription)
-                .reporterNickname(reporterNickname)
                 .reportedAt(reportedAt)
                 .reportStatus(ReportStatus.REJECTED)
                 .build();

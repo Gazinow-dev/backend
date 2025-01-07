@@ -21,6 +21,11 @@ public class Penalty {
         this.expireDate = expireDate;
     }
 
+    public static Penalty from(Long memberId) {
+        return Penalty.builder()
+                .memberId(memberId)
+                .build();
+    }
     // 기간 연장 메서드
     public void extendPenalty(int days, ClockHolder clockHolder) {
         if (expireDate.isBefore(clockHolder.now())) {
