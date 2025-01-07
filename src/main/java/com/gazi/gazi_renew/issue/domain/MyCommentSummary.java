@@ -32,7 +32,7 @@ public class MyCommentSummary {
         this.issueLikeCount = issueLikeCount;
         this.commentLikesCount = commentLikesCount;
     }
-    public static MyCommentSummary from(IssueComment issueComment, int commentCount, int likesCount, ClockHolder clockHolder) {
+    public static MyCommentSummary from(IssueComment issueComment, int commentCount, int commentLikesCount, ClockHolder clockHolder) {
         return MyCommentSummary.builder()
                 .issueCommentId(issueComment.getIssueCommentId())
                 .issueId(issueComment.getIssue().getId())
@@ -40,7 +40,7 @@ public class MyCommentSummary {
                 .createdBy(issueComment.getCreatedBy())
                 .agoTime(issueComment.formatTime(clockHolder))
                 .commentsCount(commentCount)
-                .commentLikesCount(likesCount)
+                .commentLikesCount(commentLikesCount)
                 .issueTitle(issueComment.getIssue().getTitle())
                 .issueKeyword(issueComment.getIssue().getKeyword().toString())
                 .issueLikeCount(issueComment.getIssue().getLikeCount())

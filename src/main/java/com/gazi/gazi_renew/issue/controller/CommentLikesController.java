@@ -42,7 +42,7 @@ public class CommentLikesController extends BaseController {
         return response.success(CommentLikesResponse.from(commentLikes), "댓글 좋아요 완료", HttpStatus.CREATED);
     }
     @Operation(summary = "댓글 좋아요 취소 API")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "댓글 좋아요 취소 완료",
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "댓글 좋아요 취소 완료",
             headers = @Header(name = AUTHORIZATION, description = "Access Token"))})
     @DeleteMapping("/{commentLikesId}")
     public void removeCommentLike(@PathVariable Long commentLikesId) {
