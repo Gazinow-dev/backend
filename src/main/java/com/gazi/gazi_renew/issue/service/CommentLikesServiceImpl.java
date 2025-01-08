@@ -13,6 +13,7 @@ import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class CommentLikesServiceImpl implements CommentLikesService {
     private final IssueCommentRepository issueCommentRepository;
     private final SecurityUtilService securityUtilService;
     @Override
+    @Transactional
     public CommentLikes addLike(CommentLikesCreate commentLikesCreate) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
@@ -34,6 +36,7 @@ public class CommentLikesServiceImpl implements CommentLikesService {
         }
     }
     @Override
+    @Transactional
     public void removeLike(Long commentLikesId) {
         commentLikesRepository.deleteByCommentLikesId(commentLikesId);
     }
