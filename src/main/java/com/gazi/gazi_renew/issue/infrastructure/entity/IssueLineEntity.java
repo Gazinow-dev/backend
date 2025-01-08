@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.issue.infrastructure;
+package com.gazi.gazi_renew.issue.infrastructure.entity;
 
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.domain.IssueLine;

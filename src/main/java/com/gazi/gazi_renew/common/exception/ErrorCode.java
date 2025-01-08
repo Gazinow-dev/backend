@@ -18,6 +18,7 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(CONFLICT, "중복된 닉네임입니다."),
     DUPLICATE_EMAIL(CONFLICT, "이미 가입된 이메일입니다."),
     ALREADY_LIKED_ISSUE(CONFLICT, "이미 좋아요를 누른 이슈입니다."),
+    ALREADY_LIKED_ISSUE_COMMENT(CONFLICT, "이미 좋아요를 누른 댓글입니다."),
     DUPLICATE_ROAD_NAME(CONFLICT, "이미 존재하는 경로 이름입니다."),
     /* 401 UNAUTHORIZED : 인증 실패 */
     INVALID_REFRESH_TOKEN(UNAUTHORIZED, "Refresh Token 정보가 일치하지 않습니다."),
@@ -31,6 +32,7 @@ public enum ErrorCode {
     FAILED_FCM_MESSAGE(BAD_REQUEST, "FCM 메시지 전송 실패"),
     NOTIFICATION_INVALID_TIME_RANGE(BAD_REQUEST, "알림 시작시간보다 종료시간이 더 빠릅니다."),
     MY_FIND_ROAD_NOT_FOUND(BAD_REQUEST, "해당 id로 존재하는 MyFindRoad가 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String detail;
@@ -86,5 +88,9 @@ public enum ErrorCode {
     }
     public static CustomException throwDuplicateNotificationForDay() {
         return new CustomException(DUPLICATE_NOTIFICATION_FOR_DAY);
+    }
+
+    public static CustomException throwDuplicateCommentLikeException() {
+        return new CustomException(ALREADY_LIKED_ISSUE_COMMENT);
     }
 }

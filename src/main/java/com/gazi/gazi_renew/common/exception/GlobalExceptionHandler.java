@@ -8,8 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestControllerAdvice
@@ -39,4 +44,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Response.Body> handleIllegalStateException(IllegalStateException e) {
         return response.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Response.Body> handleValidationException(MethodArgumentNotValidException e) {
+        // 모든 필드 에러를 순회하며 에러 메시지를 리스트로 수집
+        List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+
+        // 에러 메시지 리스트를 하나의 문자열로 조합 (필요에 따라 개별적으로 반환 가능)
+        String combinedErrorMessage = String.join(", ", errorMessages);
+
+        return response.fail(combinedErrorMessage, HttpStatus.BAD_REQUEST);
+    }
+
 }

@@ -1,24 +1,14 @@
-package com.gazi.gazi_renew.issue.infrastructure;
+package com.gazi.gazi_renew.issue.infrastructure.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gazi.gazi_renew.common.domain.AuditingFields;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.station.domain.Line;
-import com.gazi.gazi_renew.station.infrastructure.LineEntity;
-import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "issue")
@@ -41,6 +31,7 @@ public class IssueEntity extends AuditingFields {
 
     public static IssueEntity from(Issue issue) {
         IssueEntity issueEntity = new IssueEntity();
+        issueEntity.id = issue.getId();
         issueEntity.crawlingNo = issue.getCrawlingNo();
         issueEntity.startDate = issue.getStartDate().withSecond(0).withNano(0);
         issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);

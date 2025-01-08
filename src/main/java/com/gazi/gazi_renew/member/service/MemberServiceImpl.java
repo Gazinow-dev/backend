@@ -258,7 +258,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* 회원가입 시, 유효성 체크 */
-    @Transactional(readOnly = true)
     @Override
     public Map<String, String> validateHandling(Errors errors) {
         Map<String, String> validatorResult = new HashMap<>();
