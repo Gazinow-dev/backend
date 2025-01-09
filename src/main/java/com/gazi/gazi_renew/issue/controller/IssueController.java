@@ -38,8 +38,6 @@ public class IssueController {
             return response.fail("이슈 추가에 실패했습니다.", HttpStatus.BAD_REQUEST);
         }
     }
-
-
     @GetMapping()
     public String writeIssue(Model model, IssueCreate issueCreate,
                              @RequestParam(name = "title") String title,

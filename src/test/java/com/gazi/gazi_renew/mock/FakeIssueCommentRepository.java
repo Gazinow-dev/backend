@@ -24,6 +24,7 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
                     .issueCommentContent(issueComment.getIssueCommentContent())
                     .createdBy(issueComment.getCreatedBy())
                     .createdAt(issueComment.getCreatedAt())
+                    .reportedCount(issueComment.getReportedCount())
                     .build();
             data.add(result);
             return result;
@@ -60,6 +61,7 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
                 .issueCommentContent(issueComment.getIssueCommentContent())
                 .createdBy(issueComment.getCreatedBy())
                 .createdAt(issueComment.getCreatedAt())
+                .reportedCount(issueComment.getReportedCount())
                 .build();
 
         data.add(result);
@@ -93,5 +95,22 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
         List<IssueComment> pagedIssues = collect.subList(start, end);
 
         return new PageImpl<>(pagedIssues, pageable, data.size());
+    }
+
+    @Override
+    public void addReportedCount(IssueComment issueComment) {
+        data.removeIf(existingIssueComment -> Objects.equals(existingIssueComment.getIssueCommentId(), issueComment.getIssueCommentId()));
+
+        IssueComment result = IssueComment.builder()
+                .issueCommentId(issueComment.getIssueCommentId())
+                .issue(issueComment.getIssue())
+                .memberId(issueComment.getMemberId())
+                .issueCommentContent(issueComment.getIssueCommentContent())
+                .createdBy(issueComment.getCreatedBy())
+                .createdAt(issueComment.getCreatedAt())
+                .reportedCount(issueComment.getReportedCount() + 1)
+                .build();
+
+        data.add(result);
     }
 }

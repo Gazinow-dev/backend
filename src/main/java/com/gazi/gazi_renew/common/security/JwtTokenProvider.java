@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.common.config;
+package com.gazi.gazi_renew.common.security;
 
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.member.domain.Member;

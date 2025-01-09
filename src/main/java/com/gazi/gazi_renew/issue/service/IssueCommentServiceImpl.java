@@ -72,6 +72,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     @Override
     @Transactional(readOnly = true)
     public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
+        //댓글 조회(신고 횟수 3개) 미만만 조회
         Page<IssueComment> issueCommentList = issueCommentRepository.getIssueCommentByIssueId(pageable, issueId);
         String currentUserEmail = securityUtilService.getCurrentUserEmail();
         if (currentUserEmail.equals("anonymousUser") || currentUserEmail.isEmpty()){

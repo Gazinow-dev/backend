@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.member.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.config.JwtTokenProvider;
+import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.domain.ResponseToken;

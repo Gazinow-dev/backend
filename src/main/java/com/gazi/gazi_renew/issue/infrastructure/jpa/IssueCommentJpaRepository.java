@@ -15,9 +15,12 @@ public interface IssueCommentJpaRepository extends JpaRepository<IssueCommentEnt
     Page<IssueCommentEntity> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
     @Modifying
     @Query("UPDATE IssueCommentEntity c SET c.issueCommentContent=:issueCommentContent WHERE c.id=:issueCommentId")
-    void updateIssueCommentEntityContent(Long issueCommentId, String issueCommentContent);
+    void updateIssueCommentEntityContent(@Param("issueCommentId")Long issueCommentId,@Param("issueCommentContent") String issueCommentContent);
     int countByIssueEntityId(Long issueEntityId);
-    @Query("SELECT c FROM IssueCommentEntity c JOIN FETCH c.issueEntity i WHERE i.id = :issueEntityId")
-    Page<IssueCommentEntity> findByIssueEntityId(@Param("issueEntityId") Long issueEntityId, Pageable pageable);
 
+    @Query("SELECT c FROM IssueCommentEntity c JOIN FETCH c.issueEntity i WHERE i.id = :issueEntityId and c.reportedCount < 3")
+    Page<IssueCommentEntity> findByIssueEntityId(@Param("issueEntityId") Long issueEntityId, Pageable pageable);
+    @Modifying
+    @Query("UPDATE IssueCommentEntity c SET c.reportedCount=:reportedCount WHERE c.id=:issueCommentId")
+    void updateReportedCount(@Param("issueCommentId") Long issueCommentId, @Param("reportedCount")int reportedCount);
 }
