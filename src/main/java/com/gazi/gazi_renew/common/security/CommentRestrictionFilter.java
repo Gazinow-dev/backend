@@ -33,7 +33,7 @@ public class CommentRestrictionFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         // 댓글 작성 API가 아닌 경우 필터를 건너뜀
-        if (!request.getRequestURI().startsWith("/api/v1/comments")) {
+        if (!request.getRequestURI().equals("/api/v1/comments") || !"POST".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }

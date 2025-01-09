@@ -68,6 +68,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     @Override
     public void deleteComment(Long issueCommentId) {
         issueCommentRepository.deleteComment(issueCommentId);
+        commentLikesRepository.deleteByCommentLikesId(issueCommentId);
     }
     @Override
     @Transactional(readOnly = true)

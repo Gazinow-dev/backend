@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.admin.service;
 import com.gazi.gazi_renew.admin.controller.port.ReportService;
 import com.gazi.gazi_renew.admin.domain.Penalty;
 import com.gazi.gazi_renew.admin.domain.Report;
+import com.gazi.gazi_renew.admin.domain.ReportStatus;
 import com.gazi.gazi_renew.admin.domain.SanctionCriteria;
 import com.gazi.gazi_renew.admin.domain.dto.ReportCreate;
 import com.gazi.gazi_renew.admin.service.port.PenaltyRepository;
@@ -51,20 +52,30 @@ public class ReportServiceImpl implements ReportService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다")); //신고 대상자
 
         Report report = Report.create(reportCreate, reporterMemberId, reportedMember.getId(), clockHolder);
-        //TODO : 디스 코드 웹훅으로 신고 보내기 ( 서비스 따로 만들고 신고 대상자 , 신고자 닉네임 추가, 도메인에 별표 참고)
-//        discordNotifier.sendReportNotification(report, reporterMember, reportedMember, issueComment); //신고자,신고 대상자
-
-        reportRepository.save(report);
+        report = reportRepository.save(report);
+        discordNotifier.sendReportNotification(report, reporterMember, reportedMember, issueComment); //신고자,신고 대상자
     }
     @Override
     @Transactional
     public void approveReport(String sanctionCriteriaValue, Long reportId) {
         Report report = reportRepository.findByReportId(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 신고를 찾을 수 없습니다"));
+        if (report.getReportStatus() != ReportStatus.PENDING) {
+            throw ErrorCode.throwDuplicateProcessReportException();
+        }
         int reportCount = reportRepository.countByReportedMemberIdAndSanctionCriteria(report.getReportedMemberId(), SanctionCriteria.valueOf(sanctionCriteriaValue));
+        // 제재 대상 결정 (허위 신고 여부 판단)
+        Long penaltyTargetMemberId;
+        if (sanctionCriteriaValue.equalsIgnoreCase("FALSE_REPORT")) {
+            penaltyTargetMemberId = report.getReporterMemberId(); // 신고자 제재
+        } else {
+            penaltyTargetMemberId = report.getReportedMemberId(); // 신고 대상자 제재
+        }
 
-        Penalty penalty = penaltyRepository.findOrCreatePenalty(report.getReportedMemberId());
+        Penalty penalty = penaltyRepository.findOrCreatePenalty(penaltyTargetMemberId);
         report = report.approveReport(sanctionCriteriaValue, penalty, reportCount + 1, clockHolder);
+
+        deleteIssueComment(report);
 
         reportRepository.updateReportStatus(report);
         penaltyRepository.updatePenalty(penalty);
@@ -77,5 +88,10 @@ public class ReportServiceImpl implements ReportService {
         report = report.rejectReport();
 
         reportRepository.updateReportStatus(report);
+    }
+    private void deleteIssueComment(Report report) {
+        if (report.getIsDeletedComment() == Boolean.TRUE) {
+            issueCommentRepository.deleteComment(report.getIssueCommentId());
+        }
     }
 }

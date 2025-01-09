@@ -40,6 +40,11 @@ public class FakeCommentLikesRepository implements CommentLikesRepository {
     }
 
     @Override
+    public void deleteByIssueCommentId(Long issueCommentId) {
+        data.removeIf(like -> like.getIssueComment().getIssueCommentId().equals(issueCommentId));
+    }
+
+    @Override
     public int countByIssueCommentId(Long issueCommentId) {
         return (int) data.stream()
                 .filter(like -> like.getIssueComment().getIssueCommentId().equals(issueCommentId))

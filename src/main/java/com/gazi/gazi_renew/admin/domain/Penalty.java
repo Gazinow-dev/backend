@@ -24,6 +24,8 @@ public class Penalty {
     public static Penalty from(Long memberId) {
         return Penalty.builder()
                 .memberId(memberId)
+                .startDate(LocalDateTime.now().minusDays(7))
+                .expireDate(LocalDateTime.now().minusDays(7))
                 .build();
     }
     // 기간 연장 메서드
