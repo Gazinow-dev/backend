@@ -52,7 +52,7 @@ public class ReportServiceImpl implements ReportService {
 
         Report report = Report.create(reportCreate, reporterMemberId, reportedMember.getId(), clockHolder);
         //TODO : 디스 코드 웹훅으로 신고 보내기 ( 서비스 따로 만들고 신고 대상자 , 신고자 닉네임 추가, 도메인에 별표 참고)
-        discordNotifier.sendReportNotification(report, reporterMember, reportedMember, issueComment); //신고자,신고 대상자
+//        discordNotifier.sendReportNotification(report, reporterMember, reportedMember, issueComment); //신고자,신고 대상자
 
         reportRepository.save(report);
     }
