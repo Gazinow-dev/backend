@@ -43,7 +43,8 @@ public class IssueCommentController extends BaseController {
             @ApiResponse(responseCode = "201", description = "댓글 작성 완료",
                     content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = IssueCommentResponse.class)) ),
-            @ApiResponse(responseCode = "400", description = "댓글 내용은 500자를 넘을 수 없습니다.")
+            @ApiResponse(responseCode = "400", description = "댓글 내용은 500자를 넘을 수 없습니다."),
+            @ApiResponse(responseCode = "403", description = "댓글 작성이 제한된 사용자입니다.")
     })
     @PostMapping
     public ResponseEntity<Response.Body> saveComment(@Valid @RequestBody IssueCommentCreate issueCommentCreate) {

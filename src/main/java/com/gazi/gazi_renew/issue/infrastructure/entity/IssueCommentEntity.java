@@ -23,6 +23,7 @@ public class IssueCommentEntity{
     private String issueCommentContent;
     private String createdBy;
     private LocalDateTime createdAt;
+    private int reportedCount;
 
     public static IssueCommentEntity from(IssueComment issueComment) {
         IssueCommentEntity issueCommentEntity = new IssueCommentEntity();
@@ -32,6 +33,7 @@ public class IssueCommentEntity{
         issueCommentEntity.issueCommentContent = issueComment.getIssueCommentContent();
         issueCommentEntity.createdBy = issueComment.getCreatedBy();
         issueCommentEntity.createdAt = issueComment.getCreatedAt();
+        issueCommentEntity.reportedCount = issueComment.getReportedCount();
 
         return issueCommentEntity;
     }
@@ -43,6 +45,7 @@ public class IssueCommentEntity{
                 .issueCommentContent(issueCommentContent)
                 .createdBy(createdBy)
                 .createdAt(createdAt)
+                .reportedCount(reportedCount)
                 .build();
     }
 }

@@ -20,4 +20,6 @@ public interface IssueCommentRepository {
     int countByIssueId(Long issueId);
 
     Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId);
+
+    void addReportedCount(IssueComment issueComment);
 }

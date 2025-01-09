@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.common.config;
+package com.gazi.gazi_renew.common.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.controller.response.Response;
@@ -21,7 +21,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     private static final HttpStatus STATUS = FORBIDDEN;
 
     private final Response responseBuilder;
-
     private final ObjectMapper objectMapper;
 
     @Override
@@ -30,6 +29,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletResponse response,
             AccessDeniedException accessDeniedException
     ) throws IOException {
+        // 기본 접근 권한 없음 메시지 처리
         Body body = responseBuilder.fail(
                         "접근 권한이 없습니다.",
                         STATUS
@@ -37,13 +37,9 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .getBody();
 
         response.setContentType(APPLICATION_JSON_VALUE);
-
         response.setCharacterEncoding("UTF-8");
-
         response.setStatus(STATUS.value());
-
         response.getWriter()
                 .write(objectMapper.writeValueAsString(body));
     }
-
 }

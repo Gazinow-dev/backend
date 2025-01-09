@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.common.config;
+package com.gazi.gazi_renew.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

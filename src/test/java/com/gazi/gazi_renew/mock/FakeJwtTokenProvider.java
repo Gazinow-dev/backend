@@ -1,15 +1,12 @@
 package com.gazi.gazi_renew.mock;
 
-import com.gazi.gazi_renew.common.config.JwtTokenProvider;
+import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.member.domain.Member;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 public class FakeJwtTokenProvider extends JwtTokenProvider {

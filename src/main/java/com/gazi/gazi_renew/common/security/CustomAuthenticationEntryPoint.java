@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.common.config;
+package com.gazi.gazi_renew.common.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.controller.response.Response;

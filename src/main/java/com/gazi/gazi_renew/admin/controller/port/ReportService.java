@@ -4,7 +4,7 @@ import com.gazi.gazi_renew.admin.domain.Report;
 import com.gazi.gazi_renew.admin.domain.dto.ReportCreate;
 
 public interface ReportService {
-    Report createReport(ReportCreate reportCreate);
+    void createReport(ReportCreate reportCreate);
 
     void approveReport(String sanctionCriteriaValue, Long reportId);
     void rejectReport(Long reportId);

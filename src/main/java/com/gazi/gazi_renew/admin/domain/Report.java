@@ -29,10 +29,10 @@ public class Report {
         this.reportedAt = reportedAt;
         this.reportStatus = reportStatus;
     }
-    public static Report create(ReportCreate reportCreate, Long reporterId, Long reportedId, ClockHolder clockHolder) {
+    public static Report create(ReportCreate reportCreate, Long reporterMemberId, Long reportedMemberId, ClockHolder clockHolder) {
         return Report.builder()
-                .reporterMemberId(reporterId)
-                .reportedMemberId(reportedId)
+                .reporterMemberId(reporterMemberId)
+                .reportedMemberId(reportedMemberId)
                 .issueCommentId(reportCreate.getReportedCommentId())
                 .reportReason(ReportReason.valueOf(reportCreate.getReason()))
                 .reasonDescription(reportCreate.getReasonDescription())

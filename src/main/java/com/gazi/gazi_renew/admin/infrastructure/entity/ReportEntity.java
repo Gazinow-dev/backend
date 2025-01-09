@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.admin.infrastructure.entity;
 import com.gazi.gazi_renew.admin.domain.Report;
 import com.gazi.gazi_renew.admin.domain.ReportReason;
 import com.gazi.gazi_renew.admin.domain.ReportStatus;
+import com.gazi.gazi_renew.admin.domain.SanctionCriteria;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,6 +29,8 @@ public class ReportEntity {
     @Enumerated(EnumType.STRING)
     private ReportStatus reportStatus;
     private LocalDateTime reportedAt;
+    @Enumerated(EnumType.STRING)
+    private SanctionCriteria sanctionCriteria;
 
     public static ReportEntity from(Report report) {
         ReportEntity reportEntity = new ReportEntity();
@@ -39,6 +42,7 @@ public class ReportEntity {
         reportEntity.reasonDescription = report.getReasonDescription();
         reportEntity.reportStatus = report.getReportStatus();
         reportEntity.reportedAt = report.getReportedAt();
+        reportEntity.sanctionCriteria = SanctionCriteria.NONE;
 
         return reportEntity;
     }

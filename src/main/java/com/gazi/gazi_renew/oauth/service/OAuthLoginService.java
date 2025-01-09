@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.oauth.service;
 
 import com.gazi.gazi_renew.common.config.AppleProperties;
-import com.gazi.gazi_renew.common.config.JwtTokenProvider;
+import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
