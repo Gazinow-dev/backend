@@ -6,7 +6,6 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.dto.CommentLikesCreate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.issue.service.port.CommentLikesRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.FakeCommentLikesRepository;
@@ -22,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 class CommentLikesServiceImplTest {
     CommentLikesServiceImpl commentLikesServiceImpl;
