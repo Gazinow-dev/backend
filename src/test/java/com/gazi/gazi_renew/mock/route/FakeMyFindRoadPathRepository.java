@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.route;
 
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;

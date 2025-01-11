@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.member;
 
 import com.gazi.gazi_renew.member.domain.RecentSearch;
 import com.gazi.gazi_renew.member.service.port.RecentSearchRepository;

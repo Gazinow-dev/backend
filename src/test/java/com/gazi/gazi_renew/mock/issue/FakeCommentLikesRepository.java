@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.issue;
 
 import com.gazi.gazi_renew.issue.domain.CommentLikes;
 import com.gazi.gazi_renew.issue.domain.IssueComment;

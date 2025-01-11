@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.notification;
 
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;

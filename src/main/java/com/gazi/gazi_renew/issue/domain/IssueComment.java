@@ -108,4 +108,18 @@ public class IssueComment {
                 .reportedCount(this.reportedCount + 1)
                 .build();
     }
+    public IssueComment decreaseReportedCount() {
+        if (this.getReportedCount() > 0) {
+            return IssueComment.builder()
+                    .issueCommentId(this.issueCommentId)
+                    .issue(this.issue)
+                    .memberId(this.memberId)
+                    .issueCommentContent(this.issueCommentContent)
+                    .createdBy(this.createdBy)
+                    .createdAt(this.createdAt)
+                    .reportedCount(this.reportedCount - 1)
+                    .build();
+        }
+        return this;
+    }
 }

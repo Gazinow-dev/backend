@@ -21,11 +21,11 @@ public class Penalty {
         this.expireDate = expireDate;
     }
 
-    public static Penalty from(Long memberId) {
+    public static Penalty from(Long memberId, ClockHolder clockHolder) {
         return Penalty.builder()
                 .memberId(memberId)
-                .startDate(LocalDateTime.now().minusDays(7))
-                .expireDate(LocalDateTime.now().minusDays(7))
+                .startDate(clockHolder.now().minusDays(7))
+                .expireDate(clockHolder.now().minusDays(7))
                 .build();
     }
     // 기간 연장 메서드

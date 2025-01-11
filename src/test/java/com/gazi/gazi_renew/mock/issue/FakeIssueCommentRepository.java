@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.issue;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
@@ -98,7 +98,7 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
     }
 
     @Override
-    public void addReportedCount(IssueComment issueComment) {
+    public void updateReportedCount(IssueComment issueComment) {
         data.removeIf(existingIssueComment -> Objects.equals(existingIssueComment.getIssueCommentId(), issueComment.getIssueCommentId()));
 
         IssueComment result = IssueComment.builder()
@@ -108,7 +108,7 @@ public class FakeIssueCommentRepository implements IssueCommentRepository {
                 .issueCommentContent(issueComment.getIssueCommentContent())
                 .createdBy(issueComment.getCreatedBy())
                 .createdAt(issueComment.getCreatedAt())
-                .reportedCount(issueComment.getReportedCount() + 1)
+                .reportedCount(issueComment.getReportedCount())
                 .build();
 
         data.add(result);

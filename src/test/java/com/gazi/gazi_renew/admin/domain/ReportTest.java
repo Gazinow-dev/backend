@@ -1,7 +1,7 @@
 package com.gazi.gazi_renew.admin.domain;
 
 import com.gazi.gazi_renew.admin.domain.dto.ReportCreate;
-import com.gazi.gazi_renew.mock.TestClockHolder;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

@@ -4,11 +4,10 @@ import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.RecentSearch;
 import com.gazi.gazi_renew.member.domain.dto.RecentSearchCreate;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.FakeMemberRepository;
-import com.gazi.gazi_renew.mock.FakeRecentSearchRepository;
-import com.gazi.gazi_renew.mock.FakeSecurityUtil;
-import com.gazi.gazi_renew.mock.TestClockHolder;
-import org.assertj.core.api.Assertions;
+import com.gazi.gazi_renew.mock.member.FakeMemberRepository;
+import com.gazi.gazi_renew.mock.member.FakeRecentSearchRepository;
+import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

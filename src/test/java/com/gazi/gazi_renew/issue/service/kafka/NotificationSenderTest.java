@@ -1,7 +1,9 @@
 package com.gazi.gazi_renew.issue.service.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gazi.gazi_renew.mock.*;
+import com.gazi.gazi_renew.mock.common.FakeRedisUtilServiceImpl;
+import com.gazi.gazi_renew.mock.route.FakeMyFindRoadSubPathRepository;
+import com.gazi.gazi_renew.mock.route.FakeMyFindRoadSubwayRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;

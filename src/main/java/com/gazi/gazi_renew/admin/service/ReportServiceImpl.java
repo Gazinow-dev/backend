@@ -34,7 +34,7 @@ public class ReportServiceImpl implements ReportService {
     private final ClockHolder clockHolder;
     @Override
     @Transactional
-    public void createReport(ReportCreate reportCreate) {
+    public Report createReport(ReportCreate reportCreate) {
         Member reporterMember = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다"));
         Long reporterMemberId = reporterMember.getId(); //신고자
@@ -46,7 +46,7 @@ public class ReportServiceImpl implements ReportService {
         }
         //댓글 신고 횟수 1회 증가
         issueComment = issueComment.addReportedCount();
-        issueCommentRepository.addReportedCount(issueComment);
+        issueCommentRepository.updateReportedCount(issueComment);
 
         Member reportedMember = memberRepository.findById(issueComment.getMemberId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다")); //신고 대상자
@@ -54,10 +54,11 @@ public class ReportServiceImpl implements ReportService {
         Report report = Report.create(reportCreate, reporterMemberId, reportedMember.getId(), clockHolder);
         report = reportRepository.save(report);
         discordNotifier.sendReportNotification(report, reporterMember, reportedMember, issueComment); //신고자,신고 대상자
+        return report;
     }
     @Override
     @Transactional
-    public void approveReport(String sanctionCriteriaValue, Long reportId) {
+    public Report approveReport(String sanctionCriteriaValue, Long reportId) {
         Report report = reportRepository.findByReportId(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 신고를 찾을 수 없습니다"));
         if (report.getReportStatus() != ReportStatus.PENDING) {
@@ -79,14 +80,21 @@ public class ReportServiceImpl implements ReportService {
 
         reportRepository.updateReportStatus(report);
         penaltyRepository.updatePenalty(penalty);
+
+        return report;
     }
     @Override
     @Transactional
     public void rejectReport(Long reportId) {
         Report report = reportRepository.findByReportId(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 신고를 찾을 수 없습니다"));
-        report = report.rejectReport();
+        IssueComment issueComment = issueCommentRepository.findByIssueCommentId(report.getIssueCommentId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다"));
 
+        report = report.rejectReport();
+        issueComment = issueComment.decreaseReportedCount();
+
+        issueCommentRepository.updateReportedCount(issueComment);
         reportRepository.updateReportStatus(report);
     }
     private void deleteIssueComment(Report report) {

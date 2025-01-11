@@ -49,7 +49,7 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
     }
 
     @Override
-    public void addReportedCount(IssueComment issueComment) {
+    public void updateReportedCount(IssueComment issueComment) {
         issueCommentJpaRepository.updateReportedCount(issueComment.getIssueCommentId(), issueComment.getReportedCount());
     }
 }

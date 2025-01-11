@@ -11,10 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReportJpaRepository extends JpaRepository<ReportEntity , Long> {
 
-    Long countByReportedMemberId(Long reportedMemberId);
     @Modifying
-    @Query("UPDATE ReportEntity r SET r.reportStatus= :reportStatus WHERE r.id = :id")
-    void updateReportStatus(@Param("id") Long id,@Param("reportStatus") ReportStatus reportStatus);
+    @Query("UPDATE ReportEntity r SET r.reportStatus= :reportStatus, r.sanctionCriteria= :sanctionCriteria WHERE r.id = :id")
+    void updateReportStatus(@Param("id") Long id, @Param("reportStatus") ReportStatus reportStatus, @Param("sanctionCriteria") SanctionCriteria sanctionCriteria);
 
     Long countByReportedMemberIdAndSanctionCriteria(Long reportedMemberId, SanctionCriteria sanctionCriteria);
 

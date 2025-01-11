@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.common;
 
 import com.gazi.gazi_renew.issue.domain.Like;
 import com.gazi.gazi_renew.issue.service.port.LikeRepository;

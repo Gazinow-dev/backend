@@ -24,7 +24,7 @@ public class ReportRepositoryImpl implements ReportRepository {
     }
     @Override
     public void updateReportStatus(Report report) {
-        reportJpaRepository.updateReportStatus(report.getReportId(), report.getReportStatus());
+        reportJpaRepository.updateReportStatus(report.getReportId(), report.getReportStatus(), report.getSanctionCriteria());
     }
     @Override
     public int countByReportedMemberIdAndSanctionCriteria(Long reportedMemberId, SanctionCriteria sanctionCriteria) {

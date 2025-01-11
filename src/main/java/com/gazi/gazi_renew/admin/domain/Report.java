@@ -18,8 +18,9 @@ public class Report {
     private final LocalDateTime reportedAt;
     private final ReportStatus reportStatus;
     private final Boolean isDeletedComment;
+    private final SanctionCriteria sanctionCriteria;
     @Builder
-    public Report(Long reportId, Long reportedMemberId, Long reporterMemberId, Long issueCommentId, ReportReason reportReason, String reasonDescription, LocalDateTime reportedAt, ReportStatus reportStatus, Boolean isDeletedComment) {
+    public Report(Long reportId, Long reportedMemberId, Long reporterMemberId, Long issueCommentId, ReportReason reportReason, String reasonDescription, LocalDateTime reportedAt, ReportStatus reportStatus, Boolean isDeletedComment, SanctionCriteria sanctionCriteria) {
         this.reportId = reportId;
         this.reportedMemberId = reportedMemberId;
         this.reporterMemberId = reporterMemberId;
@@ -29,6 +30,7 @@ public class Report {
         this.reportedAt = reportedAt;
         this.reportStatus = reportStatus;
         this.isDeletedComment = isDeletedComment;
+        this.sanctionCriteria = sanctionCriteria;
     }
 
     public static Report create(ReportCreate reportCreate, Long reporterMemberId, Long reportedMemberId, ClockHolder clockHolder) {
@@ -49,18 +51,18 @@ public class Report {
         if (sanctionCriteriaValue.equalsIgnoreCase("ADVERTISEMENT")) {
             // 광고 및 홍보: 댓글 삭제 + 1년 댓글 작성 제한
             penalty.extendPenalty(365, clockHolder);
-            return getApprobeReport(Boolean.TRUE);
+            return getApproveReport(Boolean.TRUE, SanctionCriteria.valueOf(sanctionCriteriaValue));
         } else if (sanctionCriteriaValue.equalsIgnoreCase("OTHER_VIOLATIONS")) {
             // 광고 외 위반: 신고 횟수별 기간 연장
             int penaltyDays = calculatePenaltyDays(reportCount);
             penalty.extendPenalty(penaltyDays, clockHolder);
 
-            return getApprobeReport(Boolean.TRUE);
+            return getApproveReport(Boolean.TRUE, SanctionCriteria.valueOf(sanctionCriteriaValue));
         } else if (sanctionCriteriaValue.equalsIgnoreCase("FALSE_REPORT")) {
             // 허위 신고: 신고 횟수별 기간 연장
             int penaltyDays = calculateFalseReportPenaltyDays(reportCount);
             penalty.extendPenalty(penaltyDays, clockHolder);
-            return getApprobeReport(Boolean.FALSE);
+            return getApproveReport(Boolean.FALSE, SanctionCriteria.valueOf(sanctionCriteriaValue));
         } else {
             // 유효하지 않은 제재 기준 값에 대한 처리
             throw new IllegalArgumentException("유효하지 않은 제제 기준 입니다 : " + sanctionCriteriaValue);
@@ -107,7 +109,7 @@ public class Report {
             return 90; // 5회 이상
         }
     }
-    private Report getApprobeReport(Boolean isDeletedComment) {
+    private Report getApproveReport(Boolean isDeletedComment, SanctionCriteria sanctionCriteriaValue) {
         return Report.builder()
                 .reportId(reportId)
                 .reporterMemberId(reporterMemberId)
@@ -117,6 +119,7 @@ public class Report {
                 .reportedAt(reportedAt)
                 .reportStatus(ReportStatus.APPROVED)
                 .isDeletedComment(isDeletedComment)
+                .sanctionCriteria(sanctionCriteriaValue)
                 .build();
     }
 

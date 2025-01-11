@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.security;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 

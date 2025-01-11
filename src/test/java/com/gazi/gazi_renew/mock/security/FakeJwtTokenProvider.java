@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.security;
 
 import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.domain.ResponseToken;

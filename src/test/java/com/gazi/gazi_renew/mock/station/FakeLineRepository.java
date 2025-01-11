@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.station;
 
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.service.port.LineRepository;

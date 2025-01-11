@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.mock;
+package com.gazi.gazi_renew.mock.member;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
