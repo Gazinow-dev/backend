@@ -17,5 +17,5 @@ public interface ReportJpaRepository extends JpaRepository<ReportEntity , Long> 
 
     Long countByReportedMemberIdAndSanctionCriteria(Long reportedMemberId, SanctionCriteria sanctionCriteria);
 
-    boolean existsByIssueCommentIdAndReportedMemberId(Long issueCommentId, Long reporterMemberId);
+    boolean existsByIssueCommentIdAndReporterMemberId(Long issueCommentId, Long reporterMemberId);
 }

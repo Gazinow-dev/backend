@@ -32,6 +32,6 @@ public class ReportRepositoryImpl implements ReportRepository {
     }
     @Override
     public boolean existsByIssueCommentIdAndReporterMemberId(Long issueCommentId, Long reporterMemberId) {
-        return reportJpaRepository.existsByIssueCommentIdAndReportedMemberId(issueCommentId, reporterMemberId);
+        return reportJpaRepository.existsByIssueCommentIdAndReporterMemberId(issueCommentId, reporterMemberId);
     }
 }
