@@ -25,12 +25,6 @@ public class CommentLikesRepositoryImpl implements CommentLikesRepository {
     public void deleteByCommentLikesId(Long commentLikesId) {
         commentLikesJpaRepository.deleteById(commentLikesId);
     }
-
-    @Override
-    public void deleteByIssueCommentId(Long issueCommentId) {
-        commentLikesJpaRepository.deleteByIssueCommentEntityId(issueCommentId);
-    }
-
     @Override
     public int countByIssueCommentId(Long issueCommentId) {
         return commentLikesJpaRepository.countByIssueCommentEntityId(issueCommentId).intValue();
