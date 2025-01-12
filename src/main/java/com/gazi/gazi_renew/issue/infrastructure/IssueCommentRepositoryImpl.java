@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -33,6 +34,7 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
         issueCommentJpaRepository.deleteById(issueCommentId);
     }
     @Override
+    @Transactional(readOnly = true)
     public Optional<IssueComment> findByIssueCommentId(Long issueCommentId) {
         return issueCommentJpaRepository.findById(issueCommentId).map(IssueCommentEntity::toModel);
     }
