@@ -16,7 +16,6 @@ public class ReportCreate {
     @NotBlank(message = "신고 이유는 필수 입력 값입니다.")
     private final String reason;
     @Size(max = 100, message = "신고 이유 설명은 100자를 넘을 수 없습니다.")
-    @NotBlank(message = "신고 이유 설명은 필수 입력 값입니다.")
     @Schema(description = "신고 이유 설명", example = "댓글이 ~~")
     private final String reasonDescription;
     @Builder

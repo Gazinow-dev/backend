@@ -47,7 +47,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     public Page<MyCommentSummary> getIssueCommentsByMemberId(Pageable pageable) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
-        //TODO : N+1 확인
+
         Page<IssueComment> issueComments = issueCommentRepository.getIssueComments(pageable, member.getId());
 
         return issueComments.map(issueComment -> {

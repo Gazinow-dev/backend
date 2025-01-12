@@ -9,7 +9,6 @@ public interface CommentLikesRepository {
     CommentLikes save(CommentLikes from);
 
     void deleteByCommentLikesId(Long commentLikesId);
-    void deleteByIssueCommentId(Long issueCommentId);
 
     int countByIssueCommentId(Long issueCommentId);
 }
