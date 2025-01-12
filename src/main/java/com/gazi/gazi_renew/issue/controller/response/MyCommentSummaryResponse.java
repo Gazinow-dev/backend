@@ -38,7 +38,6 @@ public class MyCommentSummaryResponse {
         this.commentsCount = commentsCount;
         this.likesCount = likesCount;
     }
-
     public static Page<MyCommentSummaryResponse> fromPage(Page<MyCommentSummary> myCommentSummaryList) {
         return myCommentSummaryList.map(myCommentSummary -> MyCommentSummaryResponse.builder()
                 .issueCommentId(myCommentSummary.getIssueCommentId())

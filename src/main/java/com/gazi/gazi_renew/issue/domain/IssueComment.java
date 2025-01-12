@@ -23,8 +23,9 @@ public class IssueComment {
     private final boolean isMine;
     private final boolean isLiked;
     private final int likesCount;
+    private final int reportedCount;
     @Builder
-    public IssueComment(Long issueCommentId, Issue issue, Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt, boolean isMine, boolean isLiked, int likesCount) {
+    public IssueComment(Long issueCommentId, Issue issue, Long memberId, String issueCommentContent, String createdBy, LocalDateTime createdAt, boolean isMine, boolean isLiked, int likesCount, int reportedCount) {
         this.issueCommentId = issueCommentId;
         this.issue = issue;
         this.memberId = memberId;
@@ -34,7 +35,9 @@ public class IssueComment {
         this.isMine = isMine;
         this.isLiked = isLiked;
         this.likesCount = likesCount;
+        this.reportedCount = reportedCount;
     }
+
     public IssueComment update(IssueCommentUpdate issueCommentUpdate, ClockHolder clockHolder) {
         return IssueComment.builder()
                 .issueCommentId(this.issueCommentId)
@@ -43,6 +46,7 @@ public class IssueComment {
                 .issueCommentContent(issueCommentUpdate.getIssueCommentContent())
                 .createdBy(this.createdBy)
                 .createdAt(clockHolder.now())
+                .reportedCount(this.reportedCount)
                 .build();
     }
     public IssueComment fromCommentLikes(boolean isMine, int likesCount, boolean isLiked) {
@@ -56,6 +60,7 @@ public class IssueComment {
                 .isMine(isMine)
                 .likesCount(likesCount)
                 .isLiked(isLiked)
+                .reportedCount(this.reportedCount)
                 .build();
     }
     public static IssueComment from(IssueCommentCreate issueCommentCreate, Issue issue, Member member, ClockHolder clockHolder) {
@@ -65,6 +70,7 @@ public class IssueComment {
                 .issueCommentContent(issueCommentCreate.getIssueCommentContent())
                 .createdBy(member.getNickName())
                 .createdAt(clockHolder.now())
+                .reportedCount(0)
                 .build();
     }
     // 시간 구하기 로직
@@ -90,5 +96,30 @@ public class IssueComment {
         }
 
         return formatTime;
+    }
+    public IssueComment addReportedCount() {
+        return IssueComment.builder()
+                .issueCommentId(this.issueCommentId)
+                .issue(this.issue)
+                .memberId(this.memberId)
+                .issueCommentContent(this.issueCommentContent)
+                .createdBy(this.createdBy)
+                .createdAt(this.createdAt)
+                .reportedCount(this.reportedCount + 1)
+                .build();
+    }
+    public IssueComment decreaseReportedCount() {
+        if (this.getReportedCount() > 0) {
+            return IssueComment.builder()
+                    .issueCommentId(this.issueCommentId)
+                    .issue(this.issue)
+                    .memberId(this.memberId)
+                    .issueCommentContent(this.issueCommentContent)
+                    .createdBy(this.createdBy)
+                    .createdAt(this.createdAt)
+                    .reportedCount(this.reportedCount - 1)
+                    .build();
+        }
+        return this;
     }
 }

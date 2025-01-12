@@ -9,7 +9,12 @@ import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.*;
+import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
+import com.gazi.gazi_renew.mock.issue.FakeCommentLikesRepository;
+import com.gazi.gazi_renew.mock.issue.FakeIssueCommentRepository;
+import com.gazi.gazi_renew.mock.issue.FakeIssueRepository;
+import com.gazi.gazi_renew.mock.member.FakeMemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -19,15 +24,15 @@ import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class IssueCommentServiceImplTest {
     private IssueCommentServiceImpl issueCommentServiceImpl;
+    private FakeIssueCommentRepository fakeIssueCommentRepository;
     @BeforeEach
     void init() {
-        FakeIssueCommentRepository fakeIssueCommentRepository = new FakeIssueCommentRepository();
+        fakeIssueCommentRepository = new FakeIssueCommentRepository();
         FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
         FakeIssueRepository fakeIssueRepository = new FakeIssueRepository();
         LocalDateTime newTime = LocalDateTime.now();
@@ -125,6 +130,26 @@ class IssueCommentServiceImplTest {
         //then
         assertThat(issueCommentByIssueId.getTotalElements()).isEqualTo(2);
         assertThat(issueCommentByIssueId.getContent().get(0).getIssueCommentContent()).isEqualTo("두번쨰 가는길 지금 이슈 댓글 테스트입니다");
+    }
+    @Test
+    void 이슈_id를_통해_이슈에_달린_댓글을_조회시_댓글_신고_횟수가_3회_이상인_댓글은_즉시_숨김_처리가_된다() throws Exception{
+        IssueCommentCreate issueComment = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("새로운 가는길 지금 이슈 댓글 테스트입니다")
+                .build();
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
+        //when
+        IssueComment issueComment1 = issueCommentServiceImpl.saveComment(issueComment);
+
+        Page<IssueComment> issueCommentByIssueId = issueCommentServiceImpl.getIssueCommentByIssueId(pageable, 1L);
+        assertThat(issueCommentByIssueId.getTotalElements()).isEqualTo(3);
+        for (int i = 0; i < 3; i++) {
+            issueComment1 = issueComment1.addReportedCount();
+            fakeIssueCommentRepository.updateReportedCount(issueComment1);
+        }
+        Page<IssueComment> result = issueCommentServiceImpl.getIssueCommentByIssueId(pageable, 1L);
+        //then
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
     @Test
     void getIssueCommentByIssueId_메서드는_좋아요_갯수_및_상태까지_가져온다() throws Exception{

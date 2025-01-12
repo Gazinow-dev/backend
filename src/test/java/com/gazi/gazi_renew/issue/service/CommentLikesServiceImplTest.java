@@ -1,31 +1,30 @@
 package com.gazi.gazi_renew.issue.service;
 
+import com.gazi.gazi_renew.admin.service.DiscordNotifier;
 import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.issue.domain.CommentLikes;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
 import com.gazi.gazi_renew.issue.domain.dto.CommentLikesCreate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.issue.service.port.CommentLikesRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.FakeCommentLikesRepository;
-import com.gazi.gazi_renew.mock.FakeIssueCommentRepository;
-import com.gazi.gazi_renew.mock.FakeMemberRepository;
-import com.gazi.gazi_renew.mock.FakeSecurityUtil;
-import org.apache.commons.lang3.time.CalendarUtils;
-import org.assertj.core.api.Assertions;
+import com.gazi.gazi_renew.mock.issue.FakeCommentLikesRepository;
+import com.gazi.gazi_renew.mock.issue.FakeIssueCommentRepository;
+import com.gazi.gazi_renew.mock.member.FakeMemberRepository;
+import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 class CommentLikesServiceImplTest {
     CommentLikesServiceImpl commentLikesServiceImpl;
+
     @BeforeEach
     void init() {
         FakeCommentLikesRepository fakeCommentLikesRepository = new FakeCommentLikesRepository();

@@ -2,7 +2,11 @@ package com.gazi.gazi_renew.common.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.admin.service.port.MemberPenaltyRepository;
+import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.common.security.*;
+import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +35,8 @@ public class SecurityConfig {
     private final RedisTemplate redisTemplate;
     private final Response response;
     private final ObjectMapper objectMapper;
+    private final MemberRepository memberRepository;
+    private final MemberPenaltyRepository memberPenaltyRepository;
 
 
     CorsConfigurationSource corsConfigurationSource() {
@@ -58,10 +64,16 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/comments/{issueId}").permitAll()
                                 .requestMatchers("/api/v1/like", "/api/v1/member/logout", "/api/v1/member/change_nickname", "/api/v1/member/change_password"
                                         , "/api/v1/member/delete_member", "/api/v1/my_find_road/*", "/api/v1/recentSearch", "/api/v1/recentSearch/**",
-                                        "/api/v1/notification/**",  "/api/v1/member/fcm-token", "/api/v1/member/notifications/**", "/api/v1/comments/**").authenticated() // 요청에 대해 인증 필요
+                                        "/api/v1/notification/**",  "/api/v1/member/fcm-token", "/api/v1/member/notifications/**", "/api/v1/comments/**", "/api/v1/report/**").authenticated() // 요청에 대해 인증 필요
                                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CommentRestrictionFilter(
+                        memberPenaltyRepository,
+                        memberRepository,
+                        response
+                        ,objectMapper
+                ), JwtAuthenticationFilter.class)
                 .exceptionHandling(
                         exception ->
                                 exception.authenticationEntryPoint(

@@ -8,19 +8,17 @@ import com.gazi.gazi_renew.issue.domain.dto.LikeDelete;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.FakeIssueRepository;
-import com.gazi.gazi_renew.mock.FakeLikeRepository;
-import com.gazi.gazi_renew.mock.FakeMemberRepository;
-import com.gazi.gazi_renew.mock.FakeSecurityUtil;
+import com.gazi.gazi_renew.mock.issue.FakeIssueRepository;
+import com.gazi.gazi_renew.mock.common.FakeLikeRepository;
+import com.gazi.gazi_renew.mock.member.FakeMemberRepository;
+import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;

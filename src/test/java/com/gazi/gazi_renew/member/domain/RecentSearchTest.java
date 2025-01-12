@@ -2,7 +2,7 @@ package com.gazi.gazi_renew.member.domain;
 
 import com.gazi.gazi_renew.member.domain.dto.RecentSearchCreate;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.TestClockHolder;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

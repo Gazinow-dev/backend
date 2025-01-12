@@ -47,7 +47,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     public Page<MyCommentSummary> getIssueCommentsByMemberId(Pageable pageable) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
-        //TODO : N+1 확인
+
         Page<IssueComment> issueComments = issueCommentRepository.getIssueComments(pageable, member.getId());
 
         return issueComments.map(issueComment -> {
@@ -68,10 +68,12 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     @Override
     public void deleteComment(Long issueCommentId) {
         issueCommentRepository.deleteComment(issueCommentId);
+        commentLikesRepository.deleteByCommentLikesId(issueCommentId);
     }
     @Override
     @Transactional(readOnly = true)
     public Page<IssueComment> getIssueCommentByIssueId(Pageable pageable, Long issueId) {
+        //댓글 조회(신고 횟수 3개) 미만만 조회
         Page<IssueComment> issueCommentList = issueCommentRepository.getIssueCommentByIssueId(pageable, issueId);
         String currentUserEmail = securityUtilService.getCurrentUserEmail();
         if (currentUserEmail.equals("anonymousUser") || currentUserEmail.isEmpty()){

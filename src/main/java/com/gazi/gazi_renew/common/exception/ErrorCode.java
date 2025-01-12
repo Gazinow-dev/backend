@@ -20,6 +20,8 @@ public enum ErrorCode {
     ALREADY_LIKED_ISSUE(CONFLICT, "이미 좋아요를 누른 이슈입니다."),
     ALREADY_LIKED_ISSUE_COMMENT(CONFLICT, "이미 좋아요를 누른 댓글입니다."),
     DUPLICATE_ROAD_NAME(CONFLICT, "이미 존재하는 경로 이름입니다."),
+    DUPLICATE_REPORT_COMMENT(CONFLICT, "이미 신고 처리한 댓글입니다."),
+    DUPLICATE_PROCESS_REPORT(CONFLICT, "이미 제제 적합/부적합 처리한 신고입니다."),
     /* 401 UNAUTHORIZED : 인증 실패 */
     INVALID_REFRESH_TOKEN(UNAUTHORIZED, "Refresh Token 정보가 일치하지 않습니다."),
     INVALID_VERIFICATION_CODE(UNAUTHORIZED, "인증코드가 일치하지 않습니다."),
@@ -92,5 +94,12 @@ public enum ErrorCode {
 
     public static CustomException throwDuplicateCommentLikeException() {
         return new CustomException(ALREADY_LIKED_ISSUE_COMMENT);
+    }
+
+    public static CustomException throwDuplicateReportException() {
+        return new CustomException(DUPLICATE_REPORT_COMMENT);
+    }
+    public static CustomException throwDuplicateProcessReportException() {
+        return new CustomException(DUPLICATE_PROCESS_REPORT);
     }
 }

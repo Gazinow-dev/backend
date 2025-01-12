@@ -47,4 +47,9 @@ public class IssueCommentRepositoryImpl implements IssueCommentRepository {
         return issueCommentJpaRepository.findByIssueEntityId(issueId, pageable)
                 .map(IssueCommentEntity::toModel);
     }
+
+    @Override
+    public void updateReportedCount(IssueComment issueComment) {
+        issueCommentJpaRepository.updateReportedCount(issueComment.getIssueCommentId(), issueComment.getReportedCount());
+    }
 }

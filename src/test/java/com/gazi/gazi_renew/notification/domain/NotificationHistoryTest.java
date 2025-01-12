@@ -1,8 +1,7 @@
 package com.gazi.gazi_renew.notification.domain;
 
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.mock.TestClockHolder;
-import org.assertj.core.api.Assertions;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

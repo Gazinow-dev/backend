@@ -5,7 +5,7 @@ import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.TestClockHolder;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -228,6 +228,31 @@ class IssueCommentTest {
         String result = issueComment.formatTime(new TestClockHolder(LocalDateTime.now()));
         //then
         assertThat(result).isEqualTo("2일 전");
+    }
+    @Test
+    void 댓글은_신고를_당하면_신고_횟수가_1회_누적된다() throws Exception{
+        //given
+        IssueCommentCreate issueCommentCreate = IssueCommentCreate.builder()
+                .issueId(1L)
+                .issueCommentContent("이슈 댓글 테스트")
+                .build();
+        Member member = Member.builder()
+                .id(1L)
+                .email("mw310@naver.com")
+                .password("temp")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .firebaseToken("temp")
+                .build();
+
+        LocalDateTime newTime = LocalDateTime.now().minusDays(2); // 2일 전 생성
+        IssueComment issueComment = IssueComment.from(issueCommentCreate, issue, member, new TestClockHolder(newTime));
+        //when
+        issueComment = issueComment.addReportedCount();
+        //then
+        assertThat(issueComment.getReportedCount()).isEqualTo(1);
     }
 }
 

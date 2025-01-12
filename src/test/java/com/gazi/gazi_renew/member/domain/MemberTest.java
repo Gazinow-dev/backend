@@ -3,7 +3,7 @@ package com.gazi.gazi_renew.member.domain;
 import com.gazi.gazi_renew.member.domain.dto.MemberCheckPassword;
 import com.gazi.gazi_renew.member.domain.dto.MemberCreate;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.TestPasswordEncoder;
+import com.gazi.gazi_renew.mock.security.TestPasswordEncoder;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
