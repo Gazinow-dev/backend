@@ -61,7 +61,7 @@ public class AdminReportController {
     @PostMapping("/{reportId}/process")
     public ResponseEntity<Response.Body> processReport(
             @PathVariable Long reportId,
-            @RequestParam String sanctionCriteria, // 제재 기준
+            @RequestParam(required = false)  String sanctionCriteria, // 제재 기준
             @RequestParam String action) {         // 적합/부적합
 
         if ("APPROVED".equalsIgnoreCase(action)) {

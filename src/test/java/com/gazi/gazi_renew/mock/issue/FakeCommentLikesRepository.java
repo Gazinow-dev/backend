@@ -33,15 +33,9 @@ public class FakeCommentLikesRepository implements CommentLikesRepository {
             return commentLikes;
         }
     }
-
     @Override
-    public void deleteByCommentLikesId(Long commentLikesId) {
-        data.removeIf(like -> like.getCommentLikesId().equals(commentLikesId));
-    }
-
-    @Override
-    public void deleteByIssueCommentId(Long issueCommentId) {
-        data.removeIf(like -> like.getIssueComment().getIssueCommentId().equals(issueCommentId));
+    public void deleteByIssueCommentIdAndMemberId(Long issueCommentId, Long memberId) {
+        data.removeIf(like -> like.getIssueComment().getIssueCommentId().equals(issueCommentId) && like.getMemberId().equals(memberId));
     }
 
     @Override

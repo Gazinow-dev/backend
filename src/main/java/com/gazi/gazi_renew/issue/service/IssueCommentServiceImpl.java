@@ -67,8 +67,11 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     }
     @Override
     public void deleteComment(Long issueCommentId) {
+        Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
+
         issueCommentRepository.deleteComment(issueCommentId);
-        commentLikesRepository.deleteByCommentLikesId(issueCommentId);
+        commentLikesRepository.deleteByIssueCommentIdAndMemberId(issueCommentId, member.getId());
     }
     @Override
     @Transactional(readOnly = true)

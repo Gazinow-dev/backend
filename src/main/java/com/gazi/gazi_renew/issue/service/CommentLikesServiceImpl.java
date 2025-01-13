@@ -37,7 +37,12 @@ public class CommentLikesServiceImpl implements CommentLikesService {
     }
     @Override
     @Transactional
-    public void removeLike(Long commentLikesId) {
-        commentLikesRepository.deleteByCommentLikesId(commentLikesId);
+    public void removeLike(Long issueCommentId) {
+        Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        IssueComment issueComment = issueCommentRepository.findByIssueCommentId(issueCommentId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
+
+        commentLikesRepository.deleteByIssueCommentIdAndMemberId(issueCommentId, member.getId());
     }
 }
