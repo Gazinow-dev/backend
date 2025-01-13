@@ -89,7 +89,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
                     .map(issueComment -> {
                         boolean isMineStatus = issueComment.getMemberId().equals(curMember.getId());
                         int likesCount = commentLikesRepository.countByIssueCommentId(issueComment.getIssueCommentId());
-                        boolean isLikesStatus = commentLikesRepository.existByIssueCommentAndMemberId(issueComment, curMember.getId());
+                        boolean isLikesStatus = commentLikesRepository.existByIssueCommentIdAndMemberId(issueComment.getIssueCommentId(), curMember.getId());
                         return issueComment.fromCommentLikes(isMineStatus, likesCount, isLikesStatus);
                     });
         }

@@ -14,8 +14,8 @@ public class CommentLikesRepositoryImpl implements CommentLikesRepository {
     private final CommentLikesJpaRepository commentLikesJpaRepository;
 
     @Override
-    public boolean existByIssueCommentAndMemberId(IssueComment issueComment, Long memberId) {
-        return commentLikesJpaRepository.existsByIssueCommentEntityIdAndMemberId(issueComment.getIssueCommentId(), memberId);
+    public boolean existByIssueCommentIdAndMemberId(Long issueCommentId, Long memberId) {
+        return commentLikesJpaRepository.existsByIssueCommentEntityIdAndMemberId(issueCommentId, memberId);
     }
     @Override
     public CommentLikes save(CommentLikes commentLikes) {
