@@ -44,7 +44,7 @@ public class DiscordNotifier {
             String reportedAt = URLEncoder.encode(String.valueOf(report.getReportedAt()), StandardCharsets.UTF_8.toString());
             String reporterNickname = URLEncoder.encode(reporterMember.getNickName(), StandardCharsets.UTF_8.toString());
             String reportReason = URLEncoder.encode(report.getReportReason().getDescription(), StandardCharsets.UTF_8.toString());
-            String reasonDescription = URLEncoder.encode(report.getReasonDescription(), StandardCharsets.UTF_8.toString());
+            String reasonDescription = report.getReasonDescription() != null ? URLEncoder.encode(report.getReasonDescription(), StandardCharsets.UTF_8.toString()) : "";
             String commentCreatedAt = URLEncoder.encode(String.valueOf(issueComment.getCreatedAt()), StandardCharsets.UTF_8.toString());
             String commentContent = URLEncoder.encode(issueComment.getIssueCommentContent(), StandardCharsets.UTF_8.toString());
             String reportedNickname = URLEncoder.encode(reportedMember.getNickName(), StandardCharsets.UTF_8.toString());
