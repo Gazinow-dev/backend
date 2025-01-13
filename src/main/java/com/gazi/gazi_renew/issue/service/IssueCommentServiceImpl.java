@@ -67,8 +67,11 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     }
     @Override
     public void deleteComment(Long issueCommentId) {
+        Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
+
         issueCommentRepository.deleteComment(issueCommentId);
-        commentLikesRepository.deleteByCommentLikesId(issueCommentId);
+        commentLikesRepository.deleteByIssueCommentIdAndMemberId(issueCommentId, member.getId());
     }
     @Override
     @Transactional(readOnly = true)
@@ -86,7 +89,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
                     .map(issueComment -> {
                         boolean isMineStatus = issueComment.getMemberId().equals(curMember.getId());
                         int likesCount = commentLikesRepository.countByIssueCommentId(issueComment.getIssueCommentId());
-                        boolean isLikesStatus = commentLikesRepository.existByIssueCommentAndMemberId(issueComment, curMember.getId());
+                        boolean isLikesStatus = commentLikesRepository.existByIssueCommentIdAndMemberId(issueComment.getIssueCommentId(), curMember.getId());
                         return issueComment.fromCommentLikes(isMineStatus, likesCount, isLikesStatus);
                     });
         }

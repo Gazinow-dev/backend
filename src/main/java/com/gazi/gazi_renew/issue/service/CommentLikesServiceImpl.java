@@ -29,7 +29,7 @@ public class CommentLikesServiceImpl implements CommentLikesService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
         IssueComment issueComment = issueCommentRepository.findByIssueCommentId(commentLikesCreate.getIssueCommentId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
-        if (!commentLikesRepository.existByIssueCommentAndMemberId(issueComment, member.getId())) {
+        if (!commentLikesRepository.existByIssueCommentIdAndMemberId(issueComment.getIssueCommentId(), member.getId())) {
             return commentLikesRepository.save(CommentLikes.from(issueComment, member.getId()));
         } else {
             throw ErrorCode.throwDuplicateCommentLikeException();
@@ -37,7 +37,12 @@ public class CommentLikesServiceImpl implements CommentLikesService {
     }
     @Override
     @Transactional
-    public void removeLike(Long commentLikesId) {
-        commentLikesRepository.deleteByCommentLikesId(commentLikesId);
+    public void removeLike(Long issueCommentId) {
+        Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        if (!commentLikesRepository.existByIssueCommentIdAndMemberId(issueCommentId, member.getId())) {
+            throw new EntityNotFoundException("해당 댓글 좋아요가 존재하지 않습니다.");
+        }
+        commentLikesRepository.deleteByIssueCommentIdAndMemberId(issueCommentId, member.getId());
     }
 }
