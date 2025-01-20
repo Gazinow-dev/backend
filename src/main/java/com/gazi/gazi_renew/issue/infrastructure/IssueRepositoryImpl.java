@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,6 @@ public class IssueRepositoryImpl implements IssueRepository {
         issueJpaRepository.updateContentAndTitle(issue.getId(), issue.getTitle(), issue.getContent());
     }
 
-
     @Override
     public void updateLikeCount(Issue issue) {
         issueJpaRepository.updateLikeCount(issue.getId(), issue.getLikeCount());
@@ -74,5 +74,10 @@ public class IssueRepositoryImpl implements IssueRepository {
     @Override
     public void deleteIssue(Long id) {
         issueJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate) {
+        issueJpaRepository.updateStartDateAndExpireDate(id, startDate, expireDate);
     }
 }

@@ -1,15 +1,13 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.station.domain.Line;
-import com.gazi.gazi_renew.station.domain.Station;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 public class Issue {
@@ -65,6 +63,26 @@ public class Issue {
                 .latestNo(issueCreate.getLatestNo())
                 .build();
     }
+    public static Issue fromExternalIssue(ExternalIssueCreate externalIssueCreate) {
+        return Issue.builder()
+                .title(externalIssueCreate.getTitle())
+                .content(externalIssueCreate.getContent())
+                .startDate(externalIssueCreate.getStartDate())
+                .expireDate(externalIssueCreate.getExpireDate())
+                .crawlingNo(externalIssueCreate.getCrawlingNo())
+                .keyword(externalIssueCreate.getKeyword())
+                .build();
+    }
+    public static Issue fromInternalIssue(InternalIssueCreate internalIssueCreate) {
+        return Issue.builder()
+                .title(internalIssueCreate.getTitle())
+                .content(internalIssueCreate.getContent())
+                .startDate(internalIssueCreate.getStartDate())
+                .expireDate(internalIssueCreate.getExpireDate())
+                .crawlingNo(internalIssueCreate.getCrawlingNo())
+                .keyword(internalIssueCreate.getKeyword())
+                .build();
+    }
 
     public Issue incrementLikeCount() {
         return Issue.builder()
@@ -97,6 +115,20 @@ public class Issue {
                 .keyword(this.keyword)
                 .latestNo(this.latestNo)
                 .likeCount(updateLikeCount)
+                .build();
+    }
+    public Issue updateDate(LocalDateTime startDate, LocalDateTime expireDate) {
+        return Issue.builder()
+                .id(this.id)
+                .title(this.title)
+                .content(this.content) // 변경된 content 반영
+                .startDate(startDate)
+                .expireDate(expireDate)
+                .secretCode(this.secretCode)
+                .crawlingNo(this.crawlingNo)
+                .keyword(this.keyword)
+                .latestNo(this.latestNo)
+                .likeCount(this.likeCount)
                 .build();
     }
 }

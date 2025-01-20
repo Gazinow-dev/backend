@@ -2,20 +2,19 @@ package com.gazi.gazi_renew.issue.controller.port;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
-import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
+import com.gazi.gazi_renew.issue.domain.dto.*;
 import com.gazi.gazi_renew.station.domain.Station;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IssueService {
     // 웹 크롤링
 
     // 이슈 저장
-    boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
+//    boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
     // 이슈 조회
     IssueStationDetail getIssue(Long id);
 
@@ -30,15 +29,11 @@ public interface IssueService {
     //인기 이슈 조회
     List<IssueStationDetail> getPopularIssues();
 
-    List<Station> handleLineTwo(IssueCreate.Station issueStation, int startStationCode, int endStationCode);
-
-    List<Station> handleClockwiseDirection(int startStationCode, int endStationCode);
-
-    List<Station> handleCounterClockwiseDirection(int startStationCode, int endStationCode);
-
-    List<Station> getStationsForCircularRoute(int startStationCode, int endStationCode);
-
     List<Station> findStationsForOtherLines(int startStationCode, int endStationCode);
 
     void deleteIssue(Long id);
+
+    Issue autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException;
+
+    Issue autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException;
 }

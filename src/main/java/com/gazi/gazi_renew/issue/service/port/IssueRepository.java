@@ -4,6 +4,7 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +25,6 @@ public interface IssueRepository {
     void flush();
 
     void deleteIssue(Long id);
+
+    void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate);
 }

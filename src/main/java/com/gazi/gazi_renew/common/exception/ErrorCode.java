@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.common.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.member.domain.Member;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,8 @@ public enum ErrorCode {
     DUPLICATE_ISSUE(BAD_REQUEST, "이미 해당 데이터가 존재합니다."),
     FAILED_FCM_MESSAGE(BAD_REQUEST, "FCM 메시지 전송 실패"),
     NOTIFICATION_INVALID_TIME_RANGE(BAD_REQUEST, "알림 시작시간보다 종료시간이 더 빠릅니다."),
-    MY_FIND_ROAD_NOT_FOUND(BAD_REQUEST, "해당 id로 존재하는 MyFindRoad가 없습니다.");
+    MY_FIND_ROAD_NOT_FOUND(BAD_REQUEST, "해당 id로 존재하는 MyFindRoad가 없습니다."),
+    INVALID_SUBWAY_RANGE(BAD_REQUEST, "topis 이슈 자동 등록 실패 - 구간 처리를 위한 지하철 리스트의 길이가 2보다 큽니다");
 
 
     private final HttpStatus httpStatus;
@@ -101,5 +103,9 @@ public enum ErrorCode {
     }
     public static CustomException throwDuplicateProcessReportException() {
         return new CustomException(DUPLICATE_PROCESS_REPORT);
+    }
+
+    public static CustomException throwInvalidSubwayRangeException() {
+        return new CustomException(INVALID_SUBWAY_RANGE);
     }
 }
