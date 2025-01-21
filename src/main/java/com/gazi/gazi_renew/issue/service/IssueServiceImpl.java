@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.common.controller.port.KafkaSender;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
 import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.dto.*;
@@ -47,6 +48,7 @@ public class IssueServiceImpl implements IssueService {
     private final IssueLineRepository issueLineRepository;
     private final IssueStationRepository issueStationRepository;
     private final KafkaSender kafkaSender;
+    private final ClockHolder clockHolder;
 
     private static final int likeCount = 5;
     /**
@@ -174,6 +176,7 @@ public class IssueServiceImpl implements IssueService {
         if (!issueOptional.isEmpty()) {
             return updateExistingIssueDates(issue, issueOptional);
         }
+        issue = issueRepository.save(issue);
         //구간 처리 필요하면 (지하철역)
         if (internalIssueCreate.getProcessRange()) {
             processIssueByRange(internalIssueCreate, issue);
@@ -191,14 +194,14 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public Issue autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
         validateDuplicateIssue(externalIssueCreate.getCrawlingNo());
-        //TODO issueKey로 저장된 이슈 있는지 확인
+        // issueKey로 저장된 이슈 있는지 확인
         Issue issue = Issue.fromExternalIssue(externalIssueCreate);
-        issue = issueRepository.save(issue);
 
         Optional<Issue> issueOptional=issueRepository.findByIssueKey(externalIssueCreate.getIssueKey());
         if (!issueOptional.isEmpty()) {
             return updateExistingIssueDates(issue, issueOptional);
         }
+        issue = issueRepository.save(issue);
         return processStationsAndLinesForExternalIssue(externalIssueCreate, issue);
     }
     /**
@@ -244,7 +247,7 @@ public class IssueServiceImpl implements IssueService {
     }
     private Issue updateExistingIssueDates(Issue issue, Optional<Issue> issueOptional) {
         Issue existIssue = issueOptional.get();
-        existIssue = existIssue.updateDate(issue.getStartDate(), issue.getExpireDate());
+        existIssue = existIssue.updateDate(clockHolder, issue.getStartDate(), issue.getExpireDate());
         issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
 
         return existIssue;
@@ -263,7 +266,9 @@ public class IssueServiceImpl implements IssueService {
     private List<Station> getStationRangeList(List<String> stations, String line) {
         List<Station> stationList = new ArrayList<>();
         for (String station : stations) {
-            Station result = subwayRepository.findCoordinateByNameAndLine(station, line);
+            List<Station> stationSubList = subwayRepository.findByNameContainingAndLine(station, line);
+            Station result = Station.toFirstStation(station, stationSubList);
+
             stationList.add(result);
         }
         return stationList;

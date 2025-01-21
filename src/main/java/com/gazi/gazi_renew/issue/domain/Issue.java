@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
@@ -121,7 +122,7 @@ public class Issue {
                 .likeCount(updateLikeCount)
                 .build();
     }
-    public Issue updateDate(LocalDateTime startDate, LocalDateTime expireDate) {
+    public Issue updateDate(ClockHolder clockHolder, LocalDateTime startDate, LocalDateTime expireDate) {
         return Issue.builder()
                 .id(this.id)
                 .title(this.title)

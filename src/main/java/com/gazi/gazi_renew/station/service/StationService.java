@@ -21,8 +21,8 @@ public class StationService {
         return stationList;
     }
 
-    public List<Station> getNearByCoordinates(String latitude, String longitude) {
-        subwayRepository.
-        return null;
-    }
+//    public List<Station> getNearByCoordinates(String latitude, String longitude) {
+//        subwayRepository.
+//        return null;
+//    }
 }

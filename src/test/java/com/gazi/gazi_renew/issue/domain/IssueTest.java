@@ -1,8 +1,11 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
+import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import com.gazi.gazi_renew.station.domain.Station;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -114,5 +117,71 @@ class IssueTest {
         //then
         assertThat(resultIssue.getContent()).isEqualTo("가는길 지금");
         assertThat(resultIssue.getTitle()).isEqualTo("숙대입구역으로 변경");
+    }
+    @Test
+    void 자동으로_등록하는_외부_이슈는_issueKey를_가지고_있다() throws Exception{
+        //given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        ExternalIssueCreate.Stations stations = ExternalIssueCreate.Stations.builder()
+                .name("수도권 6호선")
+                .name("삼각지역")
+                .build();
+        ExternalIssueCreate externalIssueCreate = ExternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .keyword(IssueKeyword.시위)
+                .stations(List.of(stations))
+                .issueKey("20241115-시위-6호선")
+                .build();
+        //when
+        Issue issue = Issue.fromExternalIssue(externalIssueCreate);
+        //then
+        assertThat(issue.getIssueKey()).isEqualTo("20241115-시위-6호선");
+    }
+    @Test
+    void 자동으로_등록하는_내부_이슈는_issueKey를_가지고_있다() throws Exception{
+        //given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .lines(List.of("수도권 6호선"))
+                .locations(List.of("삼각지역"))
+                .issueKey("20241115-시위-6호선")
+                .lineInfoAvailable(false)
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .issueKey("20241115-시위-6호선")
+                .build();
+        //when
+        Issue issue = Issue.fromInternalIssue(internalIssueCreate);
+        //then
+        assertThat(issue.getIssueKey()).isEqualTo("20241115-시위-6호선");
+    }
+    @Test
+    void 이슈의_날짜를_수정할_수_있다() throws Exception{
+        //given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        TestClockHolder testClockHolder = new TestClockHolder(now);
+        Issue issue = Issue.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .issueKey("20241115-시위-6호선")
+                .keyword(IssueKeyword.시위)
+                .issueKey("20241115-시위-6호선")
+                .build();
+        //when
+        issue = issue.updateDate(testClockHolder, now, now.plusMinutes(30));
+        //then
+        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getExpireDate()).isEqualTo(now.plusMinutes(30));
     }
 }

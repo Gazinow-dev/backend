@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -118,5 +119,33 @@ public class FakeIssueRepository implements IssueRepository {
     @Override
     public void deleteIssue(Long id) {
         data.removeIf(issue -> issue.getId().equals(id));
+    }
+
+    @Override
+    public void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate) {
+        Issue issue = data.stream()
+                .filter(existingIssue -> existingIssue.getId().equals(id)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException());
+        data.remove(issue);
+
+        Issue updatedIssue = Issue.builder()
+                .id(issue.getId())
+                .title(issue.getTitle())
+                .content(issue.getContent())
+                .startDate(startDate)
+                .expireDate(expireDate)
+                .secretCode(issue.getSecretCode())
+                .keyword(issue.getKeyword())
+                .latestNo(issue.getLatestNo())
+                .likeCount(issue.getLikeCount())
+                .build();
+        data.add(updatedIssue);
+    }
+
+    @Override
+    public Optional<Issue> findByIssueKey(String issueKey) {
+        Optional<Issue> optionalIssue = data.stream().filter(existingIssue -> existingIssue.getIssueKey().equals(issueKey))
+                .findFirst();
+        return optionalIssue;
     }
 }

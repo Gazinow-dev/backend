@@ -45,6 +45,14 @@ public class FakeSubwayRepository implements SubwayRepository {
                 .filter(station -> station.getLine().equals(line))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Station> findByLine(String line) {
+        return data.stream()
+                .filter(station -> station.getLine().equals(line))
+                .collect(Collectors.toList());
+    }
+
     @Override
     public void save(Station station) {
         if (station.getId() == null || station.getId() == 0) {
