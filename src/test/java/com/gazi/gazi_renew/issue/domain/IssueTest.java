@@ -64,7 +64,7 @@ class IssueTest {
         assertThat(issue.getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
     }
     @Test
-    void Issue_내용과_제못을_업데이트할_수_있다() throws Exception{
+    void Issue_내용과_제목을_업데이트할_수_있다() throws Exception{
         //given
         Station station1 = Station.builder()
                 .id(1L)

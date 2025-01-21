@@ -27,4 +27,6 @@ public interface IssueRepository {
     void deleteIssue(Long id);
 
     void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate);
+
+    Optional<Issue> findByIssueKey(String issueKey);
 }

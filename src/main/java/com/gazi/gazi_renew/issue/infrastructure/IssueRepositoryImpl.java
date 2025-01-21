@@ -80,4 +80,9 @@ public class IssueRepositoryImpl implements IssueRepository {
     public void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate) {
         issueJpaRepository.updateStartDateAndExpireDate(id, startDate, expireDate);
     }
+
+    @Override
+    public Optional<Issue> findByIssueKey(String issueKey) {
+        return issueJpaRepository.findByIssueKey(issueKey).map(IssueEntity::toModel);
+    }
 }

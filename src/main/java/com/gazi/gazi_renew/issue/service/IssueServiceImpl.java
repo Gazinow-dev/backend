@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueServiceImpl implements IssueService {
 
@@ -158,143 +159,47 @@ public class IssueServiceImpl implements IssueService {
         issueRepository.updateIssue(issue);
     }
     @Override
-    @Transactional
     public void deleteIssue(Long issueId) {
         issueStationRepository.deleteIssueStationByIssueId(issueId);
         issueLineRepository.deleteIssueLineByIssueId(issueId);
         issueRepository.deleteIssue(issueId);
 
     }
-    private List<Station> getStationRangeList(List<String> stations, String line) {
-        List<Station> stationList = new ArrayList<>();
-        for (String station : stations) {
-            Station result = subwayRepository.findCoordinateByNameAndLine(station, line);
-            stationList.add(result);
-        }
-        return stationList;
-
-    }
     @Override
     public Issue autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException {
-        if (issueRepository.existsByCrawlingNo(internalIssueCreate.getCrawlingNo())) {
-            throw ErrorCode.throwDuplicateIssueException();
-        }
+        validateDuplicateIssue(internalIssueCreate.getCrawlingNo());
         Issue issue = Issue.fromInternalIssue(internalIssueCreate);
-        Optional<Issue> issueOptional=issueRepository.findByIssueKey(internalIssueCreate.getIssueKey());
+        Optional<Issue> issueOptional = issueRepository.findByIssueKey(internalIssueCreate.getIssueKey());
 
         if (!issueOptional.isEmpty()) {
-            Issue existIssue = issueOptional.get();
-            existIssue = existIssue.updateDate(issue.getStartDate(), issue.getExpireDate());
-            issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
-        }else {
-            //구간 처리 필요하면 (지하철역)
-            if (internalIssueCreate.getProcessRange()) {
-                String lineName = internalIssueCreate.getLines().get(0);
-                List<Station> stationRangeList = getStationRangeList(internalIssueCreate.getLocations(), lineName);
-
-                Line line = lineRepository.findByLineName(lineName)
-                        .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: "));
-
-                IssueLine issueLine = IssueLine.from(issue, line);
-                issueLineRepository.save(issueLine);
-                Station firstStation = stationRangeList.get(0);
-                Station endStation = stationRangeList.get(1);
-
-                List<Station> stationList = findByStartStationAndEndStationBetween(firstStation, endStation);
-
-                for (Station station : stationList) {
-                    IssueStation issueStation = IssueStation.from(issue, station);
-                    issueStationRepository.save(issueStation);
-                }
-                addIssueToRedis(issue);
-
-                kafkaSender.sendNotification(issue, List.of(line), stationList);
-            }
-            // 전체 호선 처리 필요
-            else if (!internalIssueCreate.getLines().isEmpty() && internalIssueCreate.getLocations().isEmpty()) {
-                List<Line> lineList = new ArrayList<>();
-                for (String lineName : internalIssueCreate.getLines()) {
-                    Line line = lineRepository.findByLineName(lineName)
-                            .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: "));
-                    lineList.add(line);
-                    IssueLine issueLine = IssueLine.from(issue, line);
-                    issueLineRepository.save(issueLine);
-
-                    List<Station> stationList = subwayRepository.findByLine(lineName);
-                    for (Station station : stationList) {
-                        IssueStation issueStation = IssueStation.from(issue, station);
-                        issueStationRepository.save(issueStation);
-                    }
-                    addIssueToRedis(issue);
-                    kafkaSender.sendNotification(issue, lineList, stationList);
-                }
-            }
-            // 단일 처리
-            else{
-                String lineName = internalIssueCreate.getLines().get(0);
-
-                Line line = lineRepository.findByLineName(lineName)
-                        .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: "));
-                IssueLine issueLine = IssueLine.from(issue, line);
-                issueLineRepository.save(issueLine);
-                List<Station> stationList = new ArrayList<>();
-                for (String stationName : internalIssueCreate.getLocations()) {
-                    List<Station> stationSubList = subwayRepository.findByNameContainingAndLine(stationName, lineName);
-                    Station station = Station.toFirstStation(stationName, stationSubList);
-
-                    IssueStation issueStation = IssueStation.from(issue, station);
-                    issueStationRepository.save(issueStation);
-
-                    stationList.add(station);
-                }
-                addIssueToRedis(issue);
-                kafkaSender.sendNotification(issue, List.of(line), stationList);
-            }
+            return updateExistingIssueDates(issue, issueOptional);
         }
-
+        //구간 처리 필요하면 (지하철역)
+        if (internalIssueCreate.getProcessRange()) {
+            processIssueByRange(internalIssueCreate, issue);
+        }
+        // 전체 호선 처리 필요
+        else if (!internalIssueCreate.getLines().isEmpty() && internalIssueCreate.getLocations().isEmpty()) {
+            processIssueByLines(internalIssueCreate, issue);
+        }
+        // 단일 처리
+        else {
+            processIssueByStations(internalIssueCreate, issue);
+        }
+        return issue;
     }
-
     @Override
     public Issue autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
-        if (issueRepository.existsByCrawlingNo(externalIssueCreate.getCrawlingNo())) {
-            throw ErrorCode.throwDuplicateIssueException();
-        }
+        validateDuplicateIssue(externalIssueCreate.getCrawlingNo());
         //TODO issueKey로 저장된 이슈 있는지 확인
         Issue issue = Issue.fromExternalIssue(externalIssueCreate);
         issue = issueRepository.save(issue);
 
-        List<ExternalIssueCreate.Stations> stations = externalIssueCreate.getStations();
-        List<Station> stationList = new ArrayList<>();
-        List<Line> lineList = new ArrayList<>();
-
-        //TODO 지하철 역 정보 조호ㅚ 필요
         Optional<Issue> issueOptional=issueRepository.findByIssueKey(externalIssueCreate.getIssueKey());
         if (!issueOptional.isEmpty()) {
-            Issue existIssue = issueOptional.get();
-            existIssue = existIssue.updateDate(issue.getStartDate(), issue.getExpireDate());
-            issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
+            return updateExistingIssueDates(issue, issueOptional);
         }
-        else{
-            for (ExternalIssueCreate.Stations station : stations) {
-                List<Station> stationSubList = subwayRepository.findByNameContainingAndLine(station.getName(), station.getLine());
-
-                Station firstStation = Station.toFirstStation(station.getName(), stationSubList);
-                stationList.add(firstStation);
-
-                IssueStation issueStation = IssueStation.from(issue, firstStation);
-                issueStationRepository.save(issueStation);
-
-                Line line = lineRepository.findByLineName(station.getLine())
-                        .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: "));
-                lineList.add(line);
-                IssueLine issueLine = IssueLine.from(issue, line);
-                issueLineRepository.save(issueLine);
-            }
-            // Redis에 이슈 추가
-            addIssueToRedis(issue);
-            kafkaSender.sendNotification(issue, lineList, stationList);
-        }
-        return issue;
+        return processStationsAndLinesForExternalIssue(externalIssueCreate, issue);
     }
     /**
      * 2호선 이외의 다른 노선에 대한 역 구간 처리
@@ -305,11 +210,112 @@ public class IssueServiceImpl implements IssueService {
     public List<Station> findStationsForOtherLines(int startStationCode, int endStationCode) {
         return subwayRepository.findByIssueStationCodeBetween(startStationCode, endStationCode);
     }
+    private Issue processStationsAndLinesForExternalIssue(ExternalIssueCreate externalIssueCreate, Issue issue) throws JsonProcessingException {
+        List<ExternalIssueCreate.Stations> stations = externalIssueCreate.getStations();
+        List<Station> stationList = new ArrayList<>();
+        List<Line> lineList = new ArrayList<>();
+        for (ExternalIssueCreate.Stations station : stations) {
+            List<Station> stationSubList = subwayRepository.findByNameContainingAndLine(station.getName(), station.getLine());
+
+            Station firstStation = Station.toFirstStation(station.getName(), stationSubList);
+            stationList.add(firstStation);
+
+            saveIssueStation(issue, firstStation);
+
+            Line line = saveIssueLine(issue, station.getLine());
+            lineList.add(line);
+        }
+        // Redis에 이슈 추가
+        addIssueToRedis(issue);
+        kafkaSender.sendNotification(issue, lineList, stationList);
+        return issue;
+    }
+
+    private void saveIssueStation(Issue issue, Station station) {
+        IssueStation issueStation = IssueStation.from(issue, station);
+        issueStationRepository.save(issueStation);
+    }
+    private Line saveIssueLine(Issue issue, String lineName) {
+        Line line = lineRepository.findByLineName(lineName)
+                .orElseThrow(() -> new EntityNotFoundException("호선이 존재하지 않습니다: "));
+        IssueLine issueLine = IssueLine.from(issue, line);
+        issueLineRepository.save(issueLine);
+        return line;
+    }
+    private Issue updateExistingIssueDates(Issue issue, Optional<Issue> issueOptional) {
+        Issue existIssue = issueOptional.get();
+        existIssue = existIssue.updateDate(issue.getStartDate(), issue.getExpireDate());
+        issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
+
+        return existIssue;
+    }
     private List<Station> findByStartStationAndEndStationBetween(Station startStation, Station endStation) {
         int startStationCode = Math.min(startStation.getIssueStationCode(), endStation.getIssueStationCode());
         int endStationCode = Math.max(startStation.getIssueStationCode(), endStation.getIssueStationCode());
 
         return findStationsForOtherLines(startStationCode, endStationCode);
+    }
+    private void validateDuplicateIssue(String crawlingNo) {
+        if (issueRepository.existsByCrawlingNo(crawlingNo)) {
+            throw ErrorCode.throwDuplicateIssueException();
+        }
+    }
+    private List<Station> getStationRangeList(List<String> stations, String line) {
+        List<Station> stationList = new ArrayList<>();
+        for (String station : stations) {
+            Station result = subwayRepository.findCoordinateByNameAndLine(station, line);
+            stationList.add(result);
+        }
+        return stationList;
+
+    }
+
+    private void processIssueByStations(InternalIssueCreate internalIssueCreate, Issue issue) throws JsonProcessingException {
+        String lineName = internalIssueCreate.getLines().get(0);
+
+        Line line = saveIssueLine(issue, lineName);
+        List<Station> stationList = new ArrayList<>();
+        for (String stationName : internalIssueCreate.getLocations()) {
+            List<Station> stationSubList = subwayRepository.findByNameContainingAndLine(stationName, lineName);
+            Station station = Station.toFirstStation(stationName, stationSubList);
+
+            saveIssueStation(issue, station);
+
+            stationList.add(station);
+        }
+        addIssueToRedis(issue);
+        kafkaSender.sendNotification(issue, List.of(line), stationList);
+    }
+
+    private void processIssueByLines(InternalIssueCreate internalIssueCreate, Issue issue) throws JsonProcessingException {
+        List<Line> lineList = new ArrayList<>();
+        for (String lineName : internalIssueCreate.getLines()) {
+            Line line = saveIssueLine(issue, lineName);
+            lineList.add(line);
+
+            List<Station> stationList = subwayRepository.findByLine(lineName);
+            for (Station station : stationList) {
+                saveIssueStation(issue, station);
+            }
+            addIssueToRedis(issue);
+            kafkaSender.sendNotification(issue, lineList, stationList);
+        }
+    }
+
+    private void processIssueByRange(InternalIssueCreate internalIssueCreate, Issue issue) throws JsonProcessingException {
+        String lineName = internalIssueCreate.getLines().get(0);
+        List<Station> stationRangeList = getStationRangeList(internalIssueCreate.getLocations(), lineName);
+        Station firstStation = stationRangeList.get(0);
+        Station endStation = stationRangeList.get(1);
+
+        List<Station> stationList = findByStartStationAndEndStationBetween(firstStation, endStation);
+        Line line = saveIssueLine(issue, lineName);
+
+        for (Station station : stationList) {
+            saveIssueStation(issue, station);
+        }
+        addIssueToRedis(issue);
+        kafkaSender.sendNotification(issue, List.of(line), stationList);
     }
     /**
      * redis에 issue 저장

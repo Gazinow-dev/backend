@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
@@ -28,4 +29,6 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
     @Modifying
     @Query("UPDATE IssueEntity i SET i.likeCount = :likeCount WHERE i.id = :id")
     void updateLikeCount(@Param("id") Long id, @Param("likeCount")int likeCount);
+
+    Optional<IssueEntity> findByIssueKey(String issueKey);
 }

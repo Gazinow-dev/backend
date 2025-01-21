@@ -22,6 +22,7 @@ public class IssueEntity extends AuditingFields {
     private String content;
     private String line;
     private String crawlingNo;
+    private String issueKey;
     private LocalDateTime startDate;
     private LocalDateTime expireDate;
     private IssueKeyword keyword;
@@ -33,6 +34,7 @@ public class IssueEntity extends AuditingFields {
         IssueEntity issueEntity = new IssueEntity();
         issueEntity.id = issue.getId();
         issueEntity.crawlingNo = issue.getCrawlingNo();
+        issueEntity.issueKey = issue.getIssueKey();
         issueEntity.startDate = issue.getStartDate().withSecond(0).withNano(0);
         issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);
         issueEntity.title = issue.getTitle();

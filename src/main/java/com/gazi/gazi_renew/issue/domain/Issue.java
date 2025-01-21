@@ -14,6 +14,7 @@ public class Issue {
     private final Long id;
     private final String title;
     private final String content;
+    private final String issueKey;
     private final LocalDateTime startDate;
     private final LocalDateTime expireDate;
     private final String secretCode;
@@ -22,10 +23,11 @@ public class Issue {
     private final int latestNo;
     private final int likeCount;
     @Builder
-    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount) {
+    public Issue(Long id, String title, String content, String issueKey, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount) {
         this.id = id;
         this.title = title;
         this.content = content;
+        this.issueKey = issueKey;
         this.startDate = startDate;
         this.expireDate = expireDate;
         this.secretCode = secretCode;
@@ -67,6 +69,7 @@ public class Issue {
         return Issue.builder()
                 .title(externalIssueCreate.getTitle())
                 .content(externalIssueCreate.getContent())
+                .issueKey(externalIssueCreate.getIssueKey())
                 .startDate(externalIssueCreate.getStartDate())
                 .expireDate(externalIssueCreate.getExpireDate())
                 .crawlingNo(externalIssueCreate.getCrawlingNo())
@@ -77,6 +80,7 @@ public class Issue {
         return Issue.builder()
                 .title(internalIssueCreate.getTitle())
                 .content(internalIssueCreate.getContent())
+                .issueKey(internalIssueCreate.getIssueKey())
                 .startDate(internalIssueCreate.getStartDate())
                 .expireDate(internalIssueCreate.getExpireDate())
                 .crawlingNo(internalIssueCreate.getCrawlingNo())
@@ -121,7 +125,7 @@ public class Issue {
         return Issue.builder()
                 .id(this.id)
                 .title(this.title)
-                .content(this.content) // 변경된 content 반영
+                .content(this.content)
                 .startDate(startDate)
                 .expireDate(expireDate)
                 .secretCode(this.secretCode)
