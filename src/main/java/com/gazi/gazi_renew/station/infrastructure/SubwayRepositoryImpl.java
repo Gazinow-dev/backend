@@ -35,6 +35,12 @@ public class SubwayRepositoryImpl implements SubwayRepository {
     }
 
     @Override
+    public List<Station> findByLine(String line) {
+        return subwayJpaRepository.findByLine(line).stream()
+                .map(StationEntity::toModel).collect(Collectors.toList());
+    }
+
+    @Override
     public void save(Station station) {
         subwayJpaRepository.save(StationEntity.from(station));
     }

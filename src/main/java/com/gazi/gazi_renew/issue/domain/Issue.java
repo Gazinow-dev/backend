@@ -1,21 +1,21 @@
 package com.gazi.gazi_renew.issue.domain;
 
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
+import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.station.domain.Line;
-import com.gazi.gazi_renew.station.domain.Station;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 public class Issue {
     private final Long id;
     private final String title;
     private final String content;
+    private final String issueKey;
     private final LocalDateTime startDate;
     private final LocalDateTime expireDate;
     private final String secretCode;
@@ -23,11 +23,13 @@ public class Issue {
     private final IssueKeyword keyword;
     private final int latestNo;
     private final int likeCount;
+    private final int commentCount;
     @Builder
-    public Issue(Long id, String title, String content, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount) {
+    public Issue(Long id, String title, String content, String issueKey, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount, int commentCount) {
         this.id = id;
         this.title = title;
         this.content = content;
+        this.issueKey = issueKey;
         this.startDate = startDate;
         this.expireDate = expireDate;
         this.secretCode = secretCode;
@@ -35,6 +37,7 @@ public class Issue {
         this.keyword = keyword;
         this.latestNo = latestNo;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     // 이슈 업데이트 (도메인 객체 행동 부여)
@@ -63,6 +66,28 @@ public class Issue {
                 .crawlingNo(issueCreate.getCrawlingNo())
                 .keyword(issueCreate.getKeyword())
                 .latestNo(issueCreate.getLatestNo())
+                .build();
+    }
+    public static Issue fromExternalIssue(ExternalIssueCreate externalIssueCreate) {
+        return Issue.builder()
+                .title(externalIssueCreate.getTitle())
+                .content(externalIssueCreate.getContent())
+                .issueKey(externalIssueCreate.getIssueKey())
+                .startDate(externalIssueCreate.getStartDate())
+                .expireDate(externalIssueCreate.getExpireDate())
+                .crawlingNo(externalIssueCreate.getCrawlingNo())
+                .keyword(externalIssueCreate.getKeyword())
+                .build();
+    }
+    public static Issue fromInternalIssue(InternalIssueCreate internalIssueCreate) {
+        return Issue.builder()
+                .title(internalIssueCreate.getTitle())
+                .content(internalIssueCreate.getContent())
+                .issueKey(internalIssueCreate.getIssueKey())
+                .startDate(internalIssueCreate.getStartDate())
+                .expireDate(internalIssueCreate.getExpireDate())
+                .crawlingNo(internalIssueCreate.getCrawlingNo())
+                .keyword(internalIssueCreate.getKeyword())
                 .build();
     }
 
@@ -97,6 +122,20 @@ public class Issue {
                 .keyword(this.keyword)
                 .latestNo(this.latestNo)
                 .likeCount(updateLikeCount)
+                .build();
+    }
+    public Issue updateDate(ClockHolder clockHolder, LocalDateTime startDate, LocalDateTime expireDate) {
+        return Issue.builder()
+                .id(this.id)
+                .title(this.title)
+                .content(this.content)
+                .startDate(startDate)
+                .expireDate(expireDate)
+                .secretCode(this.secretCode)
+                .crawlingNo(this.crawlingNo)
+                .keyword(this.keyword)
+                .latestNo(this.latestNo)
+                .likeCount(this.likeCount)
                 .build();
     }
 }

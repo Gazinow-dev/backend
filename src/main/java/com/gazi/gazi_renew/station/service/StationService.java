@@ -20,4 +20,9 @@ public class StationService {
         List<Station> stationList = subwayRepository.findByNameStartingWith(subwayName);
         return stationList;
     }
+
+//    public List<Station> getNearByCoordinates(String latitude, String longitude) {
+//        subwayRepository.
+//        return null;
+//    }
 }

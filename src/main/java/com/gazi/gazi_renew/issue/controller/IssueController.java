@@ -3,10 +3,9 @@ package com.gazi.gazi_renew.issue.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.response.Response;
+import com.gazi.gazi_renew.issue.controller.port.IssueManualService;
 import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.issue.domain.Issue;
-import com.gazi.gazi_renew.issue.controller.port.IssueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class IssueController {
 
-    private final IssueService issueService;
+    private final IssueManualService issueManualService;
     private final Response response;
     @PostMapping("/add")
     public ResponseEntity addIssue(@ModelAttribute("dto") IssueCreate issueCreate) throws JsonProcessingException {
@@ -31,7 +30,7 @@ public class IssueController {
             System.out.println("Keyword: " + station.getKeyword());
             System.out.println("Direction: " + station.getDirection());
         });
-        boolean isAdded = issueService.addIssue(issueCreate);
+        boolean isAdded = issueManualService.addIssue(issueCreate);
         if (isAdded) {
             return response.success("이슈가 성공적으로 추가되었습니다.");
         } else {
