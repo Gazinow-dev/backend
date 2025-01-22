@@ -6,12 +6,10 @@ import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,17 +36,8 @@ public class IssueRepositoryImpl implements IssueRepository {
     }
     @Override
     public Page<Issue> findAll(Pageable pageable) {
-        List<Issue> collect = issueJpaRepository.findAll()
-                .stream()
-                .map(IssueEntity::toModel)
-                .sorted(Comparator.comparing(Issue::getStartDate).reversed())
-                .collect(Collectors.toList());
-
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), collect.size());
-        List<Issue> pagedList = collect.subList(start, end);
-
-        return new PageImpl<>(pagedList, pageable, collect.size());
+        return issueJpaRepository.findAllByOrderByStartDateDesc(pageable)
+                .map(IssueEntity::toModel);
     }
 
     @Override

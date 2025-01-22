@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.infrastructure.jpa;
 
 import com.gazi.gazi_renew.issue.infrastructure.entity.IssueEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -29,6 +30,7 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long> {
     @Modifying
     @Query("UPDATE IssueEntity i SET i.likeCount = :likeCount WHERE i.id = :id")
     void updateLikeCount(@Param("id") Long id, @Param("likeCount")int likeCount);
+    Page<IssueEntity> findAllByOrderByStartDateDesc(Pageable pageable);
 
     Optional<IssueEntity> findByIssueKey(String issueKey);
 }

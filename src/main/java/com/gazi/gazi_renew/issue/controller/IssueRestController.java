@@ -52,7 +52,7 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue() {
         List<IssueStationDetail> issueList = issueService.getPopularIssues();
-        List<IssueResponse> issueResponseList = issueList.stream().map(IssueResponse::fromIssueDetail)
+        List<IssueResponse> issueResponseList = issueList.stream().map(IssueResponse::fromPopularIssueDetail)
                 .collect(Collectors.toList());
 
         return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);

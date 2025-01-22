@@ -11,6 +11,7 @@ import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.common.*;
+import com.gazi.gazi_renew.mock.issue.FakeIssueCommentRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueLineRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueStationRepository;
@@ -55,13 +56,14 @@ class IssueServiceImplTest {
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
         fakeIssueStationRepository = new FakeIssueStationRepository();
         fakeIssueLineRepository = new FakeIssueLineRepository();
+        FakeIssueCommentRepository fakeIssueCommentRepository = new FakeIssueCommentRepository();
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeKafkaSender fakeKafkaSender = new FakeKafkaSender();
         LocalDateTime newTime = LocalDateTime.now();
         TestClockHolder testClockHolder = new TestClockHolder(newTime);
 
         this.issueServiceImpl = new IssueServiceImpl(fakeIssueRepository, fakeLikeRepository, fakeSubwayRepository, fakeMemberRepository
-                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeKafkaSender,testClockHolder);
+                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeIssueCommentRepository, fakeKafkaSender, testClockHolder);
 
         Line line = Line.builder()
                 .id(1L)

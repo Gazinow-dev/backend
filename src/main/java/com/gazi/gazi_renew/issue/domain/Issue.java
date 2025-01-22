@@ -23,8 +23,9 @@ public class Issue {
     private final IssueKeyword keyword;
     private final int latestNo;
     private final int likeCount;
+    private final int commentCount;
     @Builder
-    public Issue(Long id, String title, String content, String issueKey, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount) {
+    public Issue(Long id, String title, String content, String issueKey, LocalDateTime startDate, LocalDateTime expireDate, String secretCode, String crawlingNo, IssueKeyword keyword, int latestNo, int likeCount, int commentCount) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -36,6 +37,7 @@ public class Issue {
         this.keyword = keyword;
         this.latestNo = latestNo;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     // 이슈 업데이트 (도메인 객체 행동 부여)
