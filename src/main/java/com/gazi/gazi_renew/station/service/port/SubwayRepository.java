@@ -9,12 +9,16 @@ import java.util.Optional;
 public interface SubwayRepository {
     List<Station> findByNameStartingWith(String name);
 
-    Station findCoordinateByNameAndLine(@Param("name")String name, @Param("line")String line);
+    Station findCoordinateByNameAndLine(@Param("name") String name, @Param("line") String line);
 
     List<Station> findByIssueStationCodeBetween(int lowerCode, int upperCode);
+
     List<Station> findByNameContainingAndLine(String name, String line);
+
+    List<Station> findByLine(String line);
 
     void save(Station station);
 
     Optional<Station> findById(Long id);
+
 }

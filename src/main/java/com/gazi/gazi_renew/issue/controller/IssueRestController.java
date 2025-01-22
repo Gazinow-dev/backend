@@ -1,9 +1,12 @@
 package com.gazi.gazi_renew.issue.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
+import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
+import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,7 +52,7 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue() {
         List<IssueStationDetail> issueList = issueService.getPopularIssues();
-        List<IssueResponse> issueResponseList = issueList.stream().map(IssueResponse::fromIssueDetail)
+        List<IssueResponse> issueResponseList = issueList.stream().map(IssueResponse::fromPopularIssueDetail)
                 .collect(Collectors.toList());
 
         return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);
@@ -63,5 +66,17 @@ public class IssueRestController extends BaseController {
     public ResponseEntity<Response.Body> deleteIssue(@PathVariable Long id){
         issueService.deleteIssue(id);
         return response.success(" 이슈 삭제 성공");
+    }
+    @PostMapping("/internal-issues")
+    public ResponseEntity<Response.Body> autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException {
+        issueService.autoRegisterInternalIssue(internalIssueCreate);
+
+        return response.success(" 이슈 등록 성공");
+    }
+    @PostMapping("/external-issues")
+    public ResponseEntity<Response.Body> autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
+        issueService.autoRegisterExternalIssue(externalIssueCreate);
+
+        return response.success(" 이슈 등록 성공");
     }
 }

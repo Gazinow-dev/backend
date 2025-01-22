@@ -34,8 +34,14 @@ public class SearchController extends BaseController {
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = SubwayInfoResponse.class)))})
     @GetMapping("/station")
-    public ResponseEntity<Response.Body> SubwayInfos(@Parameter(description = "지하철 이름") @RequestParam String stationName) {
+    public ResponseEntity<Response.Body> subwayInfos(@Parameter(description = "지하철 이름") @RequestParam String stationName) {
         List<Station> subwayInfo = stationService.getSubwayInfo(stationName);
         return response.success(SubwayInfoResponse.fromList(subwayInfo), "지하철 검색 성공", HttpStatus.OK);
     }
+//    @Operation(summary = "좌표 기반 인근(200m) 지하철역 조회 ")
+//    @GetMapping("/stations")
+//    public ResponseEntity<Response.Body> getNearByCoordinates(@RequestParam String latitude, @RequestParam String longitude) {
+//        List<Station> subwayInfo = stationService.getNearByCoordinates(latitude, longitude);
+//        return response.success(SubwayInfoResponse.fromList(subwayInfo), "지하철 검색 성공", HttpStatus.OK);
+//    }
 }

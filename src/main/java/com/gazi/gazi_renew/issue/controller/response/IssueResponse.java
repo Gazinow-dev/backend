@@ -24,7 +24,9 @@ public class IssueResponse {
     private final String agoTime; // 몇분전, 몇시간전...
     private final List<String> lines;
     private final int likeCount;
+    private final int commentCount;
     private final boolean isLike;
+    private final boolean isCommentRestricted;
     private final IssueKeyword keyword;
     private final LocalDateTime startDate;
     private final LocalDateTime expireDate;
@@ -84,6 +86,33 @@ public class IssueResponse {
                         .map(Line::getLineName)
                         .collect(Collectors.toList()))
                 .likeCount(issueStationDetail.getIssue().getLikeCount())
+                .commentCount(issueStationDetail.getCommentCount())
+                .startDate(issueStationDetail.getIssue().getStartDate())
+                .expireDate(issueStationDetail.getIssue().getExpireDate())
+                .isLike(issueStationDetail.isLike())
+                .isCommentRestricted(issueStationDetail.isCommentRestricted())
+                .build();
+    }
+    public static IssueResponse fromPopularIssueDetail(IssueStationDetail issueStationDetail) {
+        List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
+            return StationDto.builder()
+                    .line(issueStation.getLine())
+                    .stationName(issueStation.getName())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return IssueResponse.builder()
+                .id(issueStationDetail.getIssue().getId())
+                .title(issueStationDetail.getIssue().getTitle())
+                .content(issueStationDetail.getIssue().getContent())
+                .keyword(issueStationDetail.getIssue().getKeyword())
+                .agoTime(getTime(issueStationDetail.getIssue().getStartDate()))
+                .stationDtos(stationDtoList)
+                .lines(issueStationDetail.getLineList().stream()
+                        .map(Line::getLineName)
+                        .collect(Collectors.toList()))
+                .likeCount(issueStationDetail.getIssue().getLikeCount())
+                .commentCount(issueStationDetail.getCommentCount())
                 .startDate(issueStationDetail.getIssue().getStartDate())
                 .expireDate(issueStationDetail.getIssue().getExpireDate())
                 .isLike(issueStationDetail.isLike())
@@ -108,6 +137,8 @@ public class IssueResponse {
                             .lines(issueStationDetail.getLineList().stream()
                                     .map(Line::getLineName)
                                     .collect(Collectors.toList()))
+                            .likeCount(issueStationDetail.getIssue().getLikeCount())
+                            .commentCount(issueStationDetail.getCommentCount())
                             .startDate(issue.getStartDate())
                             .expireDate(issue.getExpireDate())
                             .agoTime(getTime(issue.getStartDate()))

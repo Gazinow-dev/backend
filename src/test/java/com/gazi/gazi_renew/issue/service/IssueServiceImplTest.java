@@ -6,16 +6,12 @@ import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
 import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.Like;
-import com.gazi.gazi_renew.issue.domain.dto.IssueCreate;
-import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
-import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
+import com.gazi.gazi_renew.issue.domain.dto.*;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
-import com.gazi.gazi_renew.mock.common.FakeKafkaSender;
-import com.gazi.gazi_renew.mock.common.FakeLikeRepository;
-import com.gazi.gazi_renew.mock.common.FakeRedisUtilServiceImpl;
-import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
+import com.gazi.gazi_renew.mock.common.*;
+import com.gazi.gazi_renew.mock.issue.FakeIssueCommentRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueLineRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueStationRepository;
@@ -60,11 +56,14 @@ class IssueServiceImplTest {
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
         fakeIssueStationRepository = new FakeIssueStationRepository();
         fakeIssueLineRepository = new FakeIssueLineRepository();
+        FakeIssueCommentRepository fakeIssueCommentRepository = new FakeIssueCommentRepository();
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeKafkaSender fakeKafkaSender = new FakeKafkaSender();
+        LocalDateTime newTime = LocalDateTime.now();
+        TestClockHolder testClockHolder = new TestClockHolder(newTime);
 
         this.issueServiceImpl = new IssueServiceImpl(fakeIssueRepository, fakeLikeRepository, fakeSubwayRepository, fakeMemberRepository
-                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeKafkaSender);
+                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeIssueCommentRepository, fakeKafkaSender, testClockHolder);
 
         Line line = Line.builder()
                 .id(1L)
@@ -86,6 +85,15 @@ class IssueServiceImplTest {
                 .lng(126.961384)
                 .issueStationCode(1)
                 .build();
+        Station station3 = Station.builder()
+                .id(1L)
+                .line("수도권 6호선")
+                .name("녹사평")
+                .stationCode(1)
+                .lat(37.539233)
+                .lng(126.961384)
+                .issueStationCode(629)
+                .build();
 
         Member member1 = Member.builder()
                 .id(1L)
@@ -103,23 +111,25 @@ class IssueServiceImplTest {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Issue issue = Issue.builder()
-                .id(1L)
+                .id(11L)
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
                 .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
                 .keyword(IssueKeyword.시위)
                 .crawlingNo("1")
+                .issueKey("20241115-시위-6호선")
                 .likeCount(10)
                 .build();
         Issue issue2 = Issue.builder()
-                .id(2L)
+                .id(12L)
                 .title("서울역 사고")
                 .content("서울역 사고 테스트")
                 .startDate(LocalDateTime.parse("2024-11-16 08:00:00", formatter))
                 .expireDate(LocalDateTime.parse("2024-11-16 10:00:00", formatter))
                 .keyword(IssueKeyword.사고)
                 .crawlingNo("3")
+                .issueKey("20241116-사고-서울역")
                 .likeCount(5)
                 .build();
 
@@ -154,6 +164,21 @@ class IssueServiceImplTest {
                 .issueId(issue.getId())
                 .build();
         fakeLikeRepository.save(like);
+        Station dummy1 = Station.builder()
+                .id(21L)
+                .line("수도권 6호선")
+                .name("효창공원역")
+                .issueStationCode(627)
+                .build();
+        Station dummy2 = Station.builder()
+                .id(22L)
+                .line("수도권 6호선")
+                .name("삼각지역")
+                .issueStationCode(628)
+                .build();
+        fakeSubwayRepository.save(dummy1);
+        fakeSubwayRepository.save(dummy2);
+        fakeSubwayRepository.save(station3);
 
         // 2호선 역 데이터 (순환선)
         for (int i = 201; i <= 243; i++) {
@@ -176,104 +201,22 @@ class IssueServiceImplTest {
                     .build();
             fakeSubwayRepository.save(station);
         }
-
-        ReflectionTestUtils.setField(issueServiceImpl, "secretCode", "gazichiki12!@");
-    }
-    @Test
-    void Issue는_addIssue를_통해_추가할_수_있다() throws Exception{
-        //given
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        IssueCreate.Station station = IssueCreate.Station
-                .builder()
-                .line("수도권 6호선")
-                .startStationCode(1)
-                .endStationCode(2)
-                .keyword(IssueKeyword.시위)
-                .build();
-        IssueCreate issueCreate = IssueCreate.builder()
-                .title("삼각지역 집회")
-                .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
-                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
-                .keyword(IssueKeyword.시위)
-                .secretCode("gazichiki12!@")
-                .lines(Arrays.asList("수도권 6호선"))
-                .stations(Arrays.asList(station))
-                .crawlingNo("2")
-                .latestNo(2)
-                .build();
-        //when
-        boolean result = issueServiceImpl.addIssue(issueCreate);
-        //then
-        assertThat(result).isTrue();
-    }
-    @Test
-    void addIssue는_이슈_등록_시_비밀코드가_틀릴_경우에_에러를_터트린다() throws Exception{
-        //given
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        IssueCreate.Station station = IssueCreate.Station
-                .builder()
-                .line("수도권 6호선")
-                .startStationCode(1)
-                .endStationCode(2)
-                .keyword(IssueKeyword.시위)
-                .build();
-        IssueCreate issueCreate = IssueCreate.builder()
-                .title("삼각지역 집회")
-                .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
-                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
-                .keyword(IssueKeyword.시위)
-                .secretCode("wrongCode")
-                .lines(Arrays.asList("수도권 6호선"))
-                .stations(Arrays.asList(station))
-                .crawlingNo("2")
-                .latestNo(2)
-                .build();
-        //when
-        assertThrows(CustomException.class, () -> issueServiceImpl.addIssue(issueCreate));
-    }
-    @Test
-    void addIssue는_이슈_등록_시_중복된_crawlingNo을_사용할_경우에_에러를_터트린다() throws Exception{
-        //given
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        IssueCreate.Station station = IssueCreate.Station
-                .builder()
-                .line("수도권 6호선")
-                .startStationCode(1)
-                .endStationCode(2)
-                .keyword(IssueKeyword.시위)
-                .build();
-        IssueCreate issueCreate = IssueCreate.builder()
-                .title("삼각지역 집회")
-                .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
-                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
-                .keyword(IssueKeyword.시위)
-                .secretCode("gazichiki12!@")
-                .lines(Arrays.asList("수도권 6호선"))
-                .stations(Arrays.asList(station))
-                .crawlingNo("1") //중복
-                .latestNo(2)
-                .build();
-        //when
-        assertThrows(CustomException.class, () -> issueServiceImpl.addIssue(issueCreate));
     }
     @Test
     void getIssue는_id를_통해_조회가_가능하다() throws Exception{
         //given
-        Long id = 1L;
+        Long id = 11L;
         //when
         IssueStationDetail issue = issueServiceImpl.getIssue(id);
         //then
-        assertThat(issue.getIssue().getId()).isEqualTo(1L);
+        assertThat(issue.getIssue().getId()).isEqualTo(11L);
         assertThat(issue.getIssue().getTitle()).isEqualTo("삼각지역 집회");
         assertThat(issue.getIssue().getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
     }
     @Test
     void getIssue는_멤버가_누른_좋아요를_조회가_가능하다() throws Exception{
         //given
-        Long id = 1L;
+        Long id = 11L;
         //when
         IssueStationDetail issue = issueServiceImpl.getIssue(id);
         //then
@@ -338,111 +281,171 @@ class IssueServiceImplTest {
         //given
         IssueUpdate issueUpdate = IssueUpdate.builder()
                 .title("updateTest")
-                .id(1L)
+                .id(11L)
                 .content("삼각지에서 효창공원 시위로 변경")
                 .build();
         //when
         issueServiceImpl.updateIssue(issueUpdate);
         //then
-        Optional<Issue> result = fakeIssueRepository.findById(1L);
+        Optional<Issue> result = fakeIssueRepository.findById(11L);
         assertThat(result.get().getTitle()).isEqualTo("updateTest");
         assertThat(result.get().getContent()).isEqualTo("삼각지에서 효창공원 시위로 변경");
-        assertThat(result.get().getId()).isEqualTo(1L);
+        assertThat(result.get().getId()).isEqualTo(11);
     }
     @Test
-    void getStationList는_2호선과_다른노선을_구분하여_올바르게_처리한다() {
-        // given
-        List<IssueCreate.Station> issueStations = Arrays.asList(
-                IssueCreate.Station.builder()
-                        .line("수도권 2호선")
-                        .startStationCode(203)
-                        .endStationCode(242)
-                        .direction(SubwayDirection.Counterclockwise) // 반시계 방향
-                        .build(),
-                IssueCreate.Station.builder()
-                        .line("수도권 1호선")
-                        .startStationCode(12)
-                        .endStationCode(14)
-                        .build()
-        );
+    void 이슈_자동_등록은_이미_등록된_크롤링_번호가_존재하면_예외가_터진다() throws Exception{
+        //given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // when
-        List<Station> stations = issueServiceImpl.getStationList(issueStations);
-
-        // then
-        assertThat(stations).hasSize(8); // 2호선 5개 + 1호선 3개
-        assertThat(stations).extracting(Station::getLine)
-                .contains("수도권 2호선", "수도권 1호선");
-    }
-
-    @Test
-    void handleClockwiseDirection는_순환선에서_내선일때_시작역_코드가_끝역_코드보다_작아야_연속적인_구간을_처리한다() {
-        // given
-        int startIssueStationCode = 201; // 출발역
-        int endIssueStationCode = 205;   // 도착역
-
-        // when
-        List<Station> stations = issueServiceImpl.handleClockwiseDirection(startIssueStationCode, endIssueStationCode);
-
-        // then
-        assertThat(stations).hasSize(5); // 역 201, 202, 203, 204, 205
-        assertThat(stations).extracting(Station::getIssueStationCode)
-                .containsExactly(201, 202, 203, 204, 205);
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .lines(List.of("수도권 6호선"))
+                .locations(List.of("삼각지역"))
+                .issueKey("20241115-시위-6호선")
+                .lineInfoAvailable(false)
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .issueKey("20241115-시위-6호선")
+                .crawlingNo("1")
+                .build();
+        //then
+        assertThrows(CustomException.class, () -> issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate));
     }
     @Test
-    void handleCounterClockwiseDirection는_순환선에서_외선일때_시작역_코드가_끝역_코드보다_커야_연속적인_구간을_처리한다() {
-        // given
-        int startIssueStationCode = 205; // 출발역
-        int endIssueStationCode = 201;   // 도착역
+    void 이슈_자동_등록은_이슈키가_존재하면_날짜만_업데이트한다() throws Exception{
+        //given
+        LocalDateTime now = LocalDateTime.now();
 
-        // when
-        List<Station> stations = issueServiceImpl.handleCounterClockwiseDirection(startIssueStationCode, endIssueStationCode);
-
-        // then
-        assertThat(stations).hasSize(5); // 역 201, 202, 203, 204, 205
-        assertThat(stations).extracting(Station::getIssueStationCode)
-                .containsExactly(201, 202, 203, 204, 205);
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(now)
+                .expireDate(now.plusDays(1))
+                .lines(List.of("수도권 6호선"))
+                .locations(List.of("삼각지역"))
+                .issueKey("20241115-시위-6호선")
+                .lineInfoAvailable(false)
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .issueKey("20241115-시위-6호선")
+                .crawlingNo("11")
+                .build();
+        //when
+        Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
+        //then
+        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
     }
     @Test
-    void handleCounterClockwiseDirection는_순환선에서_외선일때_시작역_코드가_끝역_코드보다_작으면_원형을_넘는_구간을_처리한다() {
-        // given
-        int startIssueStationCode = 203; // 출발역
-        int endIssueStationCode = 242;   // 도착역
+    void 내부_이슈_자동_등록에서_지하철_시작역과_끝역_구간처리가_가능하다() throws Exception{
+        //given
+        LocalDateTime now = LocalDateTime.now();
 
-        // when
-        List<Station> stations = issueServiceImpl.handleCounterClockwiseDirection(startIssueStationCode, endIssueStationCode);
-
-        // then
-        assertThat(stations).hasSize(5); // 역 242, 243, 201, 202, 203
-        assertThat(stations).extracting(Station::getIssueStationCode)
-                .containsExactly(242, 243, 201, 202, 203);
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(now)
+                .expireDate(now.plusDays(1))
+                .lines(List.of("수도권 6호선"))
+                .locations(List.of("효창공원", "녹사평"))
+                .issueKey("20241115-시위-효창공원역")
+                .lineInfoAvailable(false)
+                //true
+                .processRange(true)
+                .keyword(IssueKeyword.시위)
+                .crawlingNo("11")
+                .build();
+        //when
+        Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        //then
+        assertThat(issueStationList.size()).isEqualTo(3);
+        assertThat(issueStationList.get(0).getStation().getName()).isEqualTo("효창공원역");
+        assertThat(issueStationList.get(1).getStation().getName()).isEqualTo("삼각지역");
+        assertThat(issueStationList.get(2).getStation().getName()).isEqualTo("녹사평");
     }
     @Test
-    void getStationsForCircularRoute는_원형을_넘어가는_구간을_처리한다() {
-        // given
-        int startIssueStationCode = 241; // 출발역
-        int endIssueStationCode = 203;   // 도착역
+    void 내부_이슈_자동_등록에서_한번에_한_호선의_모든_지하철을_등록할_수_있다() throws Exception{
+        //given
+        LocalDateTime now = LocalDateTime.now();
 
-        // when
-        List<Station> stations = issueServiceImpl.getStationsForCircularRoute(startIssueStationCode, endIssueStationCode);
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(now)
+                .expireDate(now.plusDays(1))
+                .lines(List.of("수도권 1호선"))
+                .issueKey("20241115-시위-효창공원역")
+                .lineInfoAvailable(false)
+                .locations(List.of())
+                //true
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .crawlingNo("11")
+                .build();
 
-        // then
-        assertThat(stations).hasSize(6); // 역 241, 242, 243, 201, 202, 203
-        assertThat(stations).extracting(Station::getIssueStationCode)
-                .containsExactly(241, 242, 243, 201, 202, 203);
+        //when
+        Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        //then
+        //fake에 저장한 1호선 지하철 갯수가 5개
+        assertThat(issueStationList.size()).isEqualTo(5);
     }
     @Test
-    void findStationsForOtherLines는_2호선이_아닌_직선구간의_역들을_조회한다() {
-        // given
-        int startIssueStationCode = 12; // 출발역
-        int endIssueStationCode = 14;   // 도착역
+    void 내부_이슈_자동_등록에서_단일역_처리도_가능하다() throws Exception{
+        //given
+        LocalDateTime now = LocalDateTime.now();
 
-        // when
-        List<Station> stations = issueServiceImpl.findStationsForOtherLines(startIssueStationCode, endIssueStationCode);
+        InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(now)
+                .expireDate(now.plusDays(1))
+                .lines(List.of("수도권 6호선"))
+                .issueKey("20241115-시위-효창공원역")
+                .lineInfoAvailable(false)
+                .locations(List.of("삼각지"))
+                //true
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .crawlingNo("11")
+                .build();
 
-        // then
-        assertThat(stations).hasSize(3); // 역 12, 13, 14
-        assertThat(stations).extracting(Station::getIssueStationCode)
-                .containsExactly(12, 13, 14);
+        //when
+        Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        //then
+        //fake에 저장한 1호선 지하철 갯수가 5개
+        assertThat(issueStationList.size()).isEqualTo(1);
+    }
+    @Test
+    void 외부_이슈_자동_등록은_이슈키가_존재하면_날짜만_업데이트한다() throws Exception{
+        //given
+        LocalDateTime now = LocalDateTime.now();
+        ExternalIssueCreate.Stations stations = ExternalIssueCreate.Stations.builder()
+                .name("삼각지역")
+                .line("수도권 6호선")
+                .build();
+        ExternalIssueCreate externalIssueCreate = ExternalIssueCreate.builder()
+                .title("삼각지역 집회")
+                .content("삼각지역 집회 가는길 지금 이슈 테스트")
+                .startDate(now)
+                .expireDate(now.plusDays(1))
+                .stations(List.of(stations))
+                .issueKey("20241115-시위-6호선")
+                .lineInfoAvailable(false)
+                .processRange(false)
+                .keyword(IssueKeyword.시위)
+                .issueKey("20241115-시위-6호선")
+                .crawlingNo("11")
+                .build();
+        //when
+        Issue issue = issueServiceImpl.autoRegisterExternalIssue(externalIssueCreate);
+        //then
+        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
     }
 }
