@@ -51,4 +51,10 @@ public class SubwayRepositoryImpl implements SubwayRepository {
         return station;
     }
 
+    @Override
+    public List<Station> getNearByCoordinates(double latitude, double longitude) {
+        return subwayJpaRepository.findNearbyStations(latitude, longitude)
+                .stream().map(StationEntity::toModel).collect(Collectors.toList());
+    }
+
 }
