@@ -66,7 +66,7 @@ public class IssueServiceImpl implements IssueService {
 
         Issue issue = issueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 id로 존재하는 이슈를 찾을 수 없습니다."));
         boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
-        boolean memberRestricted = memberPenaltyRepository.isMemberRestricted(member.get().getId());
+        boolean memberRestricted = member.isPresent() && memberPenaltyRepository.isMemberRestricted(member.get().getId());
 
         IssueStationDetail issueStationDetail = getIssueStationDetail(issue, isLike);
         return issueStationDetail.restrictedWriteComment(memberRestricted);
