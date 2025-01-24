@@ -1,19 +1,26 @@
 package com.gazi.gazi_renew.common.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class AutoRegisterInterceptor implements HandlerInterceptor {
 
@@ -22,7 +29,20 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if ("POST".equalsIgnoreCase(request.getMethod()) && request.getRequestURI().startsWith("/api/v1/issue/internal-issues")) {
-            String body = getRequestBody(request);
+            objectMapper.registerModule(new JavaTimeModule());
+            log.info("Request URI: {}", request.getRequestURI());
+            log.info("Request Method: {}", request.getMethod());
+            log.info("Request Class: {}", request.getClass().getName());
+            String bodyFromInputStream = readBodyFromInputStream(request);
+
+            log.info("Body from InputStream: {}", bodyFromInputStream);
+
+
+            ContentCachingRequestWrapper cachingRequest = (ContentCachingRequestWrapper) request;
+
+            byte[] contentBytes = cachingRequest.getContentAsByteArray();
+            log.debug("Raw content bytes length: {}", contentBytes.length);
+            String body = getRequestBody(cachingRequest);
 
             // AutomationIssueCreate 변환
             InternalIssueCreate requestBody = objectMapper.readValue(body, InternalIssueCreate.class);
@@ -34,6 +54,13 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
             if (requestBody.getProcessRange() && (updatedLocations.size() > 2 || updatedLines.size() > 1)) {
                 throw ErrorCode.throwInvalidSubwayRangeException();
             }
+            if (requestBody.getLocations().isEmpty()) {
+                throw ErrorCode.throwInvalidLocationsException();
+            }
+            if (requestBody.getLines().isEmpty()) {
+                throw ErrorCode.throwInvalidLinesException();
+            }
+
 
             // 변환된 객체를 다시 JSON으로 변환 후 설정
             InternalIssueCreate updatedRequestBody = InternalIssueCreate.builder()
@@ -50,7 +77,8 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
                     .crawlingNo(requestBody.getCrawlingNo())
                     .build();
 
-            request.setAttribute("updatedRequestBody", objectMapper.writeValueAsString(updatedRequestBody));
+            request.setAttribute("internalIssueCreate", updatedRequestBody);
+
         }
         return true; // 다음 핸들러로 진행
     }
@@ -82,14 +110,35 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
                 .collect(Collectors.toList());
     }
 
-
-    private String getRequestBody(HttpServletRequest request) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader reader = request.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            stringBuilder.append(line);
+    private String getRequestBody(ContentCachingRequestWrapper request) {
+        byte[] content = request.getContentAsByteArray();
+        try {
+            return new String(content, request.getCharacterEncoding());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Failed to read request body", e);
         }
-        return stringBuilder.toString();
     }
+
+
+//    private String getRequestBody(ContentCachingRequestWrapper request) throws IOException {
+//        request.setCharacterEncoding("UTF-8");
+//
+//        StringBuilder stringBuilder = new StringBuilder();
+//        BufferedReader reader = request.getReader();
+//        String line;
+//        while ((line = reader.readLine()) != null) {
+//            stringBuilder.append(line);
+//        }
+//        return stringBuilder.toString();
+//    }
+private String readBodyFromInputStream(HttpServletRequest request) {
+    try {
+        ServletInputStream inputStream = request.getInputStream();
+        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+        log.error("Error reading from input stream", e);
+        return "";
+    }
+}
+
 }

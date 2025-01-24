@@ -3,6 +3,9 @@ package com.gazi.gazi_renew.station.infrastructure;
 import com.gazi.gazi_renew.station.domain.Station;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Type;
+import org.locationtech.jts.geom.Point;
+
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,6 +25,8 @@ public class StationEntity {
     private double lat;
     private double lng;
     private Integer issueStationCode;
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point location;
 
     public static StationEntity from(Station station) {
         StationEntity stationEntity = new StationEntity();
