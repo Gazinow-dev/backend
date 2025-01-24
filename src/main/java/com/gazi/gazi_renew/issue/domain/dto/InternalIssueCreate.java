@@ -1,8 +1,11 @@
 package com.gazi.gazi_renew.issue.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 
 import java.time.LocalDateTime;
@@ -22,7 +25,17 @@ public class InternalIssueCreate {
     private final Boolean lineInfoAvailable;
     private final String crawlingNo;
     @Builder
-    public InternalIssueCreate(String title, String content, IssueKeyword keyword, LocalDateTime startDate, LocalDateTime expireDate, List<String> lines, List<String> locations, String issueKey, Boolean processRange, Boolean lineInfoAvailable, String crawlingNo) {
+    public InternalIssueCreate( @JsonProperty("title") String title,
+                                @JsonProperty("content") String content,
+                                @JsonProperty("keyword") IssueKeyword keyword,
+                                @JsonProperty("startDate") LocalDateTime startDate,
+                                @JsonProperty("expireDate") LocalDateTime expireDate,
+                                @JsonProperty("lines") List<String> lines,
+                                @JsonProperty("locations") List<String> locations,
+                                @JsonProperty("issue_key") String issueKey,
+                                @JsonProperty("processRange") Boolean processRange,
+                                @JsonProperty("lineInfoAvailable") Boolean lineInfoAvailable,
+                                @JsonProperty("crawlingNo") String crawlingNo) {
         this.title = title;
         this.content = content;
         this.keyword = keyword;

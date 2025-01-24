@@ -14,6 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(autoRegisterInterceptor)
-                .addPathPatterns("/api/v1/issue"); // 특정 엔드포인트만 대상
+                .addPathPatterns("/api/v1/issue/**"); // 특정 엔드포인트만 대상
     }
 }

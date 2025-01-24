@@ -21,4 +21,5 @@ public interface SubwayRepository {
 
     Optional<Station> findById(Long id);
 
+    List<Station> getNearByCoordinates(double latitude, double longitude);
 }

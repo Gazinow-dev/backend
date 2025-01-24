@@ -78,4 +78,9 @@ public class FakeSubwayRepository implements SubwayRepository {
     public Optional<Station> findById(Long id) {
         return Optional.empty();
     }
+
+    @Override
+    public List<Station> getNearByCoordinates(double latitude, double longitude) {
+        return null;
+    }
 }

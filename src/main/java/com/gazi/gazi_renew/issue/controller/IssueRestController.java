@@ -5,12 +5,14 @@ import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.port.IssueService;
+import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.dto.ExternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.InternalIssueCreate;
 import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.domain.dto.IssueUpdate;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,13 +70,15 @@ public class IssueRestController extends BaseController {
         return response.success(" 이슈 삭제 성공");
     }
     @PostMapping("/internal-issues")
-    public ResponseEntity<Response.Body> autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException {
-        issueService.autoRegisterInternalIssue(internalIssueCreate);
+    public ResponseEntity<Response.Body> autoRegisterInternalIssue(HttpServletRequest request) throws JsonProcessingException {
+        InternalIssueCreate processedRequest = (InternalIssueCreate) request.getAttribute("internalIssueCreate");
+
+        issueService.autoRegisterInternalIssue(processedRequest);
 
         return response.success(" 이슈 등록 성공");
     }
     @PostMapping("/external-issues")
-    public ResponseEntity<Response.Body> autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
+    public ResponseEntity<Response.Body> autoRegisterExternalIssue(@RequestBody ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
         issueService.autoRegisterExternalIssue(externalIssueCreate);
 
         return response.success(" 이슈 등록 성공");
