@@ -54,7 +54,7 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue() {
         List<IssueStationDetail> issueList = issueService.getPopularIssues();
-        return response.success(IssueResponse.fromIssueDetail(issueList), "인기 이슈 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromPopularIssueDetail(issueList), "인기 이슈 조회 성공", HttpStatus.OK);
     }
     @PatchMapping("")
     public ResponseEntity<Response.Body> updateIssue(@RequestBody IssueUpdate issueUpdate){

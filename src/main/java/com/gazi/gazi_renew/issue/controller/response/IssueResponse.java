@@ -67,7 +67,55 @@ public class IssueResponse {
 
         return formatTime;
     }
-    public static List<IssueResponse> fromIssueDetail(List<IssueStationDetail> issueStationDetails) {
+    public static IssueResponse fromIssueDetail(List<IssueStationDetail> issueStationDetails) {
+
+        Map<Long, List<IssueStationDetail>> groupedById = issueStationDetails.stream()
+                .collect(Collectors.groupingBy(
+                        IssueStationDetail::getId,
+                        LinkedHashMap::new, // 순서를 유지하기 위해 LinkedHashMap 사용
+                        Collectors.toList()
+                ));
+        // Grouped 데이터를 IssueResponse로 변환
+        List<IssueResponse> issueResponses = groupedById.values().stream()
+                .map(details -> {
+                    // 동일한 `id`의 IssueStationDetail 데이터를 처리
+                    IssueStationDetail firstDetail = details.get(0); // 대표 데이터
+
+                    // StationDto 리스트 생성
+                    List<StationDto> stationDtoList = details.stream()
+                            .map(detail -> StationDto.builder()
+                                    .line(detail.getLine())
+                                    .stationName(detail.getStationName())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    // Line 리스트 생성
+                    List<String> lineList = details.stream()
+                            .map(IssueStationDetail::getLine)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // IssueResponse 생성
+                    return IssueResponse.builder()
+                            .id(firstDetail.getId())
+                            .title(firstDetail.getTitle())
+                            .content(firstDetail.getContent())
+                            .keyword(firstDetail.getKeyword())
+                            .agoTime(getTime(firstDetail.getStartDate()))
+                            .stationDtos(stationDtoList)
+                            .lines(lineList)
+                            .likeCount(firstDetail.getLikeCount())
+                            .commentCount(firstDetail.getCommentCount())
+                            .startDate(firstDetail.getStartDate())
+                            .expireDate(firstDetail.getExpireDate())
+                            .isLike(firstDetail.isLike())
+                            .isCommentRestricted(firstDetail.isCommentRestricted())
+                            .build();
+                })
+                .collect(Collectors.toList());
+        return issueResponses.get(0);
+    }
+    public static List<IssueResponse> fromPopularIssueDetail(List<IssueStationDetail> issueStationDetails) {
 
         Map<Long, List<IssueStationDetail>> groupedById = issueStationDetails.stream()
                 .collect(Collectors.groupingBy(
