@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
@@ -21,6 +22,7 @@ import static com.gazi.gazi_renew.issue.infrastructure.entity.QIssueCommentEntit
 import static com.gazi.gazi_renew.issue.infrastructure.entity.QIssueEntity.issueEntity;
 import static com.gazi.gazi_renew.issue.infrastructure.entity.QIssueLineEntity.issueLineEntity;
 import static com.gazi.gazi_renew.issue.infrastructure.entity.QIssueStationEntity.issueStationEntity;
+import static com.gazi.gazi_renew.station.infrastructure.QLineEntity.lineEntity;
 import static com.gazi.gazi_renew.station.infrastructure.QStationEntity.stationEntity;
 @Repository
 @RequiredArgsConstructor
@@ -43,12 +45,12 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .select(issueEntity.count())
                 .from(issueEntity);
 
-        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
-                .from(issueEntity)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(issueEntity.startDate.desc())
-                .fetch();
+//        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
+//                .from(issueEntity)
+//                .offset(pageable.getOffset())
+//                .limit(pageable.getPageSize())
+//                .orderBy(issueEntity.startDate.desc())
+//                .fetch();
 
 
         List<IssueStationDetail> result = jpaQueryFactory.select(new QIssueStationDetail(
@@ -71,8 +73,10 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
-                .where(issueEntity.id.in(issueIds))
+//                .where(issueEntity.id.in(issueIds))
                 .orderBy(issueEntity.startDate.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
         // count 쿼리가 필요하지 않을 땐 쿼리를 날리지 않음
         return PageableExecutionUtils.getPage(result, pageable, totalCount::fetchOne);
@@ -122,6 +126,12 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
 
         List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
                 .from(issueEntity)
+                .join(issueLineEntity).on(issueEntity.eq(issueLineEntity.issueEntity))
+                .where(issueLineEntity.lineEntity.id.in(
+                        JPAExpressions.select(lineEntity.id)
+                                .from(lineEntity)
+                                .where(lineEntity.lineName.eq(lineName))
+                ))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(issueEntity.startDate.desc())
@@ -147,8 +157,7 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
-                .join(issueLineEntity).on(issueEntity.eq(issueLineEntity.issueEntity))
-                .where(issueEntity.id.in(issueIds), issueLineEntity.lineEntity.lineName.eq(lineName))
+                .where(issueEntity.id.in(issueIds))
                 .orderBy(issueEntity.startDate.desc())
                 .fetch();
 
