@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.admin.service.port.MemberPenaltyRepository;
 import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
@@ -11,7 +12,6 @@ import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.mock.common.*;
-import com.gazi.gazi_renew.mock.issue.FakeIssueCommentRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueLineRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueRepository;
 import com.gazi.gazi_renew.mock.issue.FakeIssueStationRepository;
@@ -20,31 +20,36 @@ import com.gazi.gazi_renew.mock.station.FakeLineRepository;
 import com.gazi.gazi_renew.mock.station.FakeSubwayRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
-import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 class IssueServiceImplTest {
     private IssueServiceImpl issueServiceImpl;
     private FakeIssueRepository fakeIssueRepository;
     private FakeIssueStationRepository fakeIssueStationRepository;
     private FakeIssueLineRepository fakeIssueLineRepository;
+    @Mock
+    private MemberPenaltyRepository memberPenaltyRepository;
     @BeforeEach
     void init() {
+        MockitoAnnotations.openMocks(this);
+
         ObjectMapper mapper = new ObjectMapper();
 
         FakeLikeRepository fakeLikeRepository = new FakeLikeRepository();
@@ -56,14 +61,14 @@ class IssueServiceImplTest {
         FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
         fakeIssueStationRepository = new FakeIssueStationRepository();
         fakeIssueLineRepository = new FakeIssueLineRepository();
-        FakeIssueCommentRepository fakeIssueCommentRepository = new FakeIssueCommentRepository();
+
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeKafkaSender fakeKafkaSender = new FakeKafkaSender();
         LocalDateTime newTime = LocalDateTime.now();
         TestClockHolder testClockHolder = new TestClockHolder(newTime);
 
         this.issueServiceImpl = new IssueServiceImpl(fakeIssueRepository, fakeLikeRepository, fakeSubwayRepository, fakeMemberRepository
-                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, fakeIssueCommentRepository, fakeKafkaSender, testClockHolder);
+                , fakeLineRepository, fakeRedisUtilService, fakeSecurityUtil, fakeIssueLineRepository, fakeIssueStationRepository, memberPenaltyRepository, fakeKafkaSender, testClockHolder);
 
         Line line = Line.builder()
                 .id(1L)
@@ -206,21 +211,23 @@ class IssueServiceImplTest {
     void getIssue는_id를_통해_조회가_가능하다() throws Exception{
         //given
         Long id = 11L;
+        when(memberPenaltyRepository.isMemberRestricted(1L)).thenReturn(false);
         //when
-        IssueStationDetail issue = issueServiceImpl.getIssue(id);
+        List<IssueStationDetail> issueStationDetailList = issueServiceImpl.getIssue(id);
         //then
-        assertThat(issue.getIssue().getId()).isEqualTo(11L);
-        assertThat(issue.getIssue().getTitle()).isEqualTo("삼각지역 집회");
-        assertThat(issue.getIssue().getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
+        assertThat(issueStationDetailList.get(0).getId()).isEqualTo(11L);
+        assertThat(issueStationDetailList.get(0).getTitle()).isEqualTo("삼각지역 집회");
+        assertThat(issueStationDetailList.get(0).getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
     }
     @Test
     void getIssue는_멤버가_누른_좋아요를_조회가_가능하다() throws Exception{
         //given
         Long id = 11L;
+
         //when
-        IssueStationDetail issue = issueServiceImpl.getIssue(id);
+        List<IssueStationDetail> issueStationDetailList = issueServiceImpl.getIssue(id);
         //then
-        assertThat(issue.isLike()).isTrue();
+        assertThat(issueStationDetailList.get(0).isLike()).isTrue();
     }
     @Test
     void getIssue는_잘못된_id가_들어올_경우에_에러를_터트린다() throws Exception{
@@ -242,39 +249,16 @@ class IssueServiceImplTest {
         assertThat(issuePage.getTotalElements()).isEqualTo(2);
     }
     @Test
-    void getLineByIssues는_호선별로_이슈를_조회할_수_있다() throws Exception {
-        // given
-        // when
-        Pageable pageable = PageRequest.of(0, 2);
-        Page<IssueStationDetail> issuePage = issueServiceImpl.getLineByIssues("수도권 1호선", pageable);
-
-        // then
-        assertThat(issuePage).isNotNull();
-        assertThat(issuePage.getTotalElements()).isEqualTo(2);
-        assertThat(issuePage.getContent()).extracting(IssueStationDetail::getIssue).extracting(Issue::getTitle)
-                .containsExactly("서울역 사고", "삼각지역 집회");  //정렬 순서도 체크
-    }
-    @Test
-    void getLineByIssues는_존재하지_않는_호선을_조회하면_에러를_터트린다() throws Exception {
-        // given
-        String invalidLineName = "수도권 99호선";
-        Pageable pageable = PageRequest.of(0, 2);
-
-        // when & then
-        assertThrows(EntityNotFoundException.class,
-                () -> issueServiceImpl.getLineByIssues(invalidLineName, pageable));
-    }
-    @Test
     void getPopularIssues는_좋아요_숫자가_5개_이상인_이슈를_조회할_수_있다() throws Exception{
         //given
         //when
         List<IssueStationDetail> popularIssues = issueServiceImpl.getPopularIssues();
         //then
         assertThat(popularIssues.size()).isEqualTo(2);
-        assertThat(popularIssues.get(0).getIssue().getTitle()).isEqualTo("삼각지역 집회");
-        assertThat(popularIssues.get(0).getIssue().getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
-        assertThat(popularIssues.get(1).getIssue().getTitle()).isEqualTo("서울역 사고");
-        assertThat(popularIssues.get(1).getIssue().getContent()).isEqualTo("서울역 사고 테스트");
+        assertThat(popularIssues.get(0).getTitle()).isEqualTo("삼각지역 집회");
+        assertThat(popularIssues.get(0).getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
+        assertThat(popularIssues.get(1).getTitle()).isEqualTo("서울역 사고");
+        assertThat(popularIssues.get(1).getContent()).isEqualTo("서울역 사고 테스트");
     }
     @Test
     void updateIssue는_Issue_내용과_제목을_업데이트할_수_있다() throws Exception{
@@ -287,10 +271,10 @@ class IssueServiceImplTest {
         //when
         issueServiceImpl.updateIssue(issueUpdate);
         //then
-        Optional<Issue> result = fakeIssueRepository.findById(11L);
-        assertThat(result.get().getTitle()).isEqualTo("updateTest");
-        assertThat(result.get().getContent()).isEqualTo("삼각지에서 효창공원 시위로 변경");
-        assertThat(result.get().getId()).isEqualTo(11);
+        List<IssueStationDetail> result = fakeIssueRepository.getIssueById(11L);
+        assertThat(result.get(0).getTitle()).isEqualTo("updateTest");
+        assertThat(result.get(0).getContent()).isEqualTo("삼각지에서 효창공원 시위로 변경");
+        assertThat(result.get(0).getId()).isEqualTo(11);
     }
     @Test
     void 이슈_자동_등록은_이미_등록된_크롤링_번호가_존재하면_예외가_터진다() throws Exception{
