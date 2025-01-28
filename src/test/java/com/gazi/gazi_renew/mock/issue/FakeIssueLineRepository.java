@@ -54,7 +54,6 @@ public class FakeIssueLineRepository implements IssueLineRepository {
             data.add(issueLine);
         }
     }
-
     @Override
     public List<IssueLine> findAllByIssue(Issue issue) {
         return data.stream().filter(issueLine -> issueLine.getIssue().getId().equals(issue.getId()))

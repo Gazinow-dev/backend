@@ -67,91 +67,102 @@ public class IssueResponse {
 
         return formatTime;
     }
-    public static IssueResponse fromIssueDetail(IssueStationDetail issueStationDetail) {
-        List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
-            return StationDto.builder()
-                    .line(issueStation.getLine())
-                    .stationName(issueStation.getName())
-                    .build();
-        }).collect(Collectors.toList());
+    public static List<IssueResponse> fromIssueDetail(List<IssueStationDetail> issueStationDetails) {
 
-        return IssueResponse.builder()
-                .id(issueStationDetail.getIssue().getId())
-                .title(issueStationDetail.getIssue().getTitle())
-                .content(issueStationDetail.getIssue().getContent())
-                .keyword(issueStationDetail.getIssue().getKeyword())
-                .agoTime(getTime(issueStationDetail.getIssue().getStartDate()))
-                .stationDtos(stationDtoList)
-                .lines(issueStationDetail.getLineList().stream()
-                        .map(Line::getLineName)
-                        .collect(Collectors.toList()))
-                .likeCount(issueStationDetail.getIssue().getLikeCount())
-                .commentCount(issueStationDetail.getCommentCount())
-                .startDate(issueStationDetail.getIssue().getStartDate())
-                .expireDate(issueStationDetail.getIssue().getExpireDate())
-                .isLike(issueStationDetail.isLike())
-                .isCommentRestricted(issueStationDetail.isCommentRestricted())
-                .build();
-    }
-    public static IssueResponse fromPopularIssueDetail(IssueStationDetail issueStationDetail) {
-        List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
-            return StationDto.builder()
-                    .line(issueStation.getLine())
-                    .stationName(issueStation.getName())
-                    .build();
-        }).collect(Collectors.toList());
+        Map<Long, List<IssueStationDetail>> groupedById = issueStationDetails.stream()
+                .collect(Collectors.groupingBy(
+                        IssueStationDetail::getId,
+                        LinkedHashMap::new, // 순서를 유지하기 위해 LinkedHashMap 사용
+                        Collectors.toList()
+                ));
+        // Grouped 데이터를 IssueResponse로 변환
+        List<IssueResponse> issueResponses = groupedById.values().stream()
+                .map(details -> {
+                    // 동일한 `id`의 IssueStationDetail 데이터를 처리
+                    IssueStationDetail firstDetail = details.get(0); // 대표 데이터
 
-        return IssueResponse.builder()
-                .id(issueStationDetail.getIssue().getId())
-                .title(issueStationDetail.getIssue().getTitle())
-                .content(issueStationDetail.getIssue().getContent())
-                .keyword(issueStationDetail.getIssue().getKeyword())
-                .agoTime(getTime(issueStationDetail.getIssue().getStartDate()))
-                .stationDtos(stationDtoList)
-                .lines(issueStationDetail.getLineList().stream()
-                        .map(Line::getLineName)
-                        .collect(Collectors.toList()))
-                .likeCount(issueStationDetail.getIssue().getLikeCount())
-                .commentCount(issueStationDetail.getCommentCount())
-                .startDate(issueStationDetail.getIssue().getStartDate())
-                .expireDate(issueStationDetail.getIssue().getExpireDate())
-                .isLike(issueStationDetail.isLike())
-                .build();
+                    // StationDto 리스트 생성
+                    List<StationDto> stationDtoList = details.stream()
+                            .map(detail -> StationDto.builder()
+                                    .line(detail.getLine())
+                                    .stationName(detail.getStationName())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    // Line 리스트 생성
+                    List<String> lineList = details.stream()
+                            .map(IssueStationDetail::getLine)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // IssueResponse 생성
+                    return IssueResponse.builder()
+                            .id(firstDetail.getId())
+                            .title(firstDetail.getTitle())
+                            .content(firstDetail.getContent())
+                            .keyword(firstDetail.getKeyword())
+                            .agoTime(getTime(firstDetail.getStartDate()))
+                            .stationDtos(stationDtoList)
+                            .lines(lineList)
+                            .likeCount(firstDetail.getLikeCount())
+                            .commentCount(firstDetail.getCommentCount())
+                            .startDate(firstDetail.getStartDate())
+                            .expireDate(firstDetail.getExpireDate())
+                            .isLike(firstDetail.isLike())
+                            .isCommentRestricted(firstDetail.isCommentRestricted())
+                            .build();
+                })
+                .collect(Collectors.toList());
+        return issueResponses;
     }
     public static Page<IssueResponse> fromIssueDetailPage(Page<IssueStationDetail> issueStationDetails) {
-        Page<IssueResponse> issueResponsePage = new PageImpl<>(
-                issueStationDetails.stream().map(issueStationDetail -> {
-                    List<StationDto> stationDtoList = issueStationDetail.getStationList().stream().map(issueStation -> {
-                        return StationDto.builder()
-                                .line(issueStation.getLine())
-                                .stationName(issueStation.getName())
-                                .build();
-                    }).collect(Collectors.toList());
-                    Issue issue = issueStationDetail.getIssue();
+        // 그루핑 `id`
+        Map<Long, List<IssueStationDetail>> groupedById = issueStationDetails.stream()
+                .collect(Collectors.groupingBy(
+                        IssueStationDetail::getId,
+                        LinkedHashMap::new, // 순서를 유지하기 위해 LinkedHashMap 사용
+                        Collectors.toList()
+                ));
+        // Grouped 데이터를 IssueResponse로 변환
+        List<IssueResponse> issueResponses = groupedById.values().stream()
+                .map(details -> {
+                    // 동일한 `id`의 IssueStationDetail 데이터를 처리
+                    IssueStationDetail firstDetail = details.get(0); // 대표 데이터
+
+                    // StationDto 리스트 생성
+                    List<StationDto> stationDtoList = details.stream()
+                            .map(detail -> StationDto.builder()
+                                    .line(detail.getLine())
+                                    .stationName(detail.getStationName())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    // Line 리스트 생성
+                    List<String> lineList = details.stream()
+                            .map(IssueStationDetail::getLine)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // IssueResponse 생성
                     return IssueResponse.builder()
-                            .id(issue.getId())
-                            .title(issue.getTitle())
-                            .content(issue.getContent())
-                            .keyword(issue.getKeyword())
+                            .id(firstDetail.getId())
+                            .title(firstDetail.getTitle())
+                            .content(firstDetail.getContent())
+                            .keyword(firstDetail.getKeyword())
+                            .agoTime(getTime(firstDetail.getStartDate()))
                             .stationDtos(stationDtoList)
-                            .lines(issueStationDetail.getLineList().stream()
-                                    .map(Line::getLineName)
-                                    .collect(Collectors.toList()))
-                            .likeCount(issueStationDetail.getIssue().getLikeCount())
-                            .commentCount(issueStationDetail.getCommentCount())
-                            .startDate(issue.getStartDate())
-                            .expireDate(issue.getExpireDate())
-                            .agoTime(getTime(issue.getStartDate()))
-                            .isLike(issueStationDetail.isLike())
+                            .lines(lineList)
+                            .likeCount(firstDetail.getLikeCount())
+                            .commentCount(firstDetail.getCommentCount())
+                            .startDate(firstDetail.getStartDate())
+                            .expireDate(firstDetail.getExpireDate())
+                            .isLike(firstDetail.isLike())
+                            .isCommentRestricted(firstDetail.isCommentRestricted())
                             .build();
+                })
+                .collect(Collectors.toList());
 
-                }).collect(Collectors.toList()),
-                issueStationDetails.getPageable(),
-                issueStationDetails.getTotalElements()
-        );
-
-        return issueResponsePage;
-
+        // Page 객체로 변환
+        return new PageImpl<>(issueResponses, issueStationDetails.getPageable(), issueStationDetails.getTotalElements());
     }
-
 }

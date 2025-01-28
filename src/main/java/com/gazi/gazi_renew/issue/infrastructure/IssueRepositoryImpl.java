@@ -1,7 +1,9 @@
 package com.gazi.gazi_renew.issue.infrastructure;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import com.gazi.gazi_renew.issue.infrastructure.entity.IssueEntity;
+import com.gazi.gazi_renew.issue.infrastructure.jpa.CustomIssueRepository;
 import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,22 +14,26 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 public class IssueRepositoryImpl implements IssueRepository {
     private final IssueJpaRepository issueJpaRepository;
+    private final CustomIssueRepository customIssueRepository;
 
     @Override
     public boolean existsByCrawlingNo(String crawlingNo) {
-        return issueJpaRepository.existsByCrawlingNo(crawlingNo);
+        return customIssueRepository.existsByCrawlingNo(crawlingNo);
     }
 
     @Override
-    public List<Issue> findTopIssuesByLikesCount(int likesCount, Pageable pageable) {
-        return issueJpaRepository.findTopIssuesByLikesCount(likesCount, pageable).stream()
-                .map(IssueEntity::toModel).collect(Collectors.toList());
+    public List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable) {
+        return customIssueRepository.findTopIssuesByLikesCount(likesCount, pageable);
+    }
+
+    @Override
+    public Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable) {
+        return customIssueRepository.getIssueByLineName(lineName, pageable);
     }
 
     @Override
@@ -35,14 +41,14 @@ public class IssueRepositoryImpl implements IssueRepository {
         return issueJpaRepository.save(IssueEntity.from(issue)).toModel();
     }
     @Override
-    public Page<Issue> findAll(Pageable pageable) {
-        return issueJpaRepository.findAllByOrderByStartDateDesc(pageable)
-                .map(IssueEntity::toModel);
+    public Page<IssueStationDetail> findAll(Pageable pageable) {
+        return customIssueRepository.findAllByOrderByStartDateDesc(pageable);
+
     }
 
     @Override
-    public Optional<Issue> findById(Long id) {
-        return issueJpaRepository.findById(id).map(IssueEntity::toModel);
+    public List<IssueStationDetail> getIssueById(Long id) {
+        return customIssueRepository.getIssueById(id);
     }
 
     @Override
@@ -69,9 +75,12 @@ public class IssueRepositoryImpl implements IssueRepository {
     public void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate) {
         issueJpaRepository.updateStartDateAndExpireDate(id, startDate, expireDate);
     }
-
     @Override
     public Optional<Issue> findByIssueKey(String issueKey) {
-        return issueJpaRepository.findByIssueKey(issueKey).map(IssueEntity::toModel);
+        return customIssueRepository.findByIssueKey(issueKey).map(IssueEntity::toModel);
+    }
+    @Override
+    public Optional<Issue> findById(Long id) {
+        return issueJpaRepository.findById(id).map(IssueEntity::toModel);
     }
 }

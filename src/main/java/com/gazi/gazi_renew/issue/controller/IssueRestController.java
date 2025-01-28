@@ -35,8 +35,8 @@ public class IssueRestController extends BaseController {
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/get")
     public ResponseEntity<Response.Body> getIssue(@RequestParam(name="id") Long id){
-        IssueStationDetail issue = issueService.getIssue(id);
-        return response.success(IssueResponse.fromIssueDetail(issue), "이슈 조회 성공", HttpStatus.OK);
+        List<IssueStationDetail> issueStationDetailList = issueService.getIssue(id);
+        return response.success(IssueResponse.fromIssueDetail(issueStationDetailList), "이슈 조회 성공", HttpStatus.OK);
     }
 
     @GetMapping("/get_all")
@@ -54,10 +54,7 @@ public class IssueRestController extends BaseController {
     @GetMapping("/get_popular")
     public ResponseEntity<Response.Body> getPopularIssue() {
         List<IssueStationDetail> issueList = issueService.getPopularIssues();
-        List<IssueResponse> issueResponseList = issueList.stream().map(IssueResponse::fromPopularIssueDetail)
-                .collect(Collectors.toList());
-
-        return response.success(issueResponseList, "인기 이슈 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromIssueDetail(issueList), "인기 이슈 조회 성공", HttpStatus.OK);
     }
     @PatchMapping("")
     public ResponseEntity<Response.Body> updateIssue(@RequestBody IssueUpdate issueUpdate){

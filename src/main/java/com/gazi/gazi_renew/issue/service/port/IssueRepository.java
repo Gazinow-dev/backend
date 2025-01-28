@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.service.port;
 
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.dto.IssueStationDetail;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,13 +11,14 @@ import java.util.Optional;
 
 public interface IssueRepository {
     boolean existsByCrawlingNo(String crawlingNo);
-    List<Issue> findTopIssuesByLikesCount(int likesCount, Pageable pageable);
+    List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable);
 
+    Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable);
     Issue save(Issue issue);
 
-    Page<Issue> findAll(Pageable pageable);
+    Page<IssueStationDetail> findAll(Pageable pageable);
 
-    Optional<Issue> findById(Long id);
+    List<IssueStationDetail> getIssueById(Long id);
 
     void updateIssue(Issue issue);
 
@@ -29,4 +31,6 @@ public interface IssueRepository {
     void updateStartDateAndExpireDate(Long id, LocalDateTime startDate, LocalDateTime expireDate);
 
     Optional<Issue> findByIssueKey(String issueKey);
+
+    Optional<Issue> findById(Long id);
 }
