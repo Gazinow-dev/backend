@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.issue.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.admin.service.port.MemberPenaltyRepository;
 import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueLine;
@@ -17,12 +18,14 @@ import com.gazi.gazi_renew.mock.issue.FakeIssueStationRepository;
 import com.gazi.gazi_renew.mock.member.FakeMemberRepository;
 import com.gazi.gazi_renew.mock.station.FakeLineRepository;
 import com.gazi.gazi_renew.mock.station.FakeSubwayRepository;
+import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.domain.enums.SubwayDirection;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;

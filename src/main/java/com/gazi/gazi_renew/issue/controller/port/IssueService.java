@@ -16,9 +16,8 @@ public interface IssueService {
     // 이슈 저장
 //    boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
     // 이슈 조회
-    IssueStationDetail getIssue(Long id);
+    List<IssueStationDetail> getIssue(Long id);
 
-    IssueStationDetail getIssueStationDetail(Issue issue, boolean isLike);
 
     // 이슈 전체조회
     Page<IssueStationDetail> getIssues(Pageable pageable);

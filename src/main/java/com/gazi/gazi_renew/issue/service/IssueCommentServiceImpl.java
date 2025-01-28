@@ -36,6 +36,7 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     public IssueComment saveComment(IssueCommentCreate issueCommentCreate) {
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
+
         Issue issue = issueRepository.findById(issueCommentCreate.getIssueId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 이슈가 존재하지 않습니다."));
         //Testability 높이기
