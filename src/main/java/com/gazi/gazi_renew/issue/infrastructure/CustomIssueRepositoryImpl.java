@@ -45,13 +45,12 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .select(issueEntity.count())
                 .from(issueEntity);
 
-//        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
-//                .from(issueEntity)
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .orderBy(issueEntity.startDate.desc())
-//                .fetch();
-
+        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
+                .from(issueEntity)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(issueEntity.startDate.desc())
+                .fetch();
 
         List<IssueStationDetail> result = jpaQueryFactory.select(new QIssueStationDetail(
                         issueEntity.id,
@@ -73,10 +72,8 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
-//                .where(issueEntity.id.in(issueIds))
+                .where(issueEntity.id.in(issueIds))
                 .orderBy(issueEntity.startDate.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
         // count 쿼리가 필요하지 않을 땐 쿼리를 날리지 않음
         return PageableExecutionUtils.getPage(result, pageable, totalCount::fetchOne);
