@@ -1,8 +1,10 @@
 package com.gazi.gazi_renew.station.controller;
 
 import com.gazi.gazi_renew.common.controller.BaseController;
+import com.gazi.gazi_renew.station.domain.Station;
 import com.gazi.gazi_renew.station.infrastructure.StationEntity;
 import com.gazi.gazi_renew.station.infrastructure.SubwayJpaRepository;
+import com.gazi.gazi_renew.station.service.StationService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +18,11 @@ import java.util.List;
 @RestController
 public class StationController extends BaseController {
 
-    private final SubwayJpaRepository subwayJpaRepository;
+    private final StationService stationService;
 
     @Hidden
     @GetMapping
-    public List<StationEntity> getStationsByLine(@RequestParam("line") String line) {
-        return subwayJpaRepository.findByLine(line);
+    public List<Station> getStationsByLine(@RequestParam("line") String line) {
+        return stationService.getStationsByLine(line);
     }
 }

@@ -25,4 +25,9 @@ public class StationService {
         List<Station> stationList = subwayRepository.getNearByCoordinates(latitude, longitude);
         return stationList;
     }
+
+    public List<Station> getStationsByLine(String line) {
+        List<Station> stationList = subwayRepository.findByLine(line);
+        return stationList;
+    }
 }
