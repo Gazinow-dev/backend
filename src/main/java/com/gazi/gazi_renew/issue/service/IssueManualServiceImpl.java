@@ -49,13 +49,13 @@ public class IssueManualServiceImpl implements IssueManualService {
     @Override
     @Transactional
     public boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException {
-        if (!issueCreate.getSecretCode().equals(secretCode)) {
-            throw ErrorCode.throwInvalidVerificationCode();
-        }
-
-        if (issueRepository.existsByCrawlingNo(issueCreate.getCrawlingNo())) {
-            throw ErrorCode.throwDuplicateIssueException();
-        }
+//        if (!issueCreate.getSecretCode().equals(secretCode)) {
+//            throw ErrorCode.throwInvalidVerificationCode();
+//        }
+//
+//        if (issueRepository.existsByCrawlingNo(issueCreate.getCrawlingNo())) {
+//            throw ErrorCode.throwDuplicateIssueException();
+//        }
         Issue issue = Issue.from(issueCreate);
         issue = issueRepository.save(issue);
         issueRepository.flush();
