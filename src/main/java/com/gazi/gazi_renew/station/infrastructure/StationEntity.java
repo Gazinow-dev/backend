@@ -45,6 +45,7 @@ public class StationEntity {
                 .line(line)
                 .name(name)
                 .stationCode(stationCode)
+                .issueStationCode(issueStationCode)
                 .lat(lat)
                 .lng(lng)
                 .build();
