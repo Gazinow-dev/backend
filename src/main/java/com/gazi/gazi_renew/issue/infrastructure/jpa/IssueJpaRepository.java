@@ -23,4 +23,5 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity, Long>{
     @Modifying
     @Query("UPDATE IssueEntity i SET i.likeCount = :likeCount WHERE i.id = :id")
     void updateLikeCount(@Param("id") Long id, @Param("likeCount")int likeCount);
+    boolean existsByCrawlingNo(String crawlingNo);
 }

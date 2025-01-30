@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CustomIssueRepository {
-    boolean existsByCrawlingNo(String crawlingNo);
-
     List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable);
     Page<IssueStationDetail> findAllByOrderByStartDateDesc(Pageable pageable);
 
