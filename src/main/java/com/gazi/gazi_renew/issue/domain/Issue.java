@@ -129,7 +129,7 @@ public class Issue {
                 .id(this.id)
                 .title(this.title)
                 .content(this.content)
-                .startDate(startDate)
+                .startDate(this.startDate)
                 .expireDate(expireDate)
                 .secretCode(this.secretCode)
                 .crawlingNo(this.crawlingNo)
