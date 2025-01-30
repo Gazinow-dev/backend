@@ -181,7 +181,7 @@ class IssueTest {
         //when
         issue = issue.updateDate(testClockHolder, now, now.plusMinutes(30));
         //then
-        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
         assertThat(issue.getExpireDate()).isEqualTo(now.plusMinutes(30));
     }
 }
