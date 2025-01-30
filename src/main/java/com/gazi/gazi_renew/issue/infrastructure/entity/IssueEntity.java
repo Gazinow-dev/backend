@@ -36,8 +36,8 @@ public class IssueEntity extends AuditingFields {
         issueEntity.id = issue.getId();
         issueEntity.crawlingNo = issue.getCrawlingNo();
         issueEntity.issueKey = issue.getIssueKey();
-        issueEntity.startDate = issue.getStartDate().withSecond(0).withNano(0);
-        issueEntity.expireDate = issue.getExpireDate().withSecond(0).withNano(0);
+        issueEntity.startDate = issue.getStartDate() != null ? issue.getStartDate().withSecond(0).withNano(0) : null;
+        issueEntity.expireDate = issue.getExpireDate() != null ? issue.getExpireDate().withSecond(0).withNano(0) : null;
         issueEntity.title = issue.getTitle();
         issueEntity.content = issue.getContent();
         issueEntity.keyword = issue.getKeyword();
