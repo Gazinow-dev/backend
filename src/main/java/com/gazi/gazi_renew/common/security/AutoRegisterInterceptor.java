@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,14 +62,13 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
                 throw ErrorCode.throwInvalidLinesException();
             }
 
-
             // 변환된 객체를 다시 JSON으로 변환 후 설정
             InternalIssueCreate updatedRequestBody = InternalIssueCreate.builder()
                     .title(requestBody.getTitle())
                     .content(requestBody.getContent())
                     .keyword(requestBody.getKeyword())
-                    .startDate(requestBody.getStartDate())
-                    .expireDate(requestBody.getExpireDate())
+                    .startDate(requestBody.getStartDate() != null ? requestBody.getStartDate() : LocalDateTime.now())
+                    .expireDate(requestBody.getExpireDate()!= null ? requestBody.getExpireDate() : LocalDateTime.now())
                     .lines(updatedLines)
                     .locations(updatedLocations)
                     .issueKey(requestBody.getIssueKey())
