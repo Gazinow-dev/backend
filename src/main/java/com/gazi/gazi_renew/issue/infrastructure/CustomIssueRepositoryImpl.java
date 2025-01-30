@@ -29,17 +29,6 @@ import static com.gazi.gazi_renew.station.infrastructure.QStationEntity.stationE
 public class CustomIssueRepositoryImpl implements CustomIssueRepository {
     private final JPAQueryFactory jpaQueryFactory;
     @Override
-    public boolean existsByCrawlingNo(String crawlingNo) {
-        Integer fetchResult = jpaQueryFactory
-                .selectOne() // 결과를 숫자로 확인하기 위해 selectOne 사용
-                .from(issueEntity)
-                .where(issueEntity.crawlingNo.eq(crawlingNo))
-                .fetchFirst(); // 첫 번째 결과만 가져옴 (존재 여부 확인에 충분)
-
-        return fetchResult != null; // null이 아니면 존재
-    }
-
-    @Override
     public Page<IssueStationDetail> findAllByOrderByStartDateDesc(Pageable pageable) {
         JPAQuery<Long> totalCount = jpaQueryFactory
                 .select(issueEntity.count())

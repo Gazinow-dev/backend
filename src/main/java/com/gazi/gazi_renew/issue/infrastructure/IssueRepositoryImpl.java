@@ -23,7 +23,7 @@ public class IssueRepositoryImpl implements IssueRepository {
 
     @Override
     public boolean existsByCrawlingNo(String crawlingNo) {
-        return customIssueRepository.existsByCrawlingNo(crawlingNo);
+        return issueJpaRepository.existsByCrawlingNo(crawlingNo);
     }
 
     @Override
