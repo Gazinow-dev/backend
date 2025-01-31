@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.admin.domain.dto;
 
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -21,14 +22,13 @@ public class AiFilterReport {
         this.failureReason = failureReason;
         this.createdAt = createdAt;
     }
-
-    public static AiFilterReport from(AiFilterReportCreate aiFilterReportCreate) {
+    public static AiFilterReport from(AiFilterReportCreate aiFilterReportCreate, ClockHolder clockHolder) {
         return AiFilterReport.builder()
-                .issueContent(aiFilterReportCreate.getIssueContent)
-                .aiFiltered(aiFilterReportCreate.getAiFiltered)
-                .registered(aiFilterReportCreate.getRegistered)
-                .failureReason(aiFilterReportCreate.getFailureReason)
-                .createdAt(aiFilterReportCreate.getCreatedAt)
+                .issueContent(aiFilterReportCreate.getIssueContent())
+                .aiFiltered(aiFilterReportCreate.isAiFiltered())
+                .registered(aiFilterReportCreate.isRegistered())
+                .failureReason(aiFilterReportCreate.getFailureReason())
+                .createdAt(clockHolder.now())
                 .build();
     }
 }

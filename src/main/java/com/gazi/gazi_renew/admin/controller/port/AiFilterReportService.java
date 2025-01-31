@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.admin.controller.port;
 
 import com.gazi.gazi_renew.admin.domain.dto.AiFilterReport;
+import com.gazi.gazi_renew.admin.domain.dto.AiFilterReportCreate;
 
 import java.util.List;
 
