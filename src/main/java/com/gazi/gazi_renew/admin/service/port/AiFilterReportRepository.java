@@ -8,5 +8,5 @@ import java.util.List;
 public interface AiFilterReportRepository {
     AiFilterReport save(AiFilterReport aiFilterReport);
 
-    List<AiFilterReport> getThisWeekReport(LocalDateTime now);
+    List<AiFilterReport> getThisWeekReport(LocalDateTime startDate , LocalDateTime endDate);
 }

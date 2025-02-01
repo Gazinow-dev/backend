@@ -20,6 +20,6 @@ public class AiFilterReportServiceImpl implements AiFilterReportService {
     }
     @Override
     public List<AiFilterReport> getThisWeekReport() {
-        return aiFilterReportRepository.getThisWeekReport(clockHolder.now());
+        return aiFilterReportRepository.getThisWeekReport(clockHolder.now().minusDays(7), clockHolder.now());
     }
 }
