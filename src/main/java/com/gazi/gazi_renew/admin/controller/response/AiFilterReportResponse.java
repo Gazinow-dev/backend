@@ -1,4 +1,4 @@
-package com.gazi.gazi_renew.admin.controller;
+package com.gazi.gazi_renew.admin.controller.response;
 
 import com.gazi.gazi_renew.admin.domain.dto.AiFilterReport;
 import lombok.Builder;

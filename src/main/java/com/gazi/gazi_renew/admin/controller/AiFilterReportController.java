@@ -1,13 +1,13 @@
 package com.gazi.gazi_renew.admin.controller;
 
 import com.gazi.gazi_renew.admin.controller.port.AiFilterReportService;
+import com.gazi.gazi_renew.admin.controller.response.AiFilterReportResponse;
 import com.gazi.gazi_renew.admin.domain.dto.AiFilterReport;
 import com.gazi.gazi_renew.admin.domain.dto.AiFilterReportCreate;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
