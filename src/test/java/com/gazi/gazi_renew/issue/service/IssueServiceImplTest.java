@@ -301,16 +301,16 @@ class IssueServiceImplTest {
     @Test
     void 이슈_자동_등록은_이슈키가_존재하면_날짜만_업데이트한다() throws Exception{
         //given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
 
         InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(now)
+                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
                 .expireDate(now.plusDays(1))
                 .lines(List.of("수도권 6호선"))
                 .locations(List.of("삼각지역"))
-                .issueKey("20241115-시위-6호선")
                 .lineInfoAvailable(false)
                 .processRange(false)
                 .keyword(IssueKeyword.시위)
@@ -320,7 +320,7 @@ class IssueServiceImplTest {
         //when
         Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
         //then
-        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
         assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
     }
     @Test
@@ -416,7 +416,6 @@ class IssueServiceImplTest {
         ExternalIssueCreate externalIssueCreate = ExternalIssueCreate.builder()
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(now)
                 .expireDate(now.plusDays(1))
                 .stations(List.of(stations))
                 .issueKey("20241115-시위-6호선")
@@ -426,10 +425,11 @@ class IssueServiceImplTest {
                 .issueKey("20241115-시위-6호선")
                 .crawlingNo("11")
                 .build();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //when
         Issue issue = issueServiceImpl.autoRegisterExternalIssue(externalIssueCreate);
         //then
-        assertThat(issue.getStartDate()).isEqualTo(now);
+        assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
         assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
     }
 }
