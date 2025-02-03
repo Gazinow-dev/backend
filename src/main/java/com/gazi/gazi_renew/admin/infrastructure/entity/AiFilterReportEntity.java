@@ -1,18 +1,18 @@
 package com.gazi.gazi_renew.admin.infrastructure.entity;
 
 import com.gazi.gazi_renew.admin.domain.dto.AiFilterReport;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "ai_filter_report")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AiFilterReportEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String issueTitle;
     @Column(columnDefinition = "TEXT")
@@ -24,6 +24,7 @@ public class AiFilterReportEntity {
 
     public static AiFilterReportEntity from(AiFilterReport aiFilterReport) {
         AiFilterReportEntity aiFilterReportEntity = new AiFilterReportEntity();
+        aiFilterReportEntity.id = aiFilterReport.getId();
         aiFilterReportEntity.issueTitle = aiFilterReport.getIssueTitle();
         aiFilterReportEntity.issueContent = aiFilterReport.getIssueContent();
         aiFilterReportEntity.aiFiltered = aiFilterReport.isAiFiltered();
