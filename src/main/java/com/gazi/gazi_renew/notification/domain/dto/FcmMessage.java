@@ -19,7 +19,7 @@ public class FcmMessage {
         private String token;
         private FcmMessage.Data data;
         private FcmMessage.Apns apns;
-        private FcmMessage.Android android;  // ✅ Android 관련 설정 추가
+        private FcmMessage.Android android;  // ✅ Android 추가
     }
 
     @Builder
@@ -60,7 +60,7 @@ public class FcmMessage {
         private int contentAvailable;
     }
 
-    // ✅ Android 관련 설정 추가
+    // ✅ Android 관련 설정 (올바른 구조)
     @Builder
     @AllArgsConstructor
     @Getter
@@ -73,8 +73,7 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class AndroidNotification {
-        private String priority;
-        private String channelId;
+        private String channelId;  // ✅ priority 제거
     }
 
     public static FcmMessage createMessage(Long id, String firebaseToken, String title, String body, String pathJson) {
@@ -99,10 +98,9 @@ public class FcmMessage {
                                         .build())
                                 .build())
                         .android(Android.builder()
-                                .priority("high")  // ✅ Android에서 Heads-Up Notification을 사용하기 위해 추가
+                                .priority("high")  // ✅ Android의 priority는 여기!
                                 .notification(AndroidNotification.builder()
-                                        .priority("high")  // ✅ Android에서 알림 중요도 설정
-                                        .channelId("high_priority_channel")  // ✅ Android 8.0 이상에서 알림 채널 필요
+                                        .channelId("high_priority_channel")  // ✅ AndroidNotification에는 priority 제거
                                         .build())
                                 .build())
                         .build())
