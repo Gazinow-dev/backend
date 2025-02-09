@@ -73,8 +73,11 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class AndroidNotification {
-        private String channelId;  // ✅ priority 제거
+        private String channelId;
+        private String title;  // ✅ title 추가
+        private String body;   // ✅ body 추가
     }
+
 
     public static FcmMessage createMessage(Long id, String firebaseToken, String title, String body, String pathJson) {
         return FcmMessage.builder()
@@ -98,9 +101,11 @@ public class FcmMessage {
                                         .build())
                                 .build())
                         .android(Android.builder()
-                                .priority("high")  // ✅ Android의 priority는 여기!
+                                .priority("high")
                                 .notification(AndroidNotification.builder()
-                                        .channelId("high_priority_channel")  // ✅ AndroidNotification에는 priority 제거
+                                        .channelId("high_priority_channel")
+                                        .title(title)  // ✅ 추가
+                                        .body(body)    // ✅ 추가
                                         .build())
                                 .build())
                         .build())
