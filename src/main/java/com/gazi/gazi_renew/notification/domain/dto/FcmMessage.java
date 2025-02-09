@@ -42,7 +42,6 @@ public class FcmMessage {
     @AllArgsConstructor
     @Getter
     public static class AndroidNotification {
-        private int priority;  // PRIORITY_HIGH = 1
         private String visibility;  // PUBLIC, PRIVATE, SECRET
         private String channel_id;
     }
@@ -89,7 +88,6 @@ public class FcmMessage {
                         .android(Android.builder()
                                 .priority("high")
                                 .notification(AndroidNotification.builder()
-                                        .priority(1)  // PRIORITY_HIGH
                                         .visibility("PUBLIC")
                                         .channel_id("default")
                                         .build())
