@@ -89,7 +89,7 @@ public class FcmMessage {
                                 .priority("high")
                                 .notification(AndroidNotification.builder()
                                         .visibility("PUBLIC")
-                                        .channel_id("default")
+                                        .channel_id("high_priority_channel")
                                         .build())
                                 .build()
                         )
