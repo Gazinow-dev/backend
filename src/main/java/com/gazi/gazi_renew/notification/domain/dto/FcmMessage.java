@@ -9,17 +9,17 @@ import lombok.Getter;
 @Builder
 public class FcmMessage {
     private boolean validateOnly;
-    private FcmMessage.Message message;
+    private Message message;
 
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private FcmMessage.Notification notification;
+        private Notification notification;
         private String token;
-        private FcmMessage.Data data;
-        private FcmMessage.Apns apns;
-        private FcmMessage.Android android;  // ✅ Android 추가
+        private Data data;
+        private Android android;
+        private Apns apns;
     }
 
     @Builder
@@ -28,6 +28,22 @@ public class FcmMessage {
     public static class Notification {
         private String title;
         private String body;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class Android {
+        private String priority;
+        private AndroidNotification notification;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class AndroidNotification {
+        private String visibility;  // PUBLIC, PRIVATE, SECRET
+        private String channel_id;
     }
 
     @Builder
@@ -60,22 +76,6 @@ public class FcmMessage {
         private int contentAvailable;
     }
 
-    // ✅ Android 관련 설정 (올바른 구조)
-    @Builder
-    @AllArgsConstructor
-    @Getter
-    public static class Android {
-        private String priority;
-        private AndroidNotification notification;
-    }
-
-    @Builder
-    @AllArgsConstructor
-    @Getter
-    public static class AndroidNotification {
-        private String channelId;  // ✅ priority 제거
-    }
-
     public static FcmMessage createMessage(Long id, String firebaseToken, String title, String body, String pathJson) {
         return FcmMessage.builder()
                 .message(Message.builder()
@@ -85,22 +85,23 @@ public class FcmMessage {
                                 .body(body)
                                 .build()
                         )
+                        .android(Android.builder()
+                                .priority("high")
+                                .notification(AndroidNotification.builder()
+                                        .visibility("PUBLIC")
+                                        .channel_id("high_priority_channel")
+                                        .build())
+                                .build()
+                        )
                         .data(Data.builder()
                                 .path(pathJson)
                                 .notificationId(id.toString())
-                                .build()
-                        )
+                                .build())
                         .apns(Apns.builder()
                                 .payload(Payload.builder()
                                         .aps(Aps.builder()
-                                                .contentAvailable(1)  // iOS 백그라운드 푸시 활성화
+                                                .contentAvailable(1)
                                                 .build())
-                                        .build())
-                                .build())
-                        .android(Android.builder()
-                                .priority("high")  // ✅ Android의 priority는 여기!
-                                .notification(AndroidNotification.builder()
-                                        .channelId("high_priority_channel")  // ✅ AndroidNotification에는 priority 제거
                                         .build())
                                 .build())
                         .build())
