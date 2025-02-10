@@ -9,17 +9,16 @@ import lombok.Getter;
 @Builder
 public class FcmMessage {
     private boolean validateOnly;
-    private Message message;
+    private FcmMessage.Message message;
 
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Message {
-        private Notification notification;
+        private FcmMessage.Notification notification;
         private String token;
-        private Data data;
-        private Android android;
-        private Apns apns;
+        private FcmMessage.Data data;
+        private FcmMessage.Apns apns;
     }
 
     @Builder
@@ -33,41 +32,22 @@ public class FcmMessage {
     @Builder
     @AllArgsConstructor
     @Getter
-    public static class Android {
-        private String priority;
-        private AndroidNotification notification;
-    }
-
-    @Builder
-    @AllArgsConstructor
-    @Getter
-    public static class AndroidNotification {
-        private String visibility;  // PUBLIC, PRIVATE, SECRET
-        private String channel_id;
-    }
-
-    @Builder
-    @AllArgsConstructor
-    @Getter
     public static class Data {
         private String path;
         private String notificationId;
     }
-
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Apns {
         private Payload payload;
     }
-
     @Builder
     @AllArgsConstructor
     @Getter
     public static class Payload {
         private Aps aps;
     }
-
     @Builder
     @AllArgsConstructor
     @Getter
@@ -75,7 +55,6 @@ public class FcmMessage {
         @JsonProperty("content-available")
         private int contentAvailable;
     }
-
     public static FcmMessage createMessage(Long id, String firebaseToken, String title, String body, String pathJson) {
         return FcmMessage.builder()
                 .message(Message.builder()
@@ -85,22 +64,12 @@ public class FcmMessage {
                                 .body(body)
                                 .build()
                         )
-                        .android(Android.builder()
-                                .priority("high")
-                                .notification(AndroidNotification.builder()
-                                        .visibility("PUBLIC")
-                                        .channel_id("high_priority_channel")
-                                        .build())
-                                .build()
-                        )
-                        .data(Data.builder()
-                                .path(pathJson)
-                                .notificationId(id.toString())
-                                .build())
+                        .data(Data.builder().path(pathJson)
+                                .notificationId(id.toString()).build())
                         .apns(Apns.builder()
                                 .payload(Payload.builder()
                                         .aps(Aps.builder()
-                                                .contentAvailable(1)
+                                                .contentAvailable(1)  // 설정된 contentAvailable
                                                 .build())
                                         .build())
                                 .build())
@@ -108,4 +77,5 @@ public class FcmMessage {
                 .validateOnly(false)
                 .build();
     }
+
 }
