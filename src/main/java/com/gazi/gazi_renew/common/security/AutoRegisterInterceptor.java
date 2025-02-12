@@ -55,9 +55,6 @@ public class AutoRegisterInterceptor implements HandlerInterceptor {
             if (requestBody.getProcessRange() && (updatedLocations.size() > 2 || updatedLines.size() > 1)) {
                 throw ErrorCode.throwInvalidSubwayRangeException();
             }
-            if (requestBody.getLocations().isEmpty()) {
-                throw ErrorCode.throwInvalidLocationsException();
-            }
             if (requestBody.getLines().isEmpty()) {
                 throw ErrorCode.throwInvalidLinesException();
             }
