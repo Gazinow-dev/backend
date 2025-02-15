@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.admin.service.SignUpDiscordNotifier;
 import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
@@ -58,6 +59,7 @@ public class MemberServiceImpl implements MemberService {
     private final NotificationRepository notificationRepository;
     private final RecentSearchRepository recentSearchRepository;
     private final MyFindRoadService myFindRoadService;
+    private final SignUpDiscordNotifier signUpDiscordNotifier;
     @Override
     public Member signUp(@Valid MemberCreate memberCreate, Errors errors) {
         Member member = Member.from(memberCreate, passwordEncoder);
@@ -65,6 +67,7 @@ public class MemberServiceImpl implements MemberService {
         validateNickName(member.getNickName());
         //oto
         memberRepository.save(member);
+        signUpDiscordNotifier.sendSignUpNotification(member, (int) memberRepository.count());
         return member;
     }
     @Transactional(readOnly = true)

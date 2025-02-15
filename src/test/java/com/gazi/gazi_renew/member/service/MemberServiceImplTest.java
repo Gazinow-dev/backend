@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gazi.gazi_renew.admin.service.SignUpDiscordNotifier;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
 import com.gazi.gazi_renew.common.exception.CustomException;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -52,6 +53,8 @@ class MemberServiceImplTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private MyFindRoadService myFindRoadService;
+    @Mock
+    private SignUpDiscordNotifier signUpDiscordNotifier;
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
@@ -80,6 +83,7 @@ class MemberServiceImplTest {
                 .notificationRepository(fakeNotificationRepository)
                 .securityUtilService(fakeSecurityUtil)
                 .myFindRoadService(myFindRoadService)
+                .signUpDiscordNotifier(signUpDiscordNotifier)
                 .build();
 
         Member member1 = Member.builder()
@@ -152,7 +156,6 @@ class MemberServiceImplTest {
                 .nickName("newuser")
                 .firebaseToken("newFirebaseToken")
                 .build();
-
         // when
         Member createdMember = memberServiceImpl.signUp(memberCreate, errors);
 

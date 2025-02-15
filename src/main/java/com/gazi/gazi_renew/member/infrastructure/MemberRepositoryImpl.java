@@ -72,4 +72,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findById(id).map(MemberEntity::toModel);
     }
 
+    @Override
+    public long count() {
+        return memberJpaRepository.count();
+    }
+
 }
