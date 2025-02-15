@@ -26,4 +26,5 @@ public interface MemberRepository {
     void updateAlertAgree(Member member);
 
     Optional<Member> findById(Long id);
+    long count();
 }

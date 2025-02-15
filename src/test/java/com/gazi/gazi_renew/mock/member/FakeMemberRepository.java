@@ -152,4 +152,9 @@ public class FakeMemberRepository implements MemberRepository {
         return data.stream()
                 .filter(member -> member.getId().equals(id)).findFirst();
     }
+
+    @Override
+    public long count() {
+        return data.size();
+    }
 }

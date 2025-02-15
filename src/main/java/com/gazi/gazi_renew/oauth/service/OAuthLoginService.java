@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.oauth.service;
 
+import com.gazi.gazi_renew.admin.service.SignUpDiscordNotifier;
 import com.gazi.gazi_renew.common.config.AppleProperties;
 import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
@@ -43,6 +44,8 @@ public class OAuthLoginService {
 
     private final AppleProperties appleProperties;
     private final PasswordEncoder passwordEncoder;
+    private final SignUpDiscordNotifier signUpDiscordNotifier;
+
     /**
      * socialLogin 타입에 따라 분기 처리
      * @param : String socialLoginType
@@ -121,6 +124,7 @@ public class OAuthLoginService {
         memberService.validateNickName(member.getNickName());
         memberRepository.save(member);
 
+        signUpDiscordNotifier.sendSignUpNotification(member, (int) memberRepository.count());
         return member;
     }
     // URI 생성과 리다이렉트 응답을 담당하는 메서드
