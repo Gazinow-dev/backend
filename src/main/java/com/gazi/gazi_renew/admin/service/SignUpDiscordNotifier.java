@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +50,8 @@ public class SignUpDiscordNotifier {
                 count,                           // 가입 순번
                 member.getNickName(),            // 회원 닉네임
                 member.getEmail(),               // 회원 이메일
-                member.getProvider(),      // 가입한 소셜 플랫폼
-                member.getCreatedAt()            // 가입 일시
+                member.getProvider() != null ? member.getProvider() : "자체 회원가입",      // 가입한 소셜 플랫폼
+                LocalDateTime.now()            // 가입 일시
         );
     }
 }
