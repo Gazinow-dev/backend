@@ -150,13 +150,12 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
         return PageableExecutionUtils.getPage(issueStationDetails, pageable, totalCount::fetchOne);
     }
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable) {
+    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
 
         List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
                 .from(issueEntity)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .where(issueEntity.likeCount.goe(likesCount))
+                .orderBy(issueEntity.likeCount.desc()) // 좋아요 개수 내림차순 정렬
+                .limit(4) // 상위 4개만 가져오기
                 .fetch();
 
         return jpaQueryFactory.select(new QIssueStationDetail(

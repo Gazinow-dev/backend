@@ -50,7 +50,6 @@ public class IssueServiceImpl implements IssueService {
     private final KafkaSender kafkaSender;
     private final ClockHolder clockHolder;
 
-    private static final int likeCount = 5;
 
     /**
      * 이슈 세부사항 조회
@@ -120,14 +119,14 @@ public class IssueServiceImpl implements IssueService {
     }
 
     /**
-     * 좋아요 숫자가 5개 이상인 이슈 조회
+     * 좋아요 순으로 정렬
      * @param
      * @return IssueResponse
      */
     @Override
     @Transactional(readOnly = true)
     public List<IssueStationDetail> getPopularIssues() {
-         List<IssueStationDetail> issueStationDetails = issueRepository.findTopIssuesByLikesCount(likeCount, PageRequest.of(0, 4));
+        List<IssueStationDetail> issueStationDetails = issueRepository.findTopIssuesByLikesCount(PageRequest.of(0, 4));
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         List<IssueStationDetail> issueStationDetailList = issueStationDetails.stream().map(issue -> {
