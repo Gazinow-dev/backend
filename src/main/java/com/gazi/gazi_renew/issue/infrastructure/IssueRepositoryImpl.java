@@ -27,8 +27,8 @@ public class IssueRepositoryImpl implements IssueRepository {
     }
 
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable) {
-        return customIssueRepository.findTopIssuesByLikesCount(likesCount, pageable);
+    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
+        return customIssueRepository.findTopIssuesByLikesCount(pageable);
     }
 
     @Override

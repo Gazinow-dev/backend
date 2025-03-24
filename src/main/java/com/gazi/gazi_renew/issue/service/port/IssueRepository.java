@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface IssueRepository {
     boolean existsByCrawlingNo(String crawlingNo);
-    List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable);
+    List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable);
 
     Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable);
     Issue save(Issue issue);

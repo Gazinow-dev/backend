@@ -26,18 +26,16 @@ public class FakeIssueRepository implements IssueRepository {
     }
 
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable) {
-        // 필터링하여 likesCount보다 큰 이슈만 선택
-        List<Issue> filteredIssues = data.stream()
-                .filter(issue -> issue.getLikeCount() >= likesCount)
-                .sorted((i1, i2) -> Integer.compare(i2.getLikeCount(), i1.getLikeCount())) // likesCount 순으로 내림차순 정렬
+    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
+        // likeCount가 높은 순으로 정렬
+        List<Issue> sortedIssues = data.stream()
+                .sorted((i1, i2) -> Integer.compare(i2.getLikeCount(), i1.getLikeCount())) // likeCount 내림차순 정렬
+                .limit(4) // 상위 4개만 선택
                 .collect(Collectors.toList());
 
-        // 페이지네이션 적용
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), filteredIssues.size());
-
-        return start > end ? new ArrayList<>() : filteredIssues.subList(start, end).stream().map(IssueStationDetail::fromIssue).collect(Collectors.toList());
+        return sortedIssues.stream()
+                .map(IssueStationDetail::fromIssue)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CustomIssueRepository {
-    List<IssueStationDetail> findTopIssuesByLikesCount(int likesCount, Pageable pageable);
+    List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable);
     Page<IssueStationDetail> findAllByOrderByStartDateDesc(Pageable pageable);
 
     Optional<IssueEntity> findByIssueKey(String issueKey);
