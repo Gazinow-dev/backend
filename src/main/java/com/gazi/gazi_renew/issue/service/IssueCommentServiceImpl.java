@@ -1,6 +1,8 @@
 package com.gazi.gazi_renew.issue.service;
 
+import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
+import com.gazi.gazi_renew.common.exception.ErrorCode;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.controller.port.IssueCommentService;
 import com.gazi.gazi_renew.issue.domain.Issue;
@@ -31,9 +33,12 @@ public class IssueCommentServiceImpl implements IssueCommentService {
     private final ClockHolder clockHolder;
     private final SecurityUtilService securityUtilService;
     private final IssueRepository issueRepository;
+    private final RedisUtilService redisUtilService;
     private final CommentLikesRepository commentLikesRepository;
     @Override
-    public IssueComment saveComment(IssueCommentCreate issueCommentCreate) {
+    public IssueComment saveComment(IssueCommentCreate issueCommentCreate) throws Exception {
+        validateComment(issueCommentCreate.getIssueCommentContent());
+
         Member member = memberRepository.findByEmail(securityUtilService.getCurrentUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다."));
 
@@ -93,6 +98,11 @@ public class IssueCommentServiceImpl implements IssueCommentService {
                         boolean isLikesStatus = commentLikesRepository.existByIssueCommentIdAndMemberId(issueComment.getIssueCommentId(), curMember.getId());
                         return issueComment.fromCommentLikes(isMineStatus, likesCount, isLikesStatus);
                     });
+        }
+    }
+    public void validateComment(String nickName) throws Exception {
+        if (redisUtilService.containsForbiddenWord(nickName)) {
+            throw ErrorCode.throwForBiddenWordException();
         }
     }
 }

@@ -26,4 +26,6 @@ public interface RedisUtilService {
     void addIssueToRedis(String key, String hashKey, IssueRedisDto issueRedisDto) throws JsonProcessingException;
 
     Map<String, List<Map<String, Object>>> getAllUserNotifications() throws JsonProcessingException;
+
+    boolean containsForbiddenWord(String nickname);
 }

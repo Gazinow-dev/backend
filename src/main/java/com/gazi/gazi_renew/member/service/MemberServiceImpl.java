@@ -61,7 +61,7 @@ public class MemberServiceImpl implements MemberService {
     private final MyFindRoadService myFindRoadService;
     private final SignUpDiscordNotifier signUpDiscordNotifier;
     @Override
-    public Member signUp(@Valid MemberCreate memberCreate, Errors errors) {
+    public Member signUp(@Valid MemberCreate memberCreate, Errors errors) throws Exception {
         Member member = Member.from(memberCreate, passwordEncoder);
         validateEmail(member.getEmail());
         validateNickName(member.getNickName());
@@ -77,9 +77,12 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Transactional(readOnly = true)
-    public void validateNickName(String nickName) {
+    public void validateNickName(String nickName) throws Exception {
         if (memberRepository.existsByNickName(nickName)) {
             throw new IllegalStateException("중복된 닉네임입니다.");
+        }
+        if (redisUtilService.containsForbiddenWord(nickName)) {
+            throw ErrorCode.throwForBiddenWordException();
         }
     }
 
@@ -486,5 +489,4 @@ public class MemberServiceImpl implements MemberService {
             redisUtilService.deleteNotification(myFindRoad.getId().toString());
         }
     }
-
 }

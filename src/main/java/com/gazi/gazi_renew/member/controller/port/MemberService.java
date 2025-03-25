@@ -16,10 +16,10 @@ import java.util.Map;
 
 public interface MemberService {
     // 회원가입
-    Member signUp(@Valid MemberCreate memberCreate, Errors errors);
+    Member signUp(@Valid MemberCreate memberCreate, Errors errors) throws Exception;
 
     void validateEmail(String email);
-    void validateNickName(String nickName);
+    void validateNickName(String nickName) throws Exception;
 
         // 로그인
     ResponseToken login(MemberLogin loginDto);

@@ -1,5 +1,6 @@
 package com.gazi.gazi_renew.issue.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.issue.domain.CommentLikes;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueComment;
@@ -9,6 +10,7 @@ import com.gazi.gazi_renew.issue.domain.dto.IssueCommentUpdate;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.enums.Role;
+import com.gazi.gazi_renew.mock.common.FakeRedisUtilServiceImpl;
 import com.gazi.gazi_renew.mock.common.FakeSecurityUtil;
 import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import com.gazi.gazi_renew.mock.issue.FakeCommentLikesRepository;
@@ -32,6 +34,7 @@ class IssueCommentServiceImplTest {
     private FakeIssueCommentRepository fakeIssueCommentRepository;
     @BeforeEach
     void init() {
+        ObjectMapper mapper = new ObjectMapper();
         fakeIssueCommentRepository = new FakeIssueCommentRepository();
         FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
         FakeIssueRepository fakeIssueRepository = new FakeIssueRepository();
@@ -39,9 +42,10 @@ class IssueCommentServiceImplTest {
         TestClockHolder testClockHolder = new TestClockHolder(newTime);
         FakeSecurityUtil fakeSecurityUtil = new FakeSecurityUtil();
         FakeCommentLikesRepository fakeCommentLikesRepository = new FakeCommentLikesRepository();
+        FakeRedisUtilServiceImpl fakeRedisUtilService = new FakeRedisUtilServiceImpl(mapper);
 
         this.issueCommentServiceImpl = new IssueCommentServiceImpl(fakeIssueCommentRepository, fakeMemberRepository
-                , testClockHolder, fakeSecurityUtil, fakeIssueRepository, fakeCommentLikesRepository);
+                , testClockHolder, fakeSecurityUtil, fakeIssueRepository, fakeRedisUtilService, fakeCommentLikesRepository);
         Member member1 = Member.builder()
                 .id(1L)
                 .email("mw310@naver.com")

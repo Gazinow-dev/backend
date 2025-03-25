@@ -44,10 +44,11 @@ public class IssueCommentController extends BaseController {
                     content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = IssueCommentResponse.class)) ),
             @ApiResponse(responseCode = "400", description = "댓글 내용은 500자를 넘을 수 없습니다."),
-            @ApiResponse(responseCode = "403", description = "댓글 작성이 제한된 사용자입니다.")
+            @ApiResponse(responseCode = "403", description = "댓글 작성이 제한된 사용자입니다."),
+            @ApiResponse(responseCode = "422", description = "금칙어가 포함되어 사용할 수 없습니다.")
     })
     @PostMapping
-    public ResponseEntity<Response.Body> saveComment(@Valid @RequestBody IssueCommentCreate issueCommentCreate) {
+    public ResponseEntity<Response.Body> saveComment(@Valid @RequestBody IssueCommentCreate issueCommentCreate) throws Exception {
         IssueComment issueComment = issueCommentService.saveComment(issueCommentCreate);
         return response.success(IssueCommentResponse.from(issueComment, clockHolder), "댓글 작성 완료", HttpStatus.CREATED);
     }

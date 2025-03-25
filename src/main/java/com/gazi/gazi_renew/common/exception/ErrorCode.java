@@ -14,7 +14,7 @@ import static org.springframework.http.HttpStatus.*;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-
+    FORBIDDEN_WORD(UNPROCESSABLE_ENTITY, "금칙어가 포함되어 사용할 수 없습니다."),
     /* 409 CONFLICT : Resource 중복 */
     DUPLICATE_NICKNAME(CONFLICT, "중복된 닉네임입니다."),
     DUPLICATE_EMAIL(CONFLICT, "이미 가입된 이메일입니다."),
@@ -111,11 +111,11 @@ public enum ErrorCode {
         return new CustomException(INVALID_SUBWAY_RANGE);
     }
 
-    public static CustomException throwInvalidLocationsException() {
-        return new CustomException(INVALID_LOCATIONS);
-    }
-
     public static Exception throwInvalidLinesException() {
         return new CustomException(INVALID_LINES);
+    }
+
+    public static Exception throwForBiddenWordException() {
+        return new CustomException(FORBIDDEN_WORD);
     }
 }
