@@ -12,10 +12,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -23,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtilServiceImpl implements RedisUtilService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private static final String FORBIDDEN_NICKNAME_KEY = "forbidden:nicknames";
 
     public String getData(String key) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
@@ -103,7 +101,8 @@ public class RedisUtilServiceImpl implements RedisUtilService {
 
         redisTemplate.opsForHash().put(hashKey, issueKey, jsonValue);
     }
-    private List<Map<String, Object>> convertJsonToList(String jsonArray) throws JsonProcessingException {
-        return objectMapper.readValue(jsonArray, List.class);
+    public boolean containsForbiddenWord(String nickname) {
+        Set<String> forbiddenWords = redisTemplate.opsForSet().members(FORBIDDEN_NICKNAME_KEY);
+        return forbiddenWords.stream().anyMatch(nickname::contains);
     }
 }

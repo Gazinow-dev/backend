@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IssueCommentService {
-    IssueComment saveComment(IssueCommentCreate issueCommentCreate);
+    IssueComment saveComment(IssueCommentCreate issueCommentCreate) throws Exception;
 
     Page<MyCommentSummary> getIssueCommentsByMemberId(Pageable pageable);
 

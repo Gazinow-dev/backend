@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FakeRedisUtilServiceImpl implements RedisUtilService {
     private final Map<String, String> keyValueStore = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> hashStore = new ConcurrentHashMap<>();
+    private final Set<String> forbiddenWords = ConcurrentHashMap.newKeySet();
     private final ObjectMapper objectMapper;
     public FakeRedisUtilServiceImpl(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -76,6 +77,10 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
     @Override
     public Map<String, List<Map<String, Object>>> getAllUserNotifications() throws JsonProcessingException {
         return null;
+    }
+    @Override
+    public boolean containsForbiddenWord(String nickname) {
+        return forbiddenWords.stream().anyMatch(nickname::contains);
     }
 
 }

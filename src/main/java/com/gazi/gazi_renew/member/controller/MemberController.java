@@ -34,8 +34,11 @@ public class MemberController extends BaseController {
 
     // 회원가입
     @Operation(summary = "회원가입", description = "회원가입")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "422", description = "금칙어가 포함되어 사용할 수 없습니다.")
+    })
     @PostMapping("signup")
-    public ResponseEntity<Body> signup(@RequestBody @Valid MemberCreate memberCreate, Errors errors) {
+    public ResponseEntity<Body> signup(@RequestBody @Valid MemberCreate memberCreate, Errors errors) throws Exception {
         if (errors.hasErrors()) {
             Map<String, String> validatorResult = memberService.validateHandling(errors);
             return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);

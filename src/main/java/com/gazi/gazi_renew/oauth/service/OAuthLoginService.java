@@ -116,9 +116,15 @@ public class OAuthLoginService {
     }
     private Member findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
         return memberRepository.findByEmail(oAuthInfoResponse.getEmail())
-                .orElseGet(() -> newMember(oAuthInfoResponse));
+                .orElseGet(() -> {
+                    try {
+                        return newMember(oAuthInfoResponse);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
-    private Member newMember(OAuthInfoResponse oAuthInfoResponse) {
+    private Member newMember(OAuthInfoResponse oAuthInfoResponse) throws Exception {
         Member member = Member.saveSocialLoginMember(oAuthInfoResponse, passwordEncoder);
         memberService.validateEmail(member.getEmail());
         memberService.validateNickName(member.getNickName());
