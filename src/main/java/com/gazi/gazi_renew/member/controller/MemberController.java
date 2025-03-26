@@ -79,9 +79,10 @@ public class MemberController extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "닉네임이 가지(으)로 변경되었습니다."),
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. "),
-            @ApiResponse(responseCode = "409", description = "중복된 닉네임입니다. ")
+            @ApiResponse(responseCode = "409", description = "중복된 닉네임입니다. "),
+            @ApiResponse(responseCode = "422", description = "금칙어가 포함되어 사용할 수 없습니다.")
     })
-    public ResponseEntity<Body> changeNickName(@RequestBody @Valid MemberNicknameValidation memberNicknameValidation, Errors errors) {
+    public ResponseEntity<Body> changeNickName(@RequestBody @Valid MemberNicknameValidation memberNicknameValidation, Errors errors) throws Exception {
         if (errors.hasErrors()) {
             Map<String, String> validatorResult = memberService.validateHandling(errors);
             return response.fail(validatorResult, "유효성 검증 실패", HttpStatus.BAD_REQUEST);

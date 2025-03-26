@@ -31,7 +31,7 @@ public interface MemberService {
     ResponseToken reissue(MemberReissue memberReissue);
 
     // 닉네임 수정
-    Member changeNickName(@Valid MemberNicknameValidation memberNicknameValidation, Errors errors);
+    Member changeNickName(@Valid MemberNicknameValidation memberNicknameValidation, Errors errors) throws Exception;
 
     // 비밀번호 확인
     boolean checkPassword(MemberCheckPassword checkPassword);

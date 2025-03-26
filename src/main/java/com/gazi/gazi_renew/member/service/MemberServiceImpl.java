@@ -173,17 +173,20 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member changeNickName(@Valid MemberNicknameValidation memberNicknameValidation, Errors errors) {
+    public Member changeNickName(@Valid MemberNicknameValidation memberNicknameValidation, Errors errors) throws Exception {
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
         String nickname = memberNicknameValidation.getNickname();
         if (memberRepository.existsByNickName(nickname)) {
             throw ErrorCode.throwDuplicateNicknameException();
-        } else {
-            member = member.changeNickname(nickname);
-
-            memberRepository.updateNickname(member);
-            return member;
         }
+        if (redisUtilService.containsForbiddenWord(nickname)) {
+            throw ErrorCode.throwForBiddenWordException();
+        }
+        redisUtilService.containsForbiddenWord(nickname);
+        member = member.changeNickname(nickname);
+
+        memberRepository.updateNickname(member);
+        return member;
     }
     @Override
     @Transactional(readOnly = true)
