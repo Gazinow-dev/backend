@@ -20,7 +20,7 @@ public interface SubwayJpaRepository extends JpaRepository<StationEntity, Long> 
     List<StationEntity> findByNameContainingAndLine(String name, String line);
     @Query(value = "SELECT * " +
             "FROM station " +
-            "WHERE ST_DWithin(location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 300)",
+            "WHERE ST_DWithin(location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), 400)",
             nativeQuery = true)
     List<StationEntity> findNearbyStations(@Param("latitude") double latitude,
                                            @Param("longitude") double longitude);
