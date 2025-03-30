@@ -139,24 +139,33 @@ public class IssueServiceImpl implements IssueService {
     }
 
     /**
-     * issue 내용 update
+     * issue update
      * @param : IssueUpdate issueUpdate
      * @return void
      */
     @Override
-    @Transactional
     public void updateIssue(IssueUpdate issueUpdate) {
         Issue issue = issueRepository.findById(issueUpdate.getId()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 이슈입니다.")
         );
         issue = issue.update(issueUpdate);
+        deleteIssueRelations(issue.getId());
+
+        List<IssueUpdate.IssueUpdateStation> stations = issueUpdate.getIssueUpdateStationList();
+        if (stations == null) {
+            stations = Collections.emptyList();
+        }
+
+        for (IssueUpdate.IssueUpdateStation station : stations) {
+            List<Station> stationList = findByStartStationAndEndStationBetween(station.getStartStationCode(), station.getEndStationCode());
+            processIssueLineAndStations(issue, station.getLine(), stationList);
+        }
         issueRepository.updateIssue(issue);
     }
 
     @Override
     public void deleteIssue(Long issueId) {
-        issueStationRepository.deleteIssueStationByIssueId(issueId);
-        issueLineRepository.deleteIssueLineByIssueId(issueId);
+        deleteIssueRelations(issueId);
         issueRepository.deleteIssue(issueId);
 
     }
@@ -268,9 +277,9 @@ public class IssueServiceImpl implements IssueService {
         return existIssue;
     }
 
-    private List<Station> findByStartStationAndEndStationBetween(Station startStation, Station endStation) {
-        int startStationCode = Math.min(startStation.getIssueStationCode(), endStation.getIssueStationCode());
-        int endStationCode = Math.max(startStation.getIssueStationCode(), endStation.getIssueStationCode());
+    private List<Station> findByStartStationAndEndStationBetween(int start, int end) {
+        int startStationCode = Math.min(start, end);
+        int endStationCode = Math.max(start, end);
 
         return findStationsForOtherLines(startStationCode, endStationCode);
     }
@@ -331,12 +340,9 @@ public class IssueServiceImpl implements IssueService {
         Station firstStation = stationRangeList.get(0);
         Station endStation = stationRangeList.get(1);
 
-        List<Station> stationList = findByStartStationAndEndStationBetween(firstStation, endStation);
-        Line line = saveIssueLine(issue, lineName);
+        List<Station> stationList = findByStartStationAndEndStationBetween(firstStation.getIssueStationCode(), endStation.getIssueStationCode());
+        Line line = processIssueLineAndStations(issue, lineName, stationList);
 
-        for (Station station : stationList) {
-            saveIssueStation(issue, station);
-        }
         addIssueToRedis(issue);
         kafkaSender.sendNotification(issue, List.of(line), stationList);
     }
@@ -350,5 +356,16 @@ public class IssueServiceImpl implements IssueService {
                 issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
 
         redisUtilService.addIssueToRedis("issues", issue.getId().toString(), issueRedisDto);
+    }
+    private void deleteIssueRelations(Long issueId) {
+        issueStationRepository.deleteIssueStationByIssueId(issueId);
+        issueLineRepository.deleteIssueLineByIssueId(issueId);
+    }
+    private Line processIssueLineAndStations(Issue issue, String lineName, List<Station> stationList) {
+        Line line = saveIssueLine(issue, lineName);
+        for (Station station : stationList) {
+            saveIssueStation(issue, station);
+        }
+        return line;
     }
 }
