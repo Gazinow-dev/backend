@@ -53,7 +53,7 @@ public class IssueRepositoryImpl implements IssueRepository {
 
     @Override
     public void updateIssue(Issue issue) {
-        issueJpaRepository.updateContentAndTitle(issue.getId(), issue.getTitle(), issue.getContent());
+        issueJpaRepository.updateIssue(issue.getId(), issue.getTitle(), issue.getContent(), issue.getStartDate(), issue.getExpireDate(), issue.getKeyword());
     }
 
     @Override

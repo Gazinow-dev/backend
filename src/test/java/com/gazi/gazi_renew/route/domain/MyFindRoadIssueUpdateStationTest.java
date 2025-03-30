@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MyFindRoadStationTest {
+class MyFindRoadIssueUpdateStationTest {
     @Test
     void MyFindRoadStation은_MyFindRoadStationCreate_객체로_생성할_수_있다() throws Exception{
         //given

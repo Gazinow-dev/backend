@@ -46,11 +46,11 @@ public class Issue {
                 .id(this.id)
                 .title(issueUpdate.getTitle())
                 .content(issueUpdate.getContent()) // 변경된 content 반영
-                .startDate(this.startDate)
-                .expireDate(this.expireDate)
+                .startDate(issueUpdate.getStartDate())
+                .expireDate(issueUpdate.getExpireDate())
                 .secretCode(this.secretCode)
                 .crawlingNo(this.crawlingNo)
-                .keyword(this.keyword)
+                .keyword(issueUpdate.getKeyword())
                 .latestNo(this.latestNo)
                 .likeCount(this.likeCount)
                 .build();
