@@ -352,11 +352,17 @@ public class IssueServiceImpl implements IssueService {
      * @param : Issue issue
      */
     private void addIssueToRedis(Issue issue) throws JsonProcessingException {
-        IssueRedisDto issueRedisDto = new IssueRedisDto(issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
-                issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond());
+        long startEpoch = issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond();
 
+        // expireDate가 null이면 Long.MAX_VALUE 사용 (무기한 유지) 또는 현재 시간 기준 값 설정
+        long expireEpoch = (issue.getExpireDate() != null)
+                ? issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond()
+                : Long.MAX_VALUE;  // 또는 Instant.now().getEpochSecond()
+
+        IssueRedisDto issueRedisDto = new IssueRedisDto(startEpoch, expireEpoch);
         redisUtilService.addIssueToRedis("issues", issue.getId().toString(), issueRedisDto);
     }
+
     private void deleteIssueRelations(Long issueId) {
         issueStationRepository.deleteIssueStationByIssueId(issueId);
         issueLineRepository.deleteIssueLineByIssueId(issueId);
