@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.member.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.admin.service.SignUpDiscordNotifier;
+import com.gazi.gazi_renew.common.aspect.AdminLoginCheck;
 import com.gazi.gazi_renew.common.security.JwtTokenProvider;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
@@ -86,7 +87,9 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+
     @Override
+    @AdminLoginCheck
     public ResponseToken login(@Valid MemberLogin memberLogin) {
         Member member = memberRepository.findByEmail(memberLogin.getEmail()).orElseThrow(
                 () -> new EntityNotFoundException("존재하지 않는 회원의 아이디입니다.")
