@@ -4,7 +4,6 @@ import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.domain.dto.MemberLogin;
 import com.gazi.gazi_renew.member.domain.enums.Role;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
-import com.github.dockerjava.api.exception.UnauthorizedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

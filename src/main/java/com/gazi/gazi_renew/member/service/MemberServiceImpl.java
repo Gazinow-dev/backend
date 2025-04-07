@@ -143,14 +143,8 @@ public class MemberServiceImpl implements MemberService {
         // Access Token 에서 Member email 가져옴
         Authentication authentication = jwtTokenProvider.getAuthentication(memberReissue.getAccessToken());
 
-        log.info("유저 email: " + authentication.getName());
-        log.info("엑세스 토큰 만료까지 남은시간(ms): " + jwtTokenProvider.getExpiration(memberReissue.getAccessToken()));
-        log.info("리프레쉬 토큰 만료까지 남은시간(ms): " + jwtTokenProvider.getExpiration(memberReissue.getRefreshToken()));
-
         // Redis 에서 Member email 을 기반으로 저장된 Refresh Token 을 가져옴
         String refreshToken = redisUtilService.getData("RT:" + authentication.getName());
-        log.info("Redis에서 찾은 refreshToken: " + refreshToken);
-
         // 로그아웃 상태로 Refresh Token 이 존재하지 않는 경우 처리
         if (ObjectUtils.isEmpty(refreshToken)) {
             throw new IllegalStateException("Redis 에 RefreshToken 이 존재하지 않습니다. 엑세스 토큰으로 찾은 유저 이메일: " + authentication.getName());
