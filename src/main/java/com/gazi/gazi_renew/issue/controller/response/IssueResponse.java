@@ -35,10 +35,12 @@ public class IssueResponse {
     public static class StationDto {
         private final String line;
         private final String stationName;
+        private final Integer issueStationCode;
         @Builder
-        public StationDto(String line, String stationName) {
+        public StationDto(String line, String stationName, Integer issueStationCode) {
             this.line = line;
             this.stationName = stationName;
+            this.issueStationCode = issueStationCode;
         }
     }
 
@@ -86,6 +88,7 @@ public class IssueResponse {
                             .map(detail -> StationDto.builder()
                                     .line(detail.getLine())
                                     .stationName(detail.getStationName())
+                                    .issueStationCode(detail.getIssueStationCode())
                                     .build())
                             .collect(Collectors.toList());
 
@@ -134,6 +137,7 @@ public class IssueResponse {
                             .map(detail -> StationDto.builder()
                                     .line(detail.getLine())
                                     .stationName(detail.getStationName())
+                                    .issueStationCode(detail.getIssueStationCode())
                                     .build())
                             .collect(Collectors.toList());
 
@@ -182,6 +186,7 @@ public class IssueResponse {
                             .map(detail -> StationDto.builder()
                                     .line(detail.getLine())
                                     .stationName(detail.getStationName())
+                                    .issueStationCode(detail.getIssueStationCode())
                                     .build())
                             .collect(Collectors.toList());
 
