@@ -30,7 +30,7 @@ public class AdminLoginAspect {
 
         String referer = request.getHeader("Referer");
 
-        if (referer != null && referer.contains("/admin/login")) {
+        if (referer != null && referer.contains("/admin/")) {
             // request body에서 email 꺼내기
             Object[] args = joinPoint.getArgs();
             for (Object arg : args) {
