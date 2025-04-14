@@ -74,6 +74,10 @@ jobs:
           echo "${{ secrets.OAUTH_YAML_PROD }}" > ./application-oauth-prod.yaml
         shell: bash
 
+      - name: Add logback-spring.xml for ELK
+        run: |
+          echo "${{ secrets.LOGBACK_SPRING_XML }}" > ./src/main/resources/logback-spring.xml
+        shell: bash
       # gradle build
       - name: Build with Gradle
         run: ./gradlew build -x test
