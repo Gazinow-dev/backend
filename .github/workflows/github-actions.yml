@@ -76,8 +76,21 @@ jobs:
 
       - name: Add logback-spring.xml for ELK
         run: |
-          echo "${{ secrets.LOGBACK_SPRING_XML }}" > ./src/main/resources/logback-spring.xml
-        shell: bash
+          cat > ./src/main/resources/logback-spring.xml << 'EOF'
+          <configuration>
+              <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+                  <destination>43.200.191.171:5000</destination>
+                  <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                      <customFields>{"appName":"gazinow"}</customFields>
+                  </encoder>
+              </appender>
+
+              <root level="INFO">
+                  <appender-ref ref="LOGSTASH" />
+              </root>
+          </configuration>
+          EOF
+
       # gradle build
       - name: Build with Gradle
         run: ./gradlew build -x test
