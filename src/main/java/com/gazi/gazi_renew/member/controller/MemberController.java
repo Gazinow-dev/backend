@@ -50,7 +50,6 @@ public class MemberController extends BaseController {
     }
 
     // 로그인
-    @TrackEvent("LOGIN")
     @PostMapping("/login")
     public ResponseEntity<Body> login(@RequestBody @Valid MemberLogin memberLogin, Errors errors) {
         ResponseToken responseToken = memberService.login(memberLogin);

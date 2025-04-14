@@ -66,6 +66,8 @@ dependencies {
 
     // thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    // logstash
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
     // queryDSL 설정
     implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
