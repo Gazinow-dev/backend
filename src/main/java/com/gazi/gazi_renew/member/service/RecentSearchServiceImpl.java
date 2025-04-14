@@ -71,7 +71,6 @@ public class RecentSearchServiceImpl implements RecentSearchService {
         if (recentSearchList.size() >= 11) {
             RecentSearch recentSearch = recentSearchList.get(10);
             recentSearchRepository.delete(recentSearch);
-            log.info("검색결과가 11개 이상이 되어 " + member.getNickName() + " 의 가장 오래된 검색값" + recentSearch.getStationName() + "을 삭제하였습니다.");
         }
     }
     private Member isUser() {

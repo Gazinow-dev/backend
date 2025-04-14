@@ -76,7 +76,6 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
 
     @Override
     public Long addRoute(MyFindRoadCreate myFindRoadCreate) throws JsonProcessingException {
-        log.info("길저장 서비스 로직 진입");
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         MyFindRoad myFindRoad = MyFindRoad.from(myFindRoadCreate, member.getId());
@@ -86,17 +85,15 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
         }
         validateDuplicateRoadPath(myFindRoad, myFindRoadCreate.getSubPaths(), member);
 
-        log.info("myFindRoadPath 저장");
         myFindRoad = myFindRoadPathRepository.save(myFindRoad);
 
         for (MyFindRoadSubPathCreate myFindRoadSubPathCreate : myFindRoadCreate.getSubPaths()) {
             MyFindRoadSubPath myFindRoadSubPath = MyFindRoadSubPath.from(myFindRoadSubPathCreate, myFindRoad);
             myFindRoadSubPath = myFindRoadSubPathRepository.save(myFindRoadSubPath);
-            log.info("myFindRoadSubPath 저장");
+
             for (MyFindRoadStationCreate myFindRoadStationCreate : myFindRoadSubPathCreate.getStations()) {
                 MyFindRoadStation myFindRoadStation = MyFindRoadStation.from(myFindRoadStationCreate, myFindRoadSubPath.getId());
                 myFindRoadSubwayRepository.save(myFindRoadStation);
-                log.info("MyFindRoadSubway 저장 완료");
             }
         }
         //초기 알림 생성

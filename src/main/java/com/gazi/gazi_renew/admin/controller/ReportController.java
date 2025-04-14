@@ -3,6 +3,7 @@ package com.gazi.gazi_renew.admin.controller;
 import com.gazi.gazi_renew.admin.controller.port.ReportService;
 import com.gazi.gazi_renew.admin.domain.Report;
 import com.gazi.gazi_renew.admin.domain.dto.ReportCreate;
+import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.response.CommentLikesResponse;
@@ -35,6 +36,7 @@ public class ReportController extends BaseController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "신고 접수 완료",
             headers = @Header(name = AUTHORIZATION, description = "Access Token")),
             @ApiResponse(responseCode = "409", description = "이미 신고 처리한 댓글입니다.")})
+    @TrackEvent("REPORT_COMMENT")
     @PostMapping
     public ResponseEntity<Response.Body> createReport(@Valid @RequestBody ReportCreate reportCreate) {
         reportService.createReport(reportCreate);

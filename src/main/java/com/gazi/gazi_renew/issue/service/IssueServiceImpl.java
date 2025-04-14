@@ -172,12 +172,6 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public Issue autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException {
-        log.info("[내부 이슈 등록 시작] issueKey={}, crawlingNo={}, processRange={}, lines={}, locations={}",
-                internalIssueCreate.getIssueKey(),
-                internalIssueCreate.getCrawlingNo(),
-                internalIssueCreate.getProcessRange(),
-                internalIssueCreate.getLines(),
-                internalIssueCreate.getLocations());
 
         validateDuplicateIssue(internalIssueCreate.getCrawlingNo());
         Issue issue = Issue.fromInternalIssue(internalIssueCreate);
@@ -189,30 +183,21 @@ public class IssueServiceImpl implements IssueService {
         issue = issueRepository.save(issue);
         //구간 처리 필요하면 (지하철역)
         if (internalIssueCreate.getProcessRange()) {
-            log.info("[내부 이슈 구간 처리 시작]");
             processIssueByRange(internalIssueCreate, issue);
         }
         // 전체 호선 처리 필요
         else if (!internalIssueCreate.getLines().isEmpty() && internalIssueCreate.getLocations().isEmpty()) {
-            log.info("[내부 이슈 전체 호선 처리 시작]");
             processIssueByLines(internalIssueCreate, issue);
         }
         // 단일 처리
         else {
-            log.info("[내부 이슈 개별 역 처리 시작]");
             processIssueByStations(internalIssueCreate, issue);
         }
-        log.info("[내부 이슈 등록 완료] id={}", issue.getId());
         return issue;
     }
 
     @Override
     public Issue autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
-        log.info("[외부 이슈 등록 시작] issueKey={}, crawlingNo={}, stations={}",
-                externalIssueCreate.getIssueKey(),
-                externalIssueCreate.getCrawlingNo(),
-                externalIssueCreate.getStations());
-        validateDuplicateIssue(externalIssueCreate.getCrawlingNo());
         // issueKey로 저장된 이슈 있는지 확인
         Issue issue = Issue.fromExternalIssue(externalIssueCreate);
 

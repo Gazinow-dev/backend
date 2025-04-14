@@ -55,8 +55,6 @@ public class AppleApiClient implements OAuthApiClient {
 
         AppleTokens response = restTemplate.postForObject(url, request, AppleTokens.class);
 
-        log.info("Apple 인증 서버 응답 :" + response);
-
         return response.getIdToken();
     }
     @Override
@@ -80,7 +78,6 @@ public class AppleApiClient implements OAuthApiClient {
         String payload = new String(decoder.decode(payloadJWT));
         ObjectMapper objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        log.info("Apple 로그인 응답: " + payload);
         try {
             return objectMapper.readValue(payload, targetClass);
         } catch (Exception e) {

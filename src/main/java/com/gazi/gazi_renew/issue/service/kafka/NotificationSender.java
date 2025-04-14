@@ -36,7 +36,6 @@ public class NotificationSender implements KafkaSender {
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final RedisUtilService redisUtilService;
-
     public void sendNotification(Issue issue, List<Line> lineList, List<Station> stationList) throws JsonProcessingException {
         // 현재 사용자 정보 조회
         Map<String, List<Map<String, Object>>> allUserNotifications = redisUtilService.getAllUserNotifications();

@@ -107,7 +107,6 @@ public class OAuthLoginService {
 
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
         responseToken = responseToken.login(member.getEmail(), member.getNickName());
-        log.info("access token : " + responseToken.getAccessToken());
         //redis에 refresh token 저장
         redisUtilService.setRefreshToken(authentication.getName(), responseToken.getRefreshToken(),
                 responseToken.getRefreshTokenExpirationTime());

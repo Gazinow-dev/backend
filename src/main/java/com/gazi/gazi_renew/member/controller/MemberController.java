@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
@@ -10,7 +11,6 @@ import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.common.controller.response.Response.Body;
 import com.gazi.gazi_renew.member.controller.port.MemberService;
 import com.gazi.gazi_renew.member.domain.dto.*;
-import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -127,6 +127,7 @@ public class MemberController extends BaseController {
     }
     // 회원 탈퇴
     @SecurityRequirement(name = "Bearer Authentication")
+    @TrackEvent("DELETE_MEMBER")
     @DeleteMapping("/delete_member")
     @Operation(summary = "회원 탈퇴")
     @ApiResponses(value = {
