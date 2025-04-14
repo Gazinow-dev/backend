@@ -57,7 +57,8 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                         issueEntity.startDate,
                         issueEntity.expireDate,
                         stationEntity.line,
-                        stationEntity.name))
+                        stationEntity.name,
+                        stationEntity.issueStationCode))
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
@@ -96,7 +97,8 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                         issueEntity.startDate,
                         issueEntity.expireDate,
                         stationEntity.line,
-                        stationEntity.name))
+                        stationEntity.name,
+                        stationEntity.issueStationCode))
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
@@ -139,7 +141,8 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                         issueEntity.startDate,
                         issueEntity.expireDate,
                         stationEntity.line,
-                        stationEntity.name))
+                        stationEntity.name,
+                        stationEntity.issueStationCode))
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
@@ -174,7 +177,9 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                         issueEntity.startDate,
                         issueEntity.expireDate,
                         stationEntity.line,
-                        stationEntity.name))
+                        stationEntity.name,
+                        stationEntity.issueStationCode
+                        ))
                 .from(issueStationEntity)
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)

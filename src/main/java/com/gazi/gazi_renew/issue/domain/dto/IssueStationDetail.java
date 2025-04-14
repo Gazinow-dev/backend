@@ -23,9 +23,11 @@ public class IssueStationDetail {
     private final LocalDateTime expireDate;
     private final String line;
     private final String stationName;
+    private final Integer issueStationCode;
+
     @Builder
     @QueryProjection
-    public IssueStationDetail(Long id, String title, String content, int likeCount, int commentCount, boolean isLike, boolean isCommentRestricted, IssueKeyword keyword, LocalDateTime startDate, LocalDateTime expireDate, String line, String stationName) {
+    public IssueStationDetail(Long id, String title, String content, int likeCount, int commentCount, boolean isLike, boolean isCommentRestricted, IssueKeyword keyword, LocalDateTime startDate, LocalDateTime expireDate, String line, String stationName, Integer issueStationCode) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -38,6 +40,7 @@ public class IssueStationDetail {
         this.expireDate = expireDate;
         this.line = line;
         this.stationName = stationName;
+        this.issueStationCode = issueStationCode;
     }
     public IssueStationDetail restrictedWriteComment(boolean memberRestricted) {
         return IssueStationDetail.builder()
@@ -69,6 +72,7 @@ public class IssueStationDetail {
                 .expireDate(this.expireDate)
                 .line(this.line)
                 .stationName(this.stationName)
+                .issueStationCode(this.issueStationCode)
                 .build();
     }
     public static IssueStationDetail fromIssue(Issue issue) {
