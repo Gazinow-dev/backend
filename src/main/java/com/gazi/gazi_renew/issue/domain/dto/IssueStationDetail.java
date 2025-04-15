@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Getter
 public class IssueStationDetail {
@@ -56,6 +58,7 @@ public class IssueStationDetail {
                 .expireDate(this.expireDate)
                 .line(this.line)
                 .stationName(this.stationName)
+                .issueStationCode(this.issueStationCode)
                 .build();
     }
 
@@ -86,4 +89,45 @@ public class IssueStationDetail {
                 .expireDate(issue.getExpireDate())
                 .build();
     }
+    public static List<IssueStationDetail> applyTop5Policy(List<IssueStationDetail> topIssues, List<IssueStationDetail> activeOrTodayIssues) {
+        Map<Long, List<IssueStationDetail>> filteredMap = new LinkedHashMap<>();
+
+        for (IssueStationDetail topIssue : topIssues) {
+            filteredMap
+                    .computeIfAbsent(topIssue.getId(), k -> new ArrayList<>())
+                    .add(topIssue);
+        }
+
+        Map<Long, List<IssueStationDetail>> grouped = activeOrTodayIssues.stream()
+                .filter(candidate -> !filteredMap.containsKey(candidate.getId()))
+                .collect(Collectors.groupingBy(IssueStationDetail::getId, LinkedHashMap::new, Collectors.toList()));
+
+        Map<Long, List<IssueStationDetail>> missingMap = grouped.entrySet().stream()
+                .limit(2)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+
+        if (!missingMap.isEmpty()) {
+            List<Long> replaceTargetIds = filteredMap.keySet().stream()
+                    .skip(3)
+                    .limit(missingMap.size())
+                    .toList();
+
+            for (Long replaceId : replaceTargetIds) {
+                filteredMap.remove(replaceId);
+            }
+
+            filteredMap.putAll(missingMap);
+        }
+
+        return filteredMap.values().stream()
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+
 }

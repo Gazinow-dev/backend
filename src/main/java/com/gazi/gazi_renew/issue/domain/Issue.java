@@ -124,7 +124,7 @@ public class Issue {
                 .likeCount(updateLikeCount)
                 .build();
     }
-    public Issue updateDate(ClockHolder clockHolder, LocalDateTime startDate, LocalDateTime expireDate) {
+    public Issue updateDate(LocalDateTime expireDate) {
         return Issue.builder()
                 .id(this.id)
                 .title(this.title)

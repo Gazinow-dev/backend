@@ -27,8 +27,13 @@ public class IssueRepositoryImpl implements IssueRepository {
     }
 
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
-        return customIssueRepository.findTopIssuesByLikesCount(pageable);
+    public List<IssueStationDetail> findTopIssuesByLikesCount() {
+        return customIssueRepository.findTopIssuesByLikesCount();
+    }
+
+    @Override
+    public List<IssueStationDetail> findTodayOrActiveIssues() {
+        return customIssueRepository.findTodayOrActiveIssues();
     }
 
     @Override
@@ -82,5 +87,10 @@ public class IssueRepositoryImpl implements IssueRepository {
     @Override
     public Optional<Issue> findById(Long id) {
         return issueJpaRepository.findById(id).map(IssueEntity::toModel);
+    }
+
+    @Override
+    public List<IssueStationDetail> findIssueOrderByStartDate() {
+        return customIssueRepository.findIssueOrderByStartDate();
     }
 }

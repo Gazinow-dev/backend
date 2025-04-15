@@ -11,10 +11,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IssueService {
-    // 웹 크롤링
-
-    // 이슈 저장
-//    boolean addIssue(IssueCreate issueCreate) throws JsonProcessingException;
     // 이슈 조회
     List<IssueStationDetail> getIssue(Long id);
 
@@ -35,4 +31,6 @@ public interface IssueService {
     Issue autoRegisterInternalIssue(InternalIssueCreate internalIssueCreate) throws JsonProcessingException;
 
     Issue autoRegisterExternalIssue(ExternalIssueCreate externalIssueCreate) throws JsonProcessingException;
+
+    List<IssueStationDetail> getMainIssues();
 }

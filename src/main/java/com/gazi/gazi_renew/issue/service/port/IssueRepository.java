@@ -11,8 +11,9 @@ import java.util.Optional;
 
 public interface IssueRepository {
     boolean existsByCrawlingNo(String crawlingNo);
-    List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable);
+    List<IssueStationDetail> findTopIssuesByLikesCount();
 
+    List<IssueStationDetail> findTodayOrActiveIssues();
     Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable);
     Issue save(Issue issue);
 
@@ -33,4 +34,6 @@ public interface IssueRepository {
     Optional<Issue> findByIssueKey(String issueKey);
 
     Optional<Issue> findById(Long id);
+
+    List<IssueStationDetail> findIssueOrderByStartDate();
 }

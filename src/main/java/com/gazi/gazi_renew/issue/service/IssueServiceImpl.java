@@ -117,16 +117,38 @@ public class IssueServiceImpl implements IssueService {
         });
         return issueStationDetailPage;
     }
-
     /**
-     * 좋아요 순으로 정렬
+     * 메인 탭 이슈 조회
      * @param
-     * @return IssueResponse
+     * @return List<IssueStationDetail>
+     */
+    @Override
+    public List<IssueStationDetail> getMainIssues() {
+        List<IssueStationDetail> issueStationDetails = issueRepository.findIssueOrderByStartDate();
+
+        Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
+
+        List<IssueStationDetail> issueStationDetailList = issueStationDetails.stream().map(issue -> {
+            boolean isLike = member.isPresent() && likeRepository.existsByIssueAndMember(issue.getId(), member.get().getId());
+            issue = issue.fromLike(isLike);
+            return issue;
+        }).collect(Collectors.toList());
+
+        return issueStationDetailList;
+    }
+    /**
+     * NOW 탭 인기 이슈 조회
+     * @param
+     * @return List<IssueStationDetail>
      */
     @Override
     @Transactional(readOnly = true)
     public List<IssueStationDetail> getPopularIssues() {
-        List<IssueStationDetail> issueStationDetails = issueRepository.findTopIssuesByLikesCount(PageRequest.of(0, 4));
+        List<IssueStationDetail> topIssueList = issueRepository.findTopIssuesByLikesCount();
+        List<IssueStationDetail> activeIssueList = issueRepository.findTodayOrActiveIssues();
+
+        List<IssueStationDetail> issueStationDetails = IssueStationDetail.applyTop5Policy(topIssueList, activeIssueList);
+
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         List<IssueStationDetail> issueStationDetailList = issueStationDetails.stream().map(issue -> {
@@ -208,7 +230,6 @@ public class IssueServiceImpl implements IssueService {
         issue = issueRepository.save(issue);
         return processStationsAndLinesForExternalIssue(externalIssueCreate, issue);
     }
-
     /**
      * 2호선 이외의 다른 노선에 대한 역 구간 처리
      *
@@ -256,7 +277,7 @@ public class IssueServiceImpl implements IssueService {
 
     private Issue updateExistingIssueDates(Issue issue, Optional<Issue> issueOptional) {
         Issue existIssue = issueOptional.get();
-        existIssue = existIssue.updateDate(clockHolder, issue.getStartDate(), issue.getExpireDate());
+        existIssue = existIssue.updateDate(issue.getExpireDate());
         issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
 
         return existIssue;
