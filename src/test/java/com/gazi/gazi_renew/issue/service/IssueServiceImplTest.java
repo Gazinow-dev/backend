@@ -32,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -267,6 +268,20 @@ class IssueServiceImplTest {
         // then
         assertThat(issuePage).isNotNull();
         assertThat(issuePage.getTotalElements()).isEqualTo(7);
+    }
+    @Test
+    void 메인_NOW_캐러쉘_노출_이슈는_시작일자_기준으로_최신순으로_정렬된다() throws Exception {
+        // when
+        List<IssueStationDetail> mainIssues = issueServiceImpl.getMainIssues();
+
+        // then
+        assertThat(mainIssues).isNotNull();
+        assertThat(mainIssues.size()).isLessThanOrEqualTo(3);
+
+        List<IssueStationDetail> sorted = new ArrayList<>(mainIssues);
+        sorted.sort(Comparator.comparing(IssueStationDetail::getStartDate).reversed()); // 최신순 정렬
+
+        assertThat(mainIssues).isEqualTo(sorted);
     }
     @Test
     void getPopularIssues는_정책에_따라_진행중_또는_오늘_이슈가_4_5위에_보정_삽입된다() throws Exception {

@@ -52,9 +52,14 @@ public class IssueRestController extends BaseController {
         return response.success(IssueResponse.fromIssueDetailPage(sortedIssues), "line" + "이슈 조회 성공", HttpStatus.OK);
     }
     @GetMapping("/get_popular")
-    public ResponseEntity<Response.Body> getPopularIssue() {
+    public ResponseEntity<Response.Body> getPopularIssueList() {
         List<IssueStationDetail> issueList = issueService.getPopularIssues();
-        return response.success(IssueResponse.fromPopularIssueDetail(issueList), "인기 이슈 조회 성공", HttpStatus.OK);
+        return response.success(IssueResponse.fromPopularIssueDetail(issueList), "NOW탭 인기 이슈 조회 성공", HttpStatus.OK);
+    }
+    @GetMapping("/main-carousel")
+    public ResponseEntity<Response.Body> getMainNowIssueList() {
+        List<IssueStationDetail> issueList = issueService.getMainIssues();
+        return response.success(IssueResponse.fromPopularIssueDetail(issueList), "메인 페이지 이슈 조회 성공", HttpStatus.OK);
     }
     @PatchMapping("")
     public ResponseEntity<Response.Body> updateIssue(@RequestBody IssueUpdate issueUpdate){

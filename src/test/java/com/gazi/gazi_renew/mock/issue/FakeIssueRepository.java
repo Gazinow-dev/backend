@@ -21,9 +21,22 @@ public class FakeIssueRepository implements IssueRepository {
     public boolean existsByCrawlingNo(String crawlingNo) {
         return data.stream().anyMatch(issue -> issue.getCrawlingNo().equals(crawlingNo));
     }
-
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
+    public List<IssueStationDetail> findIssueOrderByStartDate() {
+
+        List<Issue> sortedIssues = data.stream()
+                .sorted(Comparator
+                        .comparing(Issue::getStartDate, Comparator.reverseOrder())   // startDate DESC
+                )
+                .limit(3) // top 3
+                .collect(Collectors.toList());
+
+        return sortedIssues.stream()
+                .map(IssueStationDetail::fromIssue)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<IssueStationDetail> findTopIssuesByLikesCount() {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
 
         List<Issue> sortedIssues = data.stream()

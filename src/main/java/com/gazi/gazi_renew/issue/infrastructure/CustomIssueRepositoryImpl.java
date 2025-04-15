@@ -192,7 +192,42 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
     }
 
     @Override
-    public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
+    public List<IssueStationDetail> findIssueOrderByStartDate() {
+        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
+                .from(issueEntity)
+                .orderBy(issueEntity.startDate.desc())
+                .limit(3) // 상위 3개만 가져오기
+                .fetch();
+
+        return jpaQueryFactory.select(new QIssueStationDetail(
+                        issueEntity.id,
+                        issueEntity.title,
+                        issueEntity.content,
+                        issueEntity.likeCount,
+                        Expressions.asNumber(
+                                JPAExpressions.select(issueCommentEntity.count())
+                                        .from(issueCommentEntity)
+                                        .where(issueCommentEntity.issueEntity.id.eq(issueEntity.id))
+                        ).intValue(), // 서브쿼리 결과를 int로 변환
+                        Expressions.constant(Boolean.FALSE),
+                        Expressions.constant(Boolean.FALSE),
+                        issueEntity.keyword,
+                        issueEntity.startDate,
+                        issueEntity.expireDate,
+                        stationEntity.line,
+                        stationEntity.name,
+                        stationEntity.issueStationCode
+                ))
+                .from(issueStationEntity)
+                .join(issueStationEntity.issueEntity, issueEntity)
+                .join(issueStationEntity.stationEntity, stationEntity)
+                .where(issueEntity.id.in(issueIds))
+                .orderBy(issueEntity.startDate.desc())
+                .fetch();
+    }
+
+    @Override
+    public List<IssueStationDetail> findTopIssuesByLikesCount() {
 
         List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
                 .from(issueEntity)
