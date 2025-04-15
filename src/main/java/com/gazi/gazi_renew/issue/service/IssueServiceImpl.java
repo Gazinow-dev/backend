@@ -126,7 +126,11 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(readOnly = true)
     public List<IssueStationDetail> getPopularIssues() {
-        List<IssueStationDetail> issueStationDetails = issueRepository.findTopIssuesByLikesCount(PageRequest.of(0, 4));
+        List<IssueStationDetail> topIssueList = issueRepository.findTopIssuesByLikesCount(PageRequest.of(0, 4));
+        List<IssueStationDetail> activeIssueList = issueRepository.findTodayOrActiveIssues();
+
+        List<IssueStationDetail> issueStationDetails = IssueStationDetail.applyTop5Policy(topIssueList, activeIssueList);
+
         Optional<Member> member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail());
 
         List<IssueStationDetail> issueStationDetailList = issueStationDetails.stream().map(issue -> {
@@ -256,7 +260,7 @@ public class IssueServiceImpl implements IssueService {
 
     private Issue updateExistingIssueDates(Issue issue, Optional<Issue> issueOptional) {
         Issue existIssue = issueOptional.get();
-        existIssue = existIssue.updateDate(clockHolder, issue.getStartDate(), issue.getExpireDate());
+        existIssue = existIssue.updateDate(issue.getExpireDate());
         issueRepository.updateStartDateAndExpireDate(existIssue.getId(), existIssue.getStartDate(), existIssue.getExpireDate());
 
         return existIssue;

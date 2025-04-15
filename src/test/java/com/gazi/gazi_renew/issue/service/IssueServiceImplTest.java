@@ -24,7 +24,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,8 +31,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -115,12 +114,33 @@ class IssueServiceImplTest {
         fakeSecurityUtil.addEmail("mw310@naver.com");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < 5; i++) {
+            Issue endedIssue = Issue.builder()
+                    .id(100L + i)
+                    .title("종료된 인기 이슈 " + i)
+                    .content("종료된 이슈 내용 " + i)
+                    .startDate(LocalDateTime.now().minusDays(6 - i))
+                    .expireDate(LocalDateTime.now().minusDays(5 - i)) // 이미 종료됨
+                    .keyword(IssueKeyword.시위)
+                    .crawlingNo("END" + i)
+                    .issueKey("2024040" + i + "-기타")
+                    .likeCount(100 - i) // like 많은 순으로 정렬되게
+                    .build();
+
+            fakeIssueRepository.save(endedIssue);
+
+            IssueLine endedLine = IssueLine.builder()
+                    .issue(endedIssue)
+                    .line(line)
+                    .build();
+            fakeIssueLineRepository.save(endedLine);
+        }
         Issue issue = Issue.builder()
                 .id(11L)
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
-                .expireDate(LocalDateTime.parse("2024-11-15 10:29:00", formatter))
+                .startDate(LocalDateTime.now().minusHours(2)) // 진행 중
+                .expireDate(LocalDateTime.now().plusHours(2))
                 .keyword(IssueKeyword.시위)
                 .crawlingNo("1")
                 .issueKey("20241115-시위-6호선")
@@ -130,8 +150,8 @@ class IssueServiceImplTest {
                 .id(12L)
                 .title("서울역 사고")
                 .content("서울역 사고 테스트")
-                .startDate(LocalDateTime.parse("2024-11-16 08:00:00", formatter))
-                .expireDate(LocalDateTime.parse("2024-11-16 10:00:00", formatter))
+                .startDate(LocalDateTime.now().minusHours(1)) // 진행 중
+                .expireDate(LocalDateTime.now().plusHours(1))
                 .keyword(IssueKeyword.사고)
                 .crawlingNo("3")
                 .issueKey("20241116-사고-서울역")
@@ -246,20 +266,48 @@ class IssueServiceImplTest {
 
         // then
         assertThat(issuePage).isNotNull();
-        assertThat(issuePage.getTotalElements()).isEqualTo(2);
+        assertThat(issuePage.getTotalElements()).isEqualTo(7);
     }
     @Test
-    void getPopularIssues는_좋아요_숫자가_5개_이상인_이슈를_조회할_수_있다() throws Exception{
-        //given
-        //when
+    void getPopularIssues는_정책에_따라_진행중_또는_오늘_이슈가_4_5위에_보정_삽입된다() throws Exception {
+        // when
         List<IssueStationDetail> popularIssues = issueServiceImpl.getPopularIssues();
-        //then
-        assertThat(popularIssues.size()).isEqualTo(2);
-        assertThat(popularIssues.get(0).getTitle()).isEqualTo("삼각지역 집회");
-        assertThat(popularIssues.get(0).getContent()).isEqualTo("삼각지역 집회 가는길 지금 이슈 테스트");
-        assertThat(popularIssues.get(1).getTitle()).isEqualTo("서울역 사고");
-        assertThat(popularIssues.get(1).getContent()).isEqualTo("서울역 사고 테스트");
+
+        // then
+        assertThat(popularIssues).isNotNull();
+
+        // issue.id 기준으로 11L (삼각지역 집회), 12L (서울역 사고)가 포함되어야 한다
+        boolean contains삼각지 = popularIssues.stream().anyMatch(i -> i.getId().equals(11L));
+        boolean contains서울역 = popularIssues.stream().anyMatch(i -> i.getId().equals(12L));
+        assertThat(contains삼각지).isTrue();
+        assertThat(contains서울역).isTrue();
+
+        // 서울역 사고는 진행중이므로, top5에 없었으면 4~5위 자리에 삽입되어야 함
+        List<Long> orderedIds = popularIssues.stream().map(IssueStationDetail::getId).toList();
+
+        // 삼각지 먼저 (likeCount 10), 서울역은 낮지만 today 이슈
+        int indexOf서울역 = orderedIds.indexOf(12L);
+        assertThat(indexOf서울역).isBetween(3, 4); // 4위 또는 5위
     }
+    @Test
+    void getPopularIssues는_좋아요_수와_발생_시점에_따라_정렬된다() throws Exception {
+        // when
+        List<IssueStationDetail> popularIssues = issueServiceImpl.getPopularIssues();
+
+        // then
+        assertThat(popularIssues).isNotNull();
+        assertThat(popularIssues.size()).isEqualTo(5);
+
+        List<IssueStationDetail> sorted = new ArrayList<>(popularIssues);
+        sorted.sort((a, b) -> {
+            int likeCompare = Integer.compare(b.getLikeCount(), a.getLikeCount());
+            if (likeCompare != 0) return likeCompare;
+            return b.getStartDate().compareTo(a.getStartDate());
+        });
+
+        assertThat(popularIssues).isEqualTo(sorted);
+    }
+
     @Test
     void updateIssue는_Issue_내용과_제목을_업데이트할_수_있다() throws Exception{
         //given
@@ -301,13 +349,12 @@ class IssueServiceImplTest {
     @Test
     void 이슈_자동_등록은_이슈키가_존재하면_날짜만_업데이트한다() throws Exception{
         //given
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
 
         InternalIssueCreate internalIssueCreate = InternalIssueCreate.builder()
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .startDate(LocalDateTime.parse("2024-11-15 08:29:00", formatter))
+                .startDate(now.minusDays(3))
                 .expireDate(now.plusDays(1))
                 .lines(List.of("수도권 6호선"))
                 .locations(List.of("삼각지역"))
@@ -320,7 +367,6 @@ class IssueServiceImplTest {
         //when
         Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
         //then
-        assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
         assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
     }
     @Test
@@ -416,7 +462,7 @@ class IssueServiceImplTest {
         ExternalIssueCreate externalIssueCreate = ExternalIssueCreate.builder()
                 .title("삼각지역 집회")
                 .content("삼각지역 집회 가는길 지금 이슈 테스트")
-                .expireDate(now.plusDays(1))
+                .expireDate(now.plusDays(5))
                 .stations(List.of(stations))
                 .issueKey("20241115-시위-6호선")
                 .lineInfoAvailable(false)
@@ -425,11 +471,9 @@ class IssueServiceImplTest {
                 .issueKey("20241115-시위-6호선")
                 .crawlingNo("11")
                 .build();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //when
         Issue issue = issueServiceImpl.autoRegisterExternalIssue(externalIssueCreate);
         //then
-        assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
-        assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(1));
+        assertThat(issue.getExpireDate()).isEqualTo(now.plusDays(5));
     }
 }

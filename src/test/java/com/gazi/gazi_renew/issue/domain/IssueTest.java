@@ -179,7 +179,7 @@ class IssueTest {
                 .issueKey("20241115-시위-6호선")
                 .build();
         //when
-        issue = issue.updateDate(testClockHolder, now, now.plusMinutes(30));
+        issue = issue.updateDate(now.plusMinutes(30));
         //then
         assertThat(issue.getStartDate()).isEqualTo(LocalDateTime.parse("2024-11-15 08:29:00", formatter));
         assertThat(issue.getExpireDate()).isEqualTo(now.plusMinutes(30));

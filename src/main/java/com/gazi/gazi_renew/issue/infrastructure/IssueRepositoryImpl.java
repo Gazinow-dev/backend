@@ -32,6 +32,11 @@ public class IssueRepositoryImpl implements IssueRepository {
     }
 
     @Override
+    public List<IssueStationDetail> findTodayOrActiveIssues() {
+        return customIssueRepository.findTodayOrActiveIssues();
+    }
+
+    @Override
     public Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable) {
         return customIssueRepository.getIssueByLineName(lineName, pageable);
     }

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,13 +153,53 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
 
         return PageableExecutionUtils.getPage(issueStationDetails, pageable, totalCount::fetchOne);
     }
+
+    @Override
+    public List<IssueStationDetail> findTodayOrActiveIssues() {
+        List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
+                .from(issueEntity)
+                .where(issueEntity.startDate.before(LocalDateTime.now()))
+                .where(issueEntity.expireDate.after(LocalDateTime.now()))
+                .orderBy(issueEntity.likeCount.desc())
+                .limit(5)
+                .fetch();
+
+        return jpaQueryFactory.select(new QIssueStationDetail(
+                        issueEntity.id,
+                        issueEntity.title,
+                        issueEntity.content,
+                        issueEntity.likeCount,
+                        Expressions.asNumber(
+                                JPAExpressions.select(issueCommentEntity.count())
+                                        .from(issueCommentEntity)
+                                        .where(issueCommentEntity.issueEntity.id.eq(issueEntity.id))
+                        ).intValue(), // 서브쿼리 결과를 int로 변환
+                        Expressions.constant(Boolean.FALSE),
+                        Expressions.constant(Boolean.FALSE),
+                        issueEntity.keyword,
+                        issueEntity.startDate,
+                        issueEntity.expireDate,
+                        stationEntity.line,
+                        stationEntity.name,
+                        stationEntity.issueStationCode
+                ))
+                .from(issueStationEntity)
+                .join(issueStationEntity.issueEntity, issueEntity)
+                .join(issueStationEntity.stationEntity, stationEntity)
+                .where(issueEntity.id.in(issueIds))
+                .orderBy(issueEntity.likeCount.desc(), issueEntity.startDate.desc())
+                .fetch();
+    }
+
     @Override
     public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
 
         List<Long> issueIds = jpaQueryFactory.select(issueEntity.id)
                 .from(issueEntity)
-                .orderBy(issueEntity.likeCount.desc()) // 좋아요 개수 내림차순 정렬
-                .limit(4) // 상위 4개만 가져오기
+                .where(issueEntity.startDate.after(LocalDateTime.now().minusDays(7)))
+                .where(issueEntity.startDate.before(LocalDateTime.now()))
+                .orderBy(issueEntity.likeCount.desc(), issueEntity.startDate.desc()) // 좋아요 개수 내림차순 정렬
+                .limit(5) // 상위 5개만 가져오기
                 .fetch();
 
         return jpaQueryFactory.select(new QIssueStationDetail(
@@ -184,7 +225,7 @@ public class CustomIssueRepositoryImpl implements CustomIssueRepository {
                 .join(issueStationEntity.issueEntity, issueEntity)
                 .join(issueStationEntity.stationEntity, stationEntity)
                 .where(issueEntity.id.in(issueIds))
-                .orderBy(issueEntity.likeCount.desc())
+                .orderBy(issueEntity.likeCount.desc(), issueEntity.startDate.desc())
                 .fetch();
     }
 }

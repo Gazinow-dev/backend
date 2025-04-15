@@ -13,6 +13,7 @@ public interface IssueRepository {
     boolean existsByCrawlingNo(String crawlingNo);
     List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable);
 
+    List<IssueStationDetail> findTodayOrActiveIssues();
     Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable);
     Issue save(Issue issue);
 

@@ -9,10 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -27,8 +24,25 @@ public class FakeIssueRepository implements IssueRepository {
 
     @Override
     public List<IssueStationDetail> findTopIssuesByLikesCount(Pageable pageable) {
-        // likeCount가 높은 순으로 정렬
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
         List<Issue> sortedIssues = data.stream()
+                .filter(issue -> issue.getStartDate().isAfter(sevenDaysAgo)) // 최근 7일
+                .sorted(Comparator
+                        .comparing(Issue::getLikeCount, Comparator.reverseOrder())       // likeCount DESC
+                        .thenComparing(Issue::getStartDate, Comparator.reverseOrder())   // startDate DESC
+                )
+                .limit(5) // top 5
+                .collect(Collectors.toList());
+
+        return sortedIssues.stream()
+                .map(IssueStationDetail::fromIssue)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<IssueStationDetail> findTodayOrActiveIssues() {
+        List<Issue> sortedIssues = data.stream()
+                .filter(issue -> issue.getStartDate().isBefore(LocalDateTime.now()) && issue.getExpireDate().isAfter(LocalDateTime.now()))
                 .sorted((i1, i2) -> Integer.compare(i2.getLikeCount(), i1.getLikeCount())) // likeCount 내림차순 정렬
                 .limit(4) // 상위 4개만 선택
                 .collect(Collectors.toList());

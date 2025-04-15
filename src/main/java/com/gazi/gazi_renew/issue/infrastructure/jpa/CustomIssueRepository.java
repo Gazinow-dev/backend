@@ -22,4 +22,6 @@ public interface CustomIssueRepository {
     List<IssueStationDetail> getIssueById(Long id);
 
     Page<IssueStationDetail> getIssueByLineName(String lineName, Pageable pageable);
+
+    List<IssueStationDetail> findTodayOrActiveIssues();
 }
