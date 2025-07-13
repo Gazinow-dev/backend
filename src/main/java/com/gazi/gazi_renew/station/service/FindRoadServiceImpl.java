@@ -211,7 +211,7 @@ public class FindRoadServiceImpl implements FindRoadService {
                             station.setStationCode(stationNode.path("stationID").asInt());
 
                             // 역 이슈 조회 및 설정
-                            String lineName = subPath.getName(); // 급행 포함한 이름 그대로 사용
+                            String lineName = subPath.getName(); // 급행 포함한 이결름 그대로 사용
                             if(lineName.equals("수도권 9호선(급행)")){
                                 lineName = "수도권 9호선";
                             }
@@ -222,7 +222,9 @@ public class FindRoadServiceImpl implements FindRoadService {
                                     .map(IssueStation::getIssue)
                                     .filter(issue -> {
                                         LocalDateTime now = LocalDateTime.now();
-                                        return now.isAfter(issue.getStartDate()) && now.isBefore(issue.getExpireDate());
+                                        LocalDateTime start = issue.getStartDate();
+                                        LocalDateTime end = issue.getExpireDate();
+                                        return now.isAfter(start) && (end == null || now.isBefore(end));
                                     })
                                     .collect(Collectors.toList());
                             List<IssueSummary> issueSummaryDto = IssueSummary.getIssueSummaryDto(activeIssues);
