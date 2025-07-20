@@ -1,22 +1,17 @@
 package com.gazi.gazi_renew.admin.controller;
 
 import com.gazi.gazi_renew.admin.controller.port.ReportService;
-import com.gazi.gazi_renew.admin.domain.Report;
 import com.gazi.gazi_renew.admin.domain.dto.ReportCreate;
 import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.controller.response.CommentLikesResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

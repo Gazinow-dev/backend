@@ -7,7 +7,6 @@ import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.dto.IssueSummary;
-import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;

@@ -1,17 +1,11 @@
 package com.gazi.gazi_renew.admin.service;
 
-import com.gazi.gazi_renew.admin.domain.Report;
-import com.gazi.gazi_renew.issue.domain.IssueComment;
+
 import com.gazi.gazi_renew.member.domain.Member;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;

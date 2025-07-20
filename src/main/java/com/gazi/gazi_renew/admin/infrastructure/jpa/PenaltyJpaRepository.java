@@ -1,6 +1,6 @@
 package com.gazi.gazi_renew.admin.infrastructure.jpa;
 
-import com.gazi.gazi_renew.admin.domain.Penalty;
+
 import com.gazi.gazi_renew.admin.infrastructure.entity.PenaltyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
