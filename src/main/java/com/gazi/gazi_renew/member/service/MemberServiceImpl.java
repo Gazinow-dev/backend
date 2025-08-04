@@ -342,6 +342,39 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.updateAlertAgree(member);
         return member;
     }
+    /**
+     * 상세 경로 알림 활성/비활성 메서드
+     * 상세 경로 알림 꺼지면 경로별 개별 알림 비활성화
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree) {
+        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        boolean alertAgree = memberAlertAgree.isAlertAgree();
+
+        member = member.updateRouteDetailNotificationEnabled(alertAgree);
+        //비활성화 시, 하위 알림 모두 비활성화
+        if (!memberAlertAgree.isAlertAgree()) {
+            resetRouteNotifications(member);
+        }
+        memberRepository.updateAlertAgree(member);
+        return member;
+    }
+    /**
+     * 내가 익일 이슈 알림 활성/비활성 메서드
+     * @param : MemberRequest.AlertAgree alertAgreeRequest
+     * @return Response.Body
+     */
+    @Override
+    public Member updateNextDayNotificationStatus(MemberAlertAgree memberAlertAgree) throws JsonProcessingException {
+        Member member = memberRepository.findByEmail(memberAlertAgree.getEmail()).orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        boolean alertAgree = memberAlertAgree.isAlertAgree();
+
+        member = member.updateNextDayNotificationEnabled(alertAgree);
+        memberRepository.updateAlertAgree(member);
+        return member;
+    }
     @Override
     @Transactional(readOnly = true)
     public Member getPushNotificationStatus(String email) {
@@ -351,6 +384,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public Member getMySavedRouteNotificationStatus(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Member getNextDayNotificationStatus(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Member getRouteDetailNotificationStatus(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
     }
