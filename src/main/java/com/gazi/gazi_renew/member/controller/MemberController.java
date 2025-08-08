@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.member.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
@@ -127,7 +126,6 @@ public class MemberController extends BaseController {
     }
     // 회원 탈퇴
     @SecurityRequirement(name = "Bearer Authentication")
-    @TrackEvent("DELETE_MEMBER")
     @DeleteMapping("/delete_member")
     @Operation(summary = "회원 탈퇴")
     @ApiResponses(value = {
@@ -229,7 +227,7 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> updateNextDayNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) throws JsonProcessingException {
-        memberService.updateMySavedRouteNotificationStatus(memberAlertAgree);
+        memberService.updateNextDayNotificationStatus(memberAlertAgree);
         return response.success("익일 이슈 알림 수신 설정이 저장되었습니다.");
     }
     @SecurityRequirement(name = "Bearer Authentication")
@@ -252,7 +250,7 @@ public class MemberController extends BaseController {
     }
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "경로별 상세 설정 알림 on/off 설정 조회")
-    @GetMapping("/notifications/next-day/status")
+    @GetMapping("/notifications/route-detail/status")
     public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
         Member member = memberService.getRouteDetailNotificationStatus(email);
         return response.success(MemberAlertAgreeResponse.routeDetailAlertAgreeFrom(member), "", HttpStatus.OK);

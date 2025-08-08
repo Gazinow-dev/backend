@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.issue.controller;
 
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.issue.controller.port.LikeService;
@@ -20,7 +19,6 @@ public class LikeController extends BaseController {
     private final LikeService likeService;
     private final Response response;
     @PostMapping
-    @TrackEvent("LIKE_ISSUE")
     public ResponseEntity<Response.Body> likeIssue(LikeCreate likeCreate){
         Long id = likeService.likeIssue(likeCreate);
         return response.success(id +"번의 좋아요를 눌렀습니다.");

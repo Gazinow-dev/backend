@@ -97,6 +97,8 @@ public class MemberTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .firebaseToken("firebaseToken")
                 .build();
         //when
@@ -117,6 +119,8 @@ public class MemberTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .firebaseToken("firebaseToken")
                 .build();
         //when
@@ -127,6 +131,34 @@ public class MemberTest {
         assertThat(member.getFirebaseToken()).isEqualTo("firebaseToken");
         assertThat(member.getPushNotificationEnabled()).isEqualTo(false);
         assertThat(member.getMySavedRouteNotificationEnabled()).isEqualTo(false);
+        assertThat(member.getNextDayNotificationEnabled()).isEqualTo(false);
+        assertThat(member.getRouteDetailNotificationEnabled()).isEqualTo(false);
+    }
+    @Test
+    void Member가_익일_이슈_알림을_끌_수_있다() throws Exception{
+        //given
+        Member member = Member.builder()
+                .email("mw310@naver.com")
+                .password("tempPassword")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
+                .firebaseToken("firebaseToken")
+                .build();
+        //when
+        member = member.updateNextDayNotificationEnabled(false);
+        //then
+        assertThat(member.getEmail()).isEqualTo("mw310@naver.com");
+        assertThat(member.getNickName()).isEqualTo("minu");
+        assertThat(member.getFirebaseToken()).isEqualTo("firebaseToken");
+        assertThat(member.getPushNotificationEnabled()).isEqualTo(true);
+        assertThat(member.getMySavedRouteNotificationEnabled()).isEqualTo(true);
+        assertThat(member.getRouteDetailNotificationEnabled()).isEqualTo(true);
+
+        assertThat(member.getNextDayNotificationEnabled()).isEqualTo(false);
     }
     @Test
     void Member가_내가_저장한_경로_알림을_끌_수_있다() throws Exception{
@@ -148,6 +180,32 @@ public class MemberTest {
         assertThat(member.getFirebaseToken()).isEqualTo("firebaseToken");
         assertThat(member.getPushNotificationEnabled()).isEqualTo(true);
         assertThat(member.getMySavedRouteNotificationEnabled()).isEqualTo(false);
+    }
+    @Test
+    void Member가_경로별_상세_설정을_끌_수_있다() throws Exception{
+        //given
+        Member member = Member.builder()
+                .email("mw310@naver.com")
+                .password("tempPassword")
+                .nickName("minu")
+                .role(Role.ROLE_USER)
+                .pushNotificationEnabled(true)
+                .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
+                .firebaseToken("firebaseToken")
+                .build();
+        //when
+        member = member.updateRouteDetailNotificationEnabled(false);
+        //then
+        assertThat(member.getEmail()).isEqualTo("mw310@naver.com");
+        assertThat(member.getNickName()).isEqualTo("minu");
+        assertThat(member.getFirebaseToken()).isEqualTo("firebaseToken");
+        assertThat(member.getPushNotificationEnabled()).isEqualTo(true);
+        assertThat(member.getMySavedRouteNotificationEnabled()).isEqualTo(true);
+        assertThat(member.getNextDayNotificationEnabled()).isEqualTo(true);
+
+        assertThat(member.getRouteDetailNotificationEnabled()).isEqualTo(false);
     }
     @Test
     void Member는_비밀번호_일치_여부를_확인할_수_있다() throws Exception{
