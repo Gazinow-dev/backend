@@ -64,7 +64,8 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void updateAlertAgree(Member member) {
         memberJpaRepository.updateAlertAgree(member.getPushNotificationEnabled(), member.getMySavedRouteNotificationEnabled(),
-                member.getEmail());
+                member.getNextDayNotificationEnabled(), member.getRouteDetailNotificationEnabled()
+                , member.getEmail());
     }
 
     @Override

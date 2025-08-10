@@ -1,6 +1,5 @@
 package com.gazi.gazi_renew.station.controller;
 
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.station.controller.response.SubwayInfoResponse;
@@ -34,7 +33,6 @@ public class SearchController extends BaseController {
             headers = @Header(name = AUTHORIZATION, description = "Access Token"),
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = SubwayInfoResponse.class)))})
-    @TrackEvent("STATION_SEARCH")
     @GetMapping("/station")
     public ResponseEntity<Response.Body> subwayInfos(@Parameter(description = "지하철 이름") @RequestParam String stationName) {
         List<Station> subwayInfo = stationService.getSubwayInfo(stationName);

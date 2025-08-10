@@ -1,9 +1,7 @@
 package com.gazi.gazi_renew.notification.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.response.Response;
-import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.notification.controller.response.NotificationHistoryResponse;
 import com.gazi.gazi_renew.notification.controller.response.NotificationResponse;
@@ -69,7 +67,6 @@ public class NotificationController {
     }
     @PostMapping("/enable")
     @Operation(summary = "알림 활성화")
-    @TrackEvent("ENABLE_NOTIFICATION")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "알림 활성화 성공"),
             @ApiResponse(responseCode = "400", description = "해당 id로 존재하는 MyFindRoad가 없습니다."),
@@ -83,7 +80,6 @@ public class NotificationController {
 
     @PostMapping("/disable")
     @Operation(summary = "알림 비활성화")
-    @TrackEvent("DISABLE_NOTIFICATION")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "알림 비활성화 성공"),
             @ApiResponse(responseCode = "404", description = "해당 경로가 존재하지 않습니다.")}
@@ -107,7 +103,6 @@ public class NotificationController {
     }
 
     @PostMapping("/update")
-    @TrackEvent("UPDATE_NOTIFICATION")
     @Operation(summary = "알림 상세 설정 수정")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "알림 상세 설정 수정 성공"),

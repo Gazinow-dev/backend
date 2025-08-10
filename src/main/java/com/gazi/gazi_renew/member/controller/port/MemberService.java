@@ -60,4 +60,13 @@ public interface MemberService {
     Member getMySavedRouteNotificationStatus(String email);
 
     Member saveFcmToken(MemberFcmToken memberFcmToken);
+
+    Member getNextDayNotificationStatus(String email);
+
+    Member getRouteDetailNotificationStatus(String email);
+
+    Member updateRouteDetailNotificationStatus(MemberAlertAgree memberAlertAgree);
+
+    Member updateNextDayNotificationStatus(MemberAlertAgree memberAlertAgree) throws JsonProcessingException;
+
 }
