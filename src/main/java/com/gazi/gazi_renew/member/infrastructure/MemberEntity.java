@@ -46,6 +46,8 @@ public class MemberEntity extends AuditingFields {
     private Boolean pushNotificationEnabled; // 푸시 알림 받기 여부
 
     private Boolean mySavedRouteNotificationEnabled; // 내가 저장한 경로 알림 여부
+    private Boolean nextDayNotificationEnabled; // 익일 이슈 알림 여부
+    private Boolean routeDetailNotificationEnabled; // 경로별 상세 설정 알림 여부
 
     private String firebaseToken;
 
@@ -78,6 +80,8 @@ public class MemberEntity extends AuditingFields {
                 .role(role)
                 .pushNotificationEnabled(pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
+                .nextDayNotificationEnabled(nextDayNotificationEnabled)
+                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .createdAt(createdAt)
                 .build();

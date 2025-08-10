@@ -94,6 +94,8 @@ class MemberServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(false)
                 .mySavedRouteNotificationEnabled(false)
+                .nextDayNotificationEnabled(false)
+                .routeDetailNotificationEnabled(false)
                 .firebaseToken("firebaseToken")
                 .build();
 
@@ -105,8 +107,11 @@ class MemberServiceImplTest {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .firebaseToken("firebaseToken")
                 .build();
+
         fakeMemberRepository.save(member1);
         fakeMemberRepository.save(member2);
         fakeSecurityUtil.addEmail("mw310@naver.com");
@@ -389,6 +394,8 @@ class MemberServiceImplTest {
         Member member = memberServiceImpl.updatePushNotificationStatus(memberAlertAgree);
         //then
         assertThat(member.getMySavedRouteNotificationEnabled()).isTrue();
+        assertThat(member.getNextDayNotificationEnabled()).isTrue();
+        assertThat(member.getRouteDetailNotificationEnabled()).isTrue();
     }
     @Test
     void updateMySavedRouteNotificationStatus는_멤버의_내가_저장한_경로_알림을_활성화할_수_있다() throws Exception{
@@ -414,6 +421,32 @@ class MemberServiceImplTest {
         Member member = memberServiceImpl.updateMySavedRouteNotificationStatus(memberAlertAgree);
         //then
         assertThat(member.getMySavedRouteNotificationEnabled()).isFalse();
+        assertThat(member.getNextDayNotificationEnabled()).isFalse();
+        assertThat(member.getRouteDetailNotificationEnabled()).isFalse();
+    }
+    @Test
+    void updateNextDayNotificationStatus는_멤버의_익일_이슈_알림을_활성화할_수_있다() throws Exception{
+        //given
+        MemberAlertAgree memberAlertAgree = MemberAlertAgree.builder()
+                .email("mw310@naver.com")
+                .alertAgree(true)
+                .build();
+        //when
+        Member member = memberServiceImpl.updateNextDayNotificationStatus(memberAlertAgree);
+        //then
+        assertThat(member.getNextDayNotificationEnabled()).isTrue();
+    }
+    @Test
+    void updateRouteDetailNotificationStatus는_멤버의_상세_경로_알림을_활성화할_수_있다() throws Exception{
+        //given
+        MemberAlertAgree memberAlertAgree = MemberAlertAgree.builder()
+                .email("mw310@naver.com")
+                .alertAgree(true)
+                .build();
+        //when
+        Member member = memberServiceImpl.updateRouteDetailNotificationStatus(memberAlertAgree);
+        //then
+        assertThat(member.getRouteDetailNotificationEnabled()).isTrue();
     }
     @Test
     void getPushNotificationStatus는_멤버의_푸시_알림을_조회할_수_있다() throws Exception{
@@ -432,6 +465,24 @@ class MemberServiceImplTest {
         Member member = memberServiceImpl.getMySavedRouteNotificationStatus(email);
         //then
         assertThat(member.getMySavedRouteNotificationEnabled()).isFalse();
+    }
+    @Test
+    void getNextDayNotificationStatus는_멤버의_익일_이슈_알림을_조회할_수_있다() throws Exception{
+        //given
+        String email = "mw310@naver.com";
+        //when
+        Member member = memberServiceImpl.getNextDayNotificationStatus(email);
+        //then
+        assertThat(member.getNextDayNotificationEnabled()).isFalse();
+    }
+    @Test
+    void getRouteDetailNotificationStatus는_멤버의_상세_경로_알림을_조회할_수_있다() throws Exception{
+        //given
+        String email = "mw310@naver.com";
+        //when
+        Member member = memberServiceImpl.getRouteDetailNotificationStatus(email);
+        //then
+        assertThat(member.getRouteDetailNotificationEnabled()).isFalse();
     }
     @Test
     void saveFcmTokens는_멤버의_FCM토큰을_저장할_수_있다() throws Exception{

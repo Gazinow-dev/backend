@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.route.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
@@ -60,7 +59,6 @@ public class MyFindRoadController extends BaseController {
                     responseCode = "401", description = "회원이 존재하지 않습니다."
             )
     })
-    @TrackEvent("SAVE_PATH")
     @PostMapping("/add_route")
     public ResponseEntity<Response.Body> addRoute(@RequestBody MyFindRoadCreate myFindRoadCreate) throws JsonProcessingException {
         Long id = myFindRoadService.addRoute(myFindRoadCreate);

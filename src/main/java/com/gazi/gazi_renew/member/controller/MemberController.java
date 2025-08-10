@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.member.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
@@ -127,7 +126,6 @@ public class MemberController extends BaseController {
     }
     // 회원 탈퇴
     @SecurityRequirement(name = "Bearer Authentication")
-    @TrackEvent("DELETE_MEMBER")
     @DeleteMapping("/delete_member")
     @Operation(summary = "회원 탈퇴")
     @ApiResponses(value = {
@@ -220,6 +218,42 @@ public class MemberController extends BaseController {
     public ResponseEntity<Body> getMySavedRouteNotificationStatus(@RequestParam String email) {
         Member member = memberService.getMySavedRouteNotificationStatus(email);
         return response.success(MemberAlertAgreeResponse.mySavedRouteAlertAgreeFrom(member), "", HttpStatus.OK);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "익일 이슈 알림 on/off 설정")
+    @PostMapping("/notifications/next-day")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "익일 경로 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateNextDayNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) throws JsonProcessingException {
+        memberService.updateNextDayNotificationStatus(memberAlertAgree);
+        return response.success("익일 이슈 알림 수신 설정이 저장되었습니다.");
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "익일 이슈 알림 on/off 설정 조회")
+    @GetMapping("/notifications/next-day/status")
+    public ResponseEntity<Body> getNextDayNotificationStatus(@RequestParam String email) {
+        Member member = memberService.getMySavedRouteNotificationStatus(email);
+        return response.success(MemberAlertAgreeResponse.nextDayAlertAgreeFrom(member), "", HttpStatus.OK);
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "경로별 상세 설정 알림 on/off 설정")
+    @PostMapping("/notifications/route-detail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "경로별 상세 설정 알림 수신 설정이 저장되었습니다."),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
+    })
+    public ResponseEntity<Body> updateRouteDetailNotificationStatus(@RequestBody @Valid MemberAlertAgree memberAlertAgree, Errors errors) throws JsonProcessingException {
+        memberService.updateRouteDetailNotificationStatus(memberAlertAgree);
+        return response.success("경로별 상세 설정 알림 수신 설정이 저장되었습니다.");
+    }
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "경로별 상세 설정 알림 on/off 설정 조회")
+    @GetMapping("/notifications/route-detail/status")
+    public ResponseEntity<Body> getRouteDetailNotificationStatus(@RequestParam String email) {
+        Member member = memberService.getRouteDetailNotificationStatus(email);
+        return response.success(MemberAlertAgreeResponse.routeDetailAlertAgreeFrom(member), "", HttpStatus.OK);
     }
 
 }

@@ -21,10 +21,13 @@ public class Member {
     private final Role role;
     private final Boolean pushNotificationEnabled;
     private final Boolean mySavedRouteNotificationEnabled;
+    private final Boolean nextDayNotificationEnabled;
+    private final Boolean routeDetailNotificationEnabled;
     private final String firebaseToken;
     private final LocalDateTime createdAt;
+
     @Builder
-    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
+    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean nextDayNotificationEnabled, Boolean routeDetailNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -33,6 +36,8 @@ public class Member {
         this.role = role;
         this.pushNotificationEnabled = pushNotificationEnabled;
         this.mySavedRouteNotificationEnabled = mySavedRouteNotificationEnabled;
+        this.nextDayNotificationEnabled = nextDayNotificationEnabled;
+        this.routeDetailNotificationEnabled = routeDetailNotificationEnabled;
         this.firebaseToken = firebaseToken;
         this.createdAt = createdAt;
     }
@@ -75,6 +80,9 @@ public class Member {
                 .role(role)
                 .pushNotificationEnabled(pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(mySavedRouteNotificationEnabled)
+                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
+                .nextDayNotificationEnabled(nextDayNotificationEnabled)
+                .routeDetailNotificationEnabled(routeDetailNotificationEnabled)
                 .firebaseToken(firebaseToken)
                 .build();
     }
@@ -88,6 +96,8 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .nextDayNotificationEnabled(this.nextDayNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -100,6 +110,8 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .nextDayNotificationEnabled(this.nextDayNotificationEnabled)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -113,6 +125,8 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(alertAgree)
                 .mySavedRouteNotificationEnabled(alertAgree)
+                .nextDayNotificationEnabled(alertAgree)
+                .routeDetailNotificationEnabled(alertAgree)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }
@@ -125,6 +139,36 @@ public class Member {
                 .role(this.role)
                 .pushNotificationEnabled(this.pushNotificationEnabled)
                 .mySavedRouteNotificationEnabled(alertAgree)
+                .nextDayNotificationEnabled(alertAgree)
+                .routeDetailNotificationEnabled(alertAgree)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public Member updateRouteDetailNotificationEnabled(boolean alertAgree) {
+        return Member.builder()
+                .id(this.id)
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .nextDayNotificationEnabled(this.nextDayNotificationEnabled)
+                .routeDetailNotificationEnabled(alertAgree)
+                .firebaseToken(this.firebaseToken)
+                .build();
+    }
+    public Member updateNextDayNotificationEnabled(boolean alertAgree) {
+        return Member.builder()
+                .id(this.id)
+                .email(this.email)
+                .password(this.password)
+                .nickName(this.nickName)
+                .role(this.role)
+                .pushNotificationEnabled(this.pushNotificationEnabled)
+                .mySavedRouteNotificationEnabled(this.mySavedRouteNotificationEnabled)
+                .nextDayNotificationEnabled(alertAgree)
+                .routeDetailNotificationEnabled(this.routeDetailNotificationEnabled)
                 .firebaseToken(this.firebaseToken)
                 .build();
     }

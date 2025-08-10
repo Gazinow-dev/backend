@@ -50,6 +50,8 @@ public class FakeMemberRepository implements MemberRepository {
                     .role(member.getRole())
                     .pushNotificationEnabled(member.getPushNotificationEnabled())
                     .mySavedRouteNotificationEnabled(member.getMySavedRouteNotificationEnabled())
+                    .nextDayNotificationEnabled(member.getNextDayNotificationEnabled())
+                    .routeDetailNotificationEnabled(member.getRouteDetailNotificationEnabled())
                     .firebaseToken(member.getFirebaseToken())
                     .build();
             data.add(createMember);

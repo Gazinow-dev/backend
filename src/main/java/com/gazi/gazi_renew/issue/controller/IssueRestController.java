@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.issue.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gazi.gazi_renew.common.aspect.TrackEvent;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.issue.controller.response.IssueResponse;
 import com.gazi.gazi_renew.common.controller.response.Response;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -72,7 +70,6 @@ public class IssueRestController extends BaseController {
         return response.success(" 이슈 삭제 성공");
     }
     @PostMapping("/internal-issues")
-    @TrackEvent("AUTO_INTERNAL_ISSUE")
     public ResponseEntity<Response.Body> autoRegisterInternalIssue(HttpServletRequest request) throws JsonProcessingException {
         InternalIssueCreate processedRequest = (InternalIssueCreate) request.getAttribute("internalIssueCreate");
 
@@ -81,7 +78,6 @@ public class IssueRestController extends BaseController {
         return response.success(" 이슈 등록 성공");
     }
     @PostMapping("/external-issues")
-    @TrackEvent("AUTO_EXTERNAL_ISSUE")
     public ResponseEntity<Response.Body> autoRegisterExternalIssue(@RequestBody ExternalIssueCreate externalIssueCreate) throws JsonProcessingException {
         issueService.autoRegisterExternalIssue(externalIssueCreate);
 
