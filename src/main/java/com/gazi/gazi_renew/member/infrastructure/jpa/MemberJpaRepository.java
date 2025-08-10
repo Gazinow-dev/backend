@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -42,4 +43,6 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                           @Param("nextDayNotificationEnabled") Boolean nextDayNotificationEnabled,
                           @Param("routeDetailNotificationEnabled") Boolean routeDetailNotificationEnabled,
                          @Param("email") String email);
+
+    List<Long> findIdsByNextDayNotificationEnabled(Boolean enabled);
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.service.kafka.NotificationSender;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
@@ -12,6 +14,8 @@ import com.gazi.gazi_renew.notification.service.port.NotificationHistoryReposito
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Slf4j
@@ -37,6 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final MemberRepository memberRepository;
     private final SecurityUtilService securityUtilService;
     private final RedisUtilService redisUtilService;
+    private final NotificationSender notificationSender;
     /**
      * 알림 설정 변경 메서드
      * myFindRoadService의 updateRouteNotification메세드를 여기서 호출해서
@@ -118,5 +126,45 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void markAsRead(Long notificationId) {
         notificationHistoryRepository.updateNotificationIsRead(notificationId);
+    }
+
+    @Override
+    public void nextDayIssueNotify() {
+        List<IssueSendTarget> targets = new ArrayList<>();
+
+        LocalDateTime endOfTomorrow = LocalDateTime.of(
+                LocalDate.now().plusDays(1),
+                LocalTime.of(23, 59, 59)
+        );
+
+        //익일 이슈 알림을 허용한 유저 가져오가
+        List<Long> memberIds = memberRepository.findIdsByNextDayNotificationEnabled();
+        if (memberIds.isEmpty()) return;
+        // 가져온 유저의 경로에서 이슈가 있는지 가져오기
+        for (Long memberId : memberIds) {
+            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(memberId);
+            for (MyFindRoad myFindRoad : myFindRoadList) {
+                for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
+                    if (myFindRoadSubPath.getTrafficType() != 1) continue; // 지하철만
+
+                    for (MyFindRoadStation station : myFindRoadSubPath.getStations()) {
+                        List<Issue> issueList = station.getIssueList();
+                        if (issueList == null) continue;
+
+                        for (Issue issue : issueList) {
+                            if (issue.getStartDate() != null && issue.getStartDate().isAfter(LocalDateTime.now()) && issue.getStartDate().isBefore(endOfTomorrow)) {
+                                // TODO : 알림 형식 지정되면 객체 만들기
+                                targets.add()
+                            }
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+        notificationSender.sendNextDayIssueNotification(targets);
+
     }
 }

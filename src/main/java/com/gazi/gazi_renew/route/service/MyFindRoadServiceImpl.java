@@ -173,6 +173,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(station.getId());
                         List<Issue> issueList = issueStationList.stream().map(IssueStation::getIssue)
                                 .collect(Collectors.toList());
+                        //여기서 이슈시간이 내일 23시 59분보다 적ㅇ고 이슈가 있으면
+                        // 바로 카프카 이벤트 발송
                         myFindRoadStation = myFindRoadStation.updateIssueList(issueList);  // 업데이트된 station 객체 생성
                     }
                     updatedStations.add(myFindRoadStation);  // 변경된 객체를 리스트에 추가
