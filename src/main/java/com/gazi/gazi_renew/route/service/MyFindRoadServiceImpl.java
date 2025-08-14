@@ -64,6 +64,10 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     @Transactional(readOnly = true)
     public List<MyFindRoad> getRoutesByMember(Long memberId) {
         List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다"));
+        for (MyFindRoad myFindRoad : myFindRoadList) {
+            myFindRoad = myFindRoad.updateMemberNextDayIssueNotification(member.getNextDayNotificationEnabled());
+        }
         return myFindRoadList;
     }
 
