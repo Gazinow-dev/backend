@@ -89,43 +89,40 @@ public class MyFindRoadResponse {
     }
     public static List<MyFindRoadResponse> fromList(List<MyFindRoad> myFindRoadList) {
         List<MyFindRoadResponse> myFindRoadResponses = new ArrayList<>();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
         for (MyFindRoad myFindRoad : myFindRoadList) {
-            //서브패스를 찾는다.
             List<SubPath> subPaths = new ArrayList<>();
-            // subpathID로 lane과 station을 찾는다.
-            for(MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()){
+
+            for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
                 String lineName = myFindRoadSubPath.getName();
-                boolean isDirect = false;
-                if (lineName.contains("(급행)")) {
-                    isDirect = true;
-                }
+                boolean isDirect = lineName != null && lineName.contains("(급행)");
+
                 SubPath subPathResponse = SubPath.builder().build();
+
                 if (myFindRoadSubPath.getTrafficType() == 1) {
                     List<IssueSummary> issueDtoList = new ArrayList<>();
                     List<MyFindRoadResponse.Station> stations = new ArrayList<>();
 
                     for (MyFindRoadStation myFindRoadStation : myFindRoadSubPath.getStations()) {
-                        List<Issue> activeIssue = new ArrayList<>();
-                        List<Issue> issueList = myFindRoadStation.getIssueList();
-                        // activeIssues에 issues 중에서 issue.getExpireDate값이 현재시간보다 앞서는 값만 받도록 설계
-                        LocalDateTime currentDateTime = LocalDateTime.now(); // 현재 시간
-                        if (issueList != null) {
-                            for (Issue issue : issueList) {
-                                if (issue.getExpireDate() != null && issue.getExpireDate().isAfter(currentDateTime)) {
-                                    activeIssue.add(issue);
-                                }
-                            }
-                        }
+                        // 횸 화면 이슈 필터링
+                        List<Issue> activeIssue = filterIssuesByUserSetting(
+                                myFindRoadStation.getIssueList(),
+                                myFindRoad.getMemberNextDayIssueNotificationEnabled(),
+                                currentDateTime
+                        );
+
                         List<IssueSummary> issueSummaryDtoList = IssueSummary.getIssueSummaryDto(activeIssue);
                         MyFindRoadResponse.Station station = MyFindRoadResponse.Station.builder()
                                 .stationName(myFindRoadStation.getStationName())
                                 .index(myFindRoadStation.getIndex())
                                 .issueSummary(issueSummaryDtoList)
                                 .build();
-                        stations.add(station);
 
+                        stations.add(station);
                         issueDtoList.addAll(issueSummaryDtoList);
                     }
+
                     subPathResponse = SubPath.builder()
                             .trafficType(myFindRoadSubPath.getTrafficType())
                             .way(myFindRoadSubPath.getWay())
@@ -140,8 +137,10 @@ public class MyFindRoadResponse {
                             .stations(stations)
                             .build();
                 }
+
                 subPaths.add(subPathResponse);
             }
+
             MyFindRoadResponse myFindRoadResponse = MyFindRoadResponse.builder()
                     .id(myFindRoad.getId())
                     .roadName(myFindRoad.getRoadName())
@@ -150,8 +149,10 @@ public class MyFindRoadResponse {
                     .totalTime(myFindRoad.getTotalTime())
                     .subPaths(subPaths)
                     .build();
+
             myFindRoadResponses.add(myFindRoadResponse);
         }
+
         return myFindRoadResponses;
     }
     public static MyFindRoadResponse from(MyFindRoad myFindRoad) {
@@ -209,4 +210,35 @@ public class MyFindRoadResponse {
                 .subPaths(subPaths)
                 .build();
     }
+    private static List<Issue> filterIssuesByUserSetting(
+            List<Issue> issueList,
+            boolean nextDayNotificationEnabled,
+            LocalDateTime currentDateTime
+    ) {
+        LocalDateTime start = currentDateTime.withHour(0).withMinute(0).withSecond(1).withNano(0);
+        LocalDateTime end   = currentDateTime.withHour(23).withMinute(59).withSecond(59).withNano(0);
+
+        if (nextDayNotificationEnabled) {
+            // 오후 9시 전/후 분기
+            if (currentDateTime.getHour() < 21) {
+                start = currentDateTime.minusDays(1).withHour(21).withMinute(0).withSecond(0).withNano(0);
+                end   = currentDateTime.plusDays(1).withHour(23).withMinute(59).withSecond(59).withNano(0);
+            } else {
+                start = currentDateTime.withHour(21).withMinute(0).withSecond(0).withNano(0);
+                end   = currentDateTime.plusDays(1).withHour(23).withMinute(59).withSecond(59).withNano(0);
+            }
+        }
+
+        List<Issue> activeIssue = new ArrayList<>();
+        if (issueList != null) {
+            for (Issue issue : issueList) {
+                if (issue.getStartDate() != null && issue.getExpireDate() != null && issue.getStartDate().isAfter(start) &&
+                        issue.getExpireDate().isBefore(end)) {
+                    activeIssue.add(issue);
+                }
+            }
+        }
+        return activeIssue;
+    }
+
 }

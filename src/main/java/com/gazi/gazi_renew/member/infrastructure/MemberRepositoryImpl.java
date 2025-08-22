@@ -6,6 +6,7 @@ import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
@@ -76,6 +77,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public long count() {
         return memberJpaRepository.count();
+    }
+
+    @Override
+    public List<Long> findIdsByNextDayNotificationEnabled(Boolean enabled) {
+        return memberJpaRepository.findIdsByNextDayNotificationEnabled(enabled);
     }
 
 }
