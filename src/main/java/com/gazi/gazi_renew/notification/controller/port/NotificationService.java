@@ -24,6 +24,4 @@ public interface NotificationService {
     Page<NotificationHistory> findAllByMemberId(Pageable pageable);
 
     void markAsRead(Long notificationId);
-
-    void nextDayIssueNotify();
 }

@@ -14,8 +14,10 @@ import com.gazi.gazi_renew.issue.service.port.IssueStationRepository;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.controller.port.FcmService;
+import com.gazi.gazi_renew.notification.domain.FcmMessageTemplate;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.domain.dto.FcmMessage;
+import com.gazi.gazi_renew.notification.domain.dto.NextDayNotificationFcmMessage;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
 import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
 import com.gazi.gazi_renew.route.controller.response.MyFindRoadResponse;
@@ -43,6 +45,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -98,6 +103,80 @@ public class FcmServiceImpl implements FcmService {
 
 
         return messages;
+    }
+    public void nextDayIssueSendMessageTo() throws IOException {
+        List<NextDayNotificationFcmMessage> targets = makeNextDayFcmDto();
+        RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + getAccessToken());
+
+        // 각 메시지를 순회하며 FCM 전송
+        for (NextDayNotificationFcmMessage message : targets) {
+            HttpEntity<NextDayNotificationFcmMessage> entity = new HttpEntity<>(message, headers);
+
+            // FCM 메시지 전송
+            ResponseEntity<String> restResponse = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
+
+            // 하나라도 실패하면 즉시 실패 응답 반환
+            if (restResponse.getStatusCode() != HttpStatus.OK) {
+                throw ErrorCode.throwFailedFcmMessage();
+            }
+        }
+    }
+    private List<NextDayNotificationFcmMessage> makeNextDayFcmDto() {
+        LocalDateTime endOfTomorrow = LocalDateTime.of(
+                LocalDate.now().plusDays(1),
+                LocalTime.of(23, 59, 59)
+        );
+
+        //익일 이슈 알림을 허용한 유저 가져오가
+        List<Long> memberIds = memberRepository.findIdsByNextDayNotificationEnabled(Boolean.TRUE);
+        if (memberIds.isEmpty()) {
+            throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
+        }
+        List<NextDayNotificationFcmMessage> nextDayFcmMessageList = new ArrayList<>();
+        List<Long> myFindRoadIdList = new ArrayList<>();
+        // 가져온 유저의 경로에서 이슈가 있는지 가져오기
+        for (Long memberId : memberIds) {
+            int issueCnt = 0;
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다"));
+            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(memberId);
+            for (MyFindRoad myFindRoad : myFindRoadList) {
+                for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
+                    if (myFindRoadSubPath.getTrafficType() != 1) continue; // 지하철만
+
+                    for (MyFindRoadStation station : myFindRoadSubPath.getStations()) {
+                        List<Issue> issueList = station.getIssueList();
+                        if (issueList == null) continue;
+
+                        for (Issue issue : issueList) {
+                            if (issue.getStartDate() != null && issue.getStartDate().isAfter(LocalDateTime.now()) && issue.getStartDate().isBefore(endOfTomorrow)) {
+                                // TODO : 알림 형식 지정되면 객체 만들기
+                                issueCnt += 1;
+                            }
+                        }
+                    }
+
+                }
+                if (issueCnt > 0) {
+                    myFindRoadIdList.add(myFindRoad.getId());
+                }
+            }
+            if (!myFindRoadIdList.isEmpty()) {
+                NextDayNotificationFcmMessage message = NextDayNotificationFcmMessage.createMessage(
+                        myFindRoadIdList,
+                        member.getFirebaseToken(),
+                        FcmMessageTemplate.NEXT_DAY_ISSUE.getTitle(),
+                        issueCnt);
+                nextDayFcmMessageList.add(message);
+            }
+        }
+        return nextDayFcmMessageList;
     }
 
     private String getAccessToken() throws IOException {
