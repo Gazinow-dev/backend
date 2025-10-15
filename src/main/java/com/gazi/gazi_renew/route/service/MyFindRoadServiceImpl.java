@@ -58,6 +58,11 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
     public  List<MyFindRoad> getRoutes() {
         Member member = memberRepository.getReferenceByEmail(securityUtilService.getCurrentUserEmail()).orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
         List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
+        for (int i = 0; i < myFindRoadList.size(); i++) {
+            MyFindRoad updated = myFindRoadList.get(i)
+                    .updateMemberNextDayIssueNotification(member.getNextDayNotificationEnabled());
+            myFindRoadList.set(i, updated);
+        }
         return getStationList(myFindRoadList);
     }
     @Override
@@ -173,6 +178,8 @@ public class MyFindRoadServiceImpl implements MyFindRoadService {
                         List<IssueStation> issueStationList = issueStationRepository.findAllByStationId(station.getId());
                         List<Issue> issueList = issueStationList.stream().map(IssueStation::getIssue)
                                 .collect(Collectors.toList());
+                        //여기서 이슈시간이 내일 23시 59분보다 적ㅇ고 이슈가 있으면
+                        // 바로 카프카 이벤트 발송
                         myFindRoadStation = myFindRoadStation.updateIssueList(issueList);  // 업데이트된 station 객체 생성
                     }
                     updatedStations.add(myFindRoadStation);  // 변경된 객체를 리스트에 추가

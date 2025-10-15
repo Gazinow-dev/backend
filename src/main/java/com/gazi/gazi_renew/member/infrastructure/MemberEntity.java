@@ -65,6 +65,7 @@ public class MemberEntity extends AuditingFields {
         memberEntity.role = member.getRole();
         memberEntity.pushNotificationEnabled = member.getPushNotificationEnabled();
         memberEntity.mySavedRouteNotificationEnabled = member.getMySavedRouteNotificationEnabled();
+        memberEntity.nextDayNotificationEnabled = member.getNextDayNotificationEnabled();
         memberEntity.firebaseToken = member.getFirebaseToken();
         memberEntity.createdAt = member.getCreatedAt();
         return memberEntity;

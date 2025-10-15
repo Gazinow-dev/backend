@@ -6,7 +6,10 @@ import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Repository
 @RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberRepository {
@@ -78,4 +81,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.count();
     }
 
+    @Override
+    public List<Member> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled) {
+        return memberJpaRepository.findByNextDayNotificationEnabled(nextDayNotificationEnabled)
+                .stream().map(MemberEntity::toModel).collect(Collectors.toList());
+    }
 }
