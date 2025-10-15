@@ -1,6 +1,8 @@
 package com.gazi.gazi_renew.notification.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,8 +37,7 @@ public class NextDayNotificationFcmMessage {
     @AllArgsConstructor
     @Getter
     public static class Data {
-        private Integer nextDayIssueCount;
-        private List<Long> myFindRoadIdList;
+        private String myFindRoadIdList;
     }
     @Builder
     @AllArgsConstructor
@@ -58,7 +59,7 @@ public class NextDayNotificationFcmMessage {
         private int contentAvailable;
     }
 
-    public static NextDayNotificationFcmMessage createMessage(List<Long> myFindRoadIdList, String firebaseToken, String title, Integer nextDayIssueCount) {
+    public static NextDayNotificationFcmMessage createMessage(List<Long> myFindRoadIdList, String firebaseToken, String title) throws JsonProcessingException {
         return NextDayNotificationFcmMessage.builder()
                 .message(NextDayNotificationFcmMessage.Message.builder()
                         .token(firebaseToken)
@@ -66,8 +67,10 @@ public class NextDayNotificationFcmMessage {
                                 .title(title)
                                 .build()
                         )
-                        .data(Data.builder().nextDayIssueCount(nextDayIssueCount)
-                                .myFindRoadIdList(myFindRoadIdList)
+                        .data(Data.builder()
+                                .myFindRoadIdList(
+                                        new ObjectMapper().writeValueAsString(myFindRoadIdList)
+                                )
                                 .build())
                         .apns(NextDayNotificationFcmMessage.Apns.builder()
                                 .payload(NextDayNotificationFcmMessage.Payload.builder()

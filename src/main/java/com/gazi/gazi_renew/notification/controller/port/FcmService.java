@@ -11,5 +11,5 @@ import java.util.List;
 @Service
 public interface FcmService {
     List<FcmMessage> sendMessageTo(NotificationCreate notificationCreate) throws IOException;
-    void nextDayIssueSendMessageTo() throws IOException;
+    List<NextDayNotificationFcmMessage> nextDayIssueSendMessageTo() throws IOException;
 }

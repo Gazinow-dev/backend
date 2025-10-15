@@ -29,5 +29,5 @@ public interface MemberRepository {
     Optional<Member> findById(Long id);
     long count();
 
-    List<Long> findIdsByNextDayNotificationEnabled(Boolean enabled);
+    List<Member> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled);
 }

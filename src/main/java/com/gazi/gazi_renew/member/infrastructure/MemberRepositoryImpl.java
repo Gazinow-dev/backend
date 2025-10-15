@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Repository
 @RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberRepository {
@@ -80,8 +82,8 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public List<Long> findIdsByNextDayNotificationEnabled(Boolean enabled) {
-        return memberJpaRepository.findIdsByNextDayNotificationEnabled(enabled);
+    public List<Member> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled) {
+        return memberJpaRepository.findByNextDayNotificationEnabled(nextDayNotificationEnabled)
+                .stream().map(MemberEntity::toModel).collect(Collectors.toList());
     }
-
 }

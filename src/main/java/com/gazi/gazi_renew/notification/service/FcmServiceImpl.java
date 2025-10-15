@@ -104,7 +104,7 @@ public class FcmServiceImpl implements FcmService {
 
         return messages;
     }
-    public void nextDayIssueSendMessageTo() throws IOException {
+    public List<NextDayNotificationFcmMessage> nextDayIssueSendMessageTo() throws IOException {
         List<NextDayNotificationFcmMessage> targets = makeNextDayFcmDto();
         RestTemplate restTemplate = new RestTemplate();
 
@@ -126,27 +126,28 @@ public class FcmServiceImpl implements FcmService {
                 throw ErrorCode.throwFailedFcmMessage();
             }
         }
+        return targets;
     }
-    private List<NextDayNotificationFcmMessage> makeNextDayFcmDto() {
+    private List<NextDayNotificationFcmMessage> makeNextDayFcmDto() throws JsonProcessingException {
         LocalDateTime endOfTomorrow = LocalDateTime.of(
                 LocalDate.now().plusDays(1),
                 LocalTime.of(23, 59, 59)
         );
 
         //익일 이슈 알림을 허용한 유저 가져오가
-        List<Long> memberIds = memberRepository.findIdsByNextDayNotificationEnabled(Boolean.TRUE);
-        if (memberIds.isEmpty()) {
+        List<Member> memberList = memberRepository.findByNextDayNotificationEnabled(Boolean.TRUE);
+        if (memberList.isEmpty()) {
             throw new EntityNotFoundException("해당 멤버가 존재하지 않습니다.");
         }
         List<NextDayNotificationFcmMessage> nextDayFcmMessageList = new ArrayList<>();
         List<Long> myFindRoadIdList = new ArrayList<>();
         // 가져온 유저의 경로에서 이슈가 있는지 가져오기
-        for (Long memberId : memberIds) {
+        for (Member member : memberList) {
             int issueCnt = 0;
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new EntityNotFoundException("해당 회원이 존재하지 않습니다"));
-            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findByMemberId(memberId);
+            Long memberId = member.getId();
+            List<MyFindRoad> myFindRoadList = myFindRoadPathRepository.findAllByMemberOrderByIdDesc(member);
             for (MyFindRoad myFindRoad : myFindRoadList) {
+                myFindRoad = getStation(myFindRoad);
                 for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
                     if (myFindRoadSubPath.getTrafficType() != 1) continue; // 지하철만
 
@@ -156,7 +157,6 @@ public class FcmServiceImpl implements FcmService {
 
                         for (Issue issue : issueList) {
                             if (issue.getStartDate() != null && issue.getStartDate().isAfter(LocalDateTime.now()) && issue.getStartDate().isBefore(endOfTomorrow)) {
-                                // TODO : 알림 형식 지정되면 객체 만들기
                                 issueCnt += 1;
                             }
                         }
@@ -171,8 +171,7 @@ public class FcmServiceImpl implements FcmService {
                 NextDayNotificationFcmMessage message = NextDayNotificationFcmMessage.createMessage(
                         myFindRoadIdList,
                         member.getFirebaseToken(),
-                        FcmMessageTemplate.NEXT_DAY_ISSUE.getTitle(),
-                        issueCnt);
+                        FcmMessageTemplate.NEXT_DAY_ISSUE.getTitle());
                 nextDayFcmMessageList.add(message);
             }
         }
