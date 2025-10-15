@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.member.service.port;
 import com.gazi.gazi_renew.member.domain.Member;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository {
@@ -27,4 +28,6 @@ public interface MemberRepository {
 
     Optional<Member> findById(Long id);
     long count();
+
+    List<Member> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled);
 }

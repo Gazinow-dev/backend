@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.controller.port.SecurityUtilService;
 import com.gazi.gazi_renew.common.exception.ErrorCode;
+import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.service.kafka.NotificationSender;
 import com.gazi.gazi_renew.member.domain.Member;
 import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.Notification;
@@ -12,6 +14,8 @@ import com.gazi.gazi_renew.notification.service.port.NotificationHistoryReposito
 import com.gazi.gazi_renew.notification.service.port.NotificationRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
+import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
+import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadPathRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Slf4j
