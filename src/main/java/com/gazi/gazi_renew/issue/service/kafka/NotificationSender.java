@@ -3,9 +3,12 @@ package com.gazi.gazi_renew.issue.service.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.port.KafkaSender;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
+import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.Issue;
 import com.gazi.gazi_renew.issue.domain.enums.KoreanDayOfWeek;
+import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
+import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
 import com.gazi.gazi_renew.route.domain.MyFindRoadStation;
 import com.gazi.gazi_renew.route.domain.MyFindRoadSubPath;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
@@ -35,7 +38,10 @@ public class NotificationSender implements KafkaSender {
     private final KafkaTemplate<String, NotificationCreate> kafkaTemplate;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
+    private final NotificationHistoryRepository notificationHistoryRepository;
     private final RedisUtilService redisUtilService;
+    private final ClockHolder clockHolder;
+
     public void sendNotification(Issue issue, List<Line> lineList, List<Station> stationList) throws JsonProcessingException {
         // 현재 사용자 정보 조회
         Map<String, List<Map<String, Object>>> allUserNotifications = redisUtilService.getAllUserNotifications();
@@ -44,16 +50,32 @@ public class NotificationSender implements KafkaSender {
             List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(Long.parseLong(myFindRoadPathId));
             List<Map<String, Object>> notificationsByMyFindRoadPathId = allUserNotifications.get(myFindRoadPathId);
 
-            // 알림 조건에 따른 필터링
-            if (matchesRoute(myFindRoadSubPathList, lineList, stationList) && matchesNotificationConditions(notificationsByMyFindRoadPathId, issue)) {
-                // 알림 생성
-                NotificationCreate notificationCreate = NotificationCreate.builder()
-                        .myRoadId(Long.parseLong(myFindRoadPathId))
-                        .issueId(issue.getId())
-                        .build();
-                // Kafka로 알림 전송
-                kafkaTemplate.send("notification", notificationCreate);
-                log.info("Kafka 토픽 'notification'에 알림 전송 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
+            boolean routeMatched = matchesRoute(myFindRoadSubPathList, lineList, stationList);
+            boolean conditionMatched = matchesNotificationConditions(notificationsByMyFindRoadPathId, issue);
+
+            if (routeMatched) {
+                // NotificationHistory는 무조건 저장
+                NotificationHistory history = NotificationHistory.saveHistory(
+                        Long.parseLong(myFindRoadPathId),
+                        issue.getId(),
+                        issue.getContent(),   // body
+                        issue.getTitle(),     // title
+                        issue.getKeyword(),
+                        clockHolder
+                );
+                notificationHistoryRepository.save(history);
+                log.info("NotificationHistory 저장 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
+
+                // 조건까지 일치하면 FCM 발송 (Kafka로 전송)
+                if (conditionMatched) {
+                    NotificationCreate notificationCreate = NotificationCreate.builder()
+                            .myRoadId(Long.parseLong(myFindRoadPathId))
+                            .issueId(issue.getId())
+                            .build();
+
+                    kafkaTemplate.send("notification", notificationCreate);
+                    log.info("Kafka 토픽 'notification'에 알림 전송 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
+                }
             }
         }
 
