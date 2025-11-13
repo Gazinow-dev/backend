@@ -39,9 +39,7 @@ public class NotificationSender implements KafkaSender {
     private final KafkaTemplate<String, NotificationCreate> kafkaTemplate;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
-    private final NotificationHistoryRepository notificationHistoryRepository;
     private final RedisUtilService redisUtilService;
-    private final ClockHolder clockHolder;
 
     public void sendNotification(Issue issue, List<Line> lineList, List<Station> stationList) throws JsonProcessingException {
         // 현재 사용자 정보 조회
@@ -55,18 +53,6 @@ public class NotificationSender implements KafkaSender {
             boolean conditionMatched = matchesNotificationConditions(notificationsByMyFindRoadPathId, issue);
 
             if (routeMatched) {
-                // NotificationHistory는 무조건 저장
-                NotificationHistory history = NotificationHistory.saveHistory(
-                        Long.parseLong(myFindRoadPathId),
-                        issue.getId(),
-                        issue.getContent(),   // body
-                        issue.getTitle(),     // title
-                        issue.getKeyword(),
-                        clockHolder
-                );
-                notificationHistoryRepository.save(history);
-                log.info("NotificationHistory 저장 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
-
                 // 조건까지 일치하면 FCM 발송 (Kafka로 전송)
                 if (conditionMatched) {
                     NotificationCreate notificationCreate = NotificationCreate.builder()
