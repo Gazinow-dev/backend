@@ -9,16 +9,16 @@ import lombok.*;
 public class NotificationCreate {
     private final Long myRoadId;
     private final Long issueId;
-    private final Boolean notification;
+    private final Boolean sendNotification;
 
     @Builder
     @JsonCreator
     public NotificationCreate(
             @JsonProperty("myRoadId") Long myRoadId,
             @JsonProperty("issueId") Long issueId,
-            @JsonProperty("notification") Boolean notification) {
+            @JsonProperty("sendNotification") Boolean sendNotification) {
         this.myRoadId = myRoadId;
         this.issueId = issueId;
-        this.notification = notification;
+        this.sendNotification = sendNotification;
     }
 }

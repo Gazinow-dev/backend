@@ -72,7 +72,7 @@ public class NotificationSender implements KafkaSender {
                     NotificationCreate notificationCreate = NotificationCreate.builder()
                             .myRoadId(Long.parseLong(myFindRoadPathId))
                             .issueId(issue.getId())
-                            .notification(Boolean.TRUE)
+                            .sendNotification(Boolean.TRUE)
                             .build();
 
                     kafkaTemplate.send("notification", notificationCreate);
@@ -81,7 +81,7 @@ public class NotificationSender implements KafkaSender {
                     NotificationCreate notificationCreate = NotificationCreate.builder()
                             .myRoadId(Long.parseLong(myFindRoadPathId))
                             .issueId(issue.getId())
-                            .notification(Boolean.FALSE)
+                            .sendNotification(Boolean.FALSE)
                             .build();
                     kafkaTemplate.send("notification", notificationCreate);
                 }

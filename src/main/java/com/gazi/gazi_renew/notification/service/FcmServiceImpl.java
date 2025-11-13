@@ -255,7 +255,7 @@ public class FcmServiceImpl implements FcmService {
                 NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), body
                         , title, issue.get().getKeyword(), clockHolder);
                 NotificationHistory savedHistory = notificationHistoryRepository.save(notificationHistory);
-                if (notificationCreate.getNotification()) {
+                if (notificationCreate.getSendNotification()) {
                     FcmMessage fcmMessage = FcmMessage.createMessage(
                             savedHistory.getId(),
                             firebaseToken,
