@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.common.controller.port.KafkaSender;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.issue.domain.enums.KoreanDayOfWeek;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
@@ -71,10 +72,18 @@ public class NotificationSender implements KafkaSender {
                     NotificationCreate notificationCreate = NotificationCreate.builder()
                             .myRoadId(Long.parseLong(myFindRoadPathId))
                             .issueId(issue.getId())
+                            .notification(Boolean.TRUE)
                             .build();
 
                     kafkaTemplate.send("notification", notificationCreate);
                     log.info("Kafka 토픽 'notification'에 알림 전송 완료 - roadId: {}, issueId: {}", myFindRoadPathId, issue.getId());
+                } else {
+                    NotificationCreate notificationCreate = NotificationCreate.builder()
+                            .myRoadId(Long.parseLong(myFindRoadPathId))
+                            .issueId(issue.getId())
+                            .notification(Boolean.FALSE)
+                            .build();
+                    kafkaTemplate.send("notification", notificationCreate);
                 }
             }
         }
@@ -145,6 +154,4 @@ public class NotificationSender implements KafkaSender {
         }
         return false;
     }
-
-
 }
