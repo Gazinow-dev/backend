@@ -2,6 +2,7 @@ package com.gazi.gazi_renew.admin.controller.port;
 
 import com.gazi.gazi_renew.admin.domain.AdminNotice;
 import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeCreate;
+import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeUpdate;
 
 import java.util.List;
 
@@ -16,5 +17,5 @@ public interface AdminNotificationService {
 
     void deleteNotificationByNoticeId(Long noticeId);
 
-    AdminNotice updateNotification(AdminNoticeCreate adminNoticeCreate);
+    void updateNotification(AdminNoticeUpdate adminNoticeUpdate);
 }

@@ -3,6 +3,8 @@ package com.gazi.gazi_renew.admin.service;
 import com.gazi.gazi_renew.admin.controller.port.AdminNotificationService;
 import com.gazi.gazi_renew.admin.domain.AdminNotice;
 import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeCreate;
+import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeUpdate;
+import com.gazi.gazi_renew.admin.service.port.AdminNoticeRepository;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,12 +38,14 @@ public class AdminNoticeServiceImpl implements AdminNotificationService {
     @Override
     @Transactional
     public void deleteNotificationByNoticeId(Long noticeId) {
-        adminNoticeRepository.deleteNotificationByNoticeId(noticeId)
+        adminNoticeRepository.deleteNotificationByNoticeId(noticeId);
     }
 
     @Override
     @Transactional
-    public AdminNotice updateNotification(AdminNoticeCreate adminNoticeCreate) {
-        return adminNoticeRepository.updateNotification(AdminNotice.update(adminNoticeCreate, clockHolder));
+    public void updateNotification(AdminNoticeUpdate adminNoticeUpdate) {
+        AdminNotice adminNotice = adminNoticeRepository.getNotificationByNoticeId(adminNoticeUpdate.getNoticeId());
+        adminNotice = adminNotice.update(adminNoticeUpdate, clockHolder);
+        adminNoticeRepository.updateNotification(adminNotice);
     }
 }

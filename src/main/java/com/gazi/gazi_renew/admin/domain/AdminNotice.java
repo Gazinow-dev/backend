@@ -1,6 +1,7 @@
 package com.gazi.gazi_renew.admin.domain;
 
 import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeCreate;
+import com.gazi.gazi_renew.admin.domain.dto.AdminNoticeUpdate;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,12 +34,12 @@ public class AdminNotice {
     }
 
 
-    public AdminNotice update(AdminNoticeCreate adminNoticeCreate, ClockHolder clockHolder) {
+    public AdminNotice update(AdminNoticeUpdate adminNoticeUpdate, ClockHolder clockHolder) {
         return AdminNotice.builder()
-                .noticeId(this.noticeId)
-                .noticeTitle(adminNoticeCreate.getNoticeTitle())
-                .noticeContent(adminNoticeCreate.getNoticeContent())
-                .createdAt(clockHolder.now())
+                .noticeId(noticeId)
+                .noticeTitle(adminNoticeUpdate.getNoticeTitle())
+                .noticeContent(adminNoticeUpdate.getNoticeContent())
+                .createdAt(createdAt)
                 .modifiedAt(clockHolder.now())
                 .build();
     }
