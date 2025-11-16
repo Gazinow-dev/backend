@@ -159,4 +159,12 @@ public class FakeMemberRepository implements MemberRepository {
     public long count() {
         return data.size();
     }
+
+    @Override
+    public List<Member> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled) {
+        return data.stream()
+                .filter(member -> Objects.equals(member.getNextDayNotificationEnabled(), nextDayNotificationEnabled))
+                .toList();
+    }
+
 }
