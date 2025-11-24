@@ -53,6 +53,7 @@ public class Member {
         return Member.builder()
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))
@@ -68,6 +69,7 @@ public class Member {
                 .role(Role.ROLE_USER)
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
+                .nextDayNotificationEnabled(true)
                 .firebaseToken(memberCreate.getFirebaseToken())
                 .build();
     }
