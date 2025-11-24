@@ -54,6 +54,7 @@ public class Member {
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
                 .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .email(email)
                 .password(passwordEncoder.encode("dummy"))
                 .role(Role.valueOf("ROLE_USER"))
@@ -70,6 +71,7 @@ public class Member {
                 .pushNotificationEnabled(true)
                 .mySavedRouteNotificationEnabled(true)
                 .nextDayNotificationEnabled(true)
+                .routeDetailNotificationEnabled(true)
                 .firebaseToken(memberCreate.getFirebaseToken())
                 .build();
     }
