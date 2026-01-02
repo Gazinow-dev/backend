@@ -106,7 +106,7 @@ public class OAuthLoginService {
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), null, authorities);
 
         ResponseToken responseToken = jwtTokenProvider.generateToken(authentication);
-        responseToken = responseToken.login(member.getEmail(), member.getNickName());
+        responseToken = responseToken.login(member.getEmail(), member.getNickName(), member.getSocialLoginIsNewMember());
         //redis에 refresh token 저장
         redisUtilService.setRefreshToken(authentication.getName(), responseToken.getRefreshToken(),
                 responseToken.getRefreshTokenExpirationTime());
@@ -139,6 +139,7 @@ public class OAuthLoginService {
                 .queryParam("refreshToken", responseToken.getRefreshToken())
                 .queryParam("email", responseToken.getEmail())
                 .queryParam("nickName", responseToken.getNickName())
+                .queryParam("socialLoginIsNewMember", responseToken.isSocialLoginIsNewMember())
                 .build()
                 .toUri();
 
