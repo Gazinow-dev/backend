@@ -19,8 +19,9 @@ public class ResponseToken {
     private final boolean notificationByKeyword;
     private final boolean notificationByRepost;
     private final boolean notificationByLike;
+    private final boolean socialLoginIsNewMember;
     @Builder
-    public ResponseToken(String grantType, Long memberId, String nickName, String email, String firebaseToken, String accessToken, String refreshToken, Long accessTokenExpirationTime, Long refreshTokenExpirationTime, boolean notificationByKeyword, boolean notificationByRepost, boolean notificationByLike) {
+    public ResponseToken(String grantType, Long memberId, String nickName, String email, String firebaseToken, String accessToken, String refreshToken, Long accessTokenExpirationTime, Long refreshTokenExpirationTime, boolean notificationByKeyword, boolean notificationByRepost, boolean notificationByLike, boolean socialLoginIsNewMember) {
         this.grantType = grantType;
         this.memberId = memberId;
         this.nickName = nickName;
@@ -33,15 +34,17 @@ public class ResponseToken {
         this.notificationByKeyword = notificationByKeyword;
         this.notificationByRepost = notificationByRepost;
         this.notificationByLike = notificationByLike;
+        this.socialLoginIsNewMember = socialLoginIsNewMember;
     }
 
-    public ResponseToken login(String email, String nickName) {
+    public ResponseToken login(String email, String nickName, Boolean socialLoginIsNewMember) {
         return ResponseToken.builder()
                 .grantType(this.grantType)
                 .accessToken(this.accessToken)
                 .refreshToken(this.refreshToken)
                 .accessTokenExpirationTime(this.accessTokenExpirationTime)
                 .refreshTokenExpirationTime(this.refreshTokenExpirationTime)
+                .socialLoginIsNewMember(Boolean.TRUE.equals(socialLoginIsNewMember))
                 .email(email)
                 .nickName(nickName)
                 .build();

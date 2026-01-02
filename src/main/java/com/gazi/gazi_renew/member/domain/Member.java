@@ -23,11 +23,12 @@ public class Member {
     private final Boolean mySavedRouteNotificationEnabled;
     private final Boolean nextDayNotificationEnabled;
     private final Boolean routeDetailNotificationEnabled;
+    private final Boolean socialLoginIsNewMember;
     private final String firebaseToken;
     private final LocalDateTime createdAt;
 
     @Builder
-    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean nextDayNotificationEnabled, Boolean routeDetailNotificationEnabled, String firebaseToken, LocalDateTime createdAt) {
+    public Member(Long id, String email, String password, String nickName, OAuthProvider provider, Role role, Boolean pushNotificationEnabled, Boolean mySavedRouteNotificationEnabled, Boolean nextDayNotificationEnabled, Boolean routeDetailNotificationEnabled, Boolean socialLoginIsNewMember, String firebaseToken, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -38,6 +39,7 @@ public class Member {
         this.mySavedRouteNotificationEnabled = mySavedRouteNotificationEnabled;
         this.nextDayNotificationEnabled = nextDayNotificationEnabled;
         this.routeDetailNotificationEnabled = routeDetailNotificationEnabled;
+        this.socialLoginIsNewMember = socialLoginIsNewMember;
         this.firebaseToken = firebaseToken;
         this.createdAt = createdAt;
     }
@@ -60,6 +62,7 @@ public class Member {
                 .role(Role.valueOf("ROLE_USER"))
                 .nickName(nickname)
                 .provider(oAuthInfoResponse.getOAuthProvider())
+                .socialLoginIsNewMember(Boolean.TRUE)
                 .build();
     }
     public static Member from(MemberCreate memberCreate, PasswordEncoder passwordEncoder) {

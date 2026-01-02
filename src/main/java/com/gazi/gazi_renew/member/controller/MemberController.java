@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gazi.gazi_renew.common.controller.BaseController;
 import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.common.domain.ResponseToken;
+import com.gazi.gazi_renew.member.controller.response.FcmTokenResponse;
 import com.gazi.gazi_renew.member.controller.response.MemberAlertAgreeResponse;
 import com.gazi.gazi_renew.member.controller.response.MemberNicknameResponse;
 import com.gazi.gazi_renew.member.domain.Member;
@@ -145,8 +146,8 @@ public class MemberController extends BaseController {
             @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다. ")
     })
     public ResponseEntity<Body> saveFcmToken(@RequestBody MemberFcmToken memberFcmToken) {
-        memberService.saveFcmToken(memberFcmToken);
-        return response.success("FireBase 토큰 저장 완료.");
+        Member member = memberService.saveFcmToken(memberFcmToken);
+        return response.success(FcmTokenResponse.from(member));
     }
 
     @Operation(summary = "이메일 인증")
