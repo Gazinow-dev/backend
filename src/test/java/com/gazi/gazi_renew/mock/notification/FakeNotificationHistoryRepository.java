@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -64,5 +63,12 @@ public class FakeNotificationHistoryRepository implements NotificationHistoryRep
                             .startDate(history.getStartDate())
                             .build());
                 });
+    }
+
+    @Override
+    public Long countByMemberIdAndReadFalse(Long memberId) {
+        return data.stream()
+                .filter(history -> !history.isRead() && history.getMemberId().equals(memberId))
+                .count();
     }
 }

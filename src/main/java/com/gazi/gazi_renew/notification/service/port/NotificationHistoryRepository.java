@@ -10,4 +10,6 @@ public interface NotificationHistoryRepository {
     Page<NotificationHistory> findAllByMemberId(Long memberId, Pageable pageable);
 
     void updateNotificationIsRead(Long notificationId);
+
+    Long countByMemberIdAndReadFalse(Long memberId);
 }

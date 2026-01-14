@@ -5,6 +5,7 @@ import com.gazi.gazi_renew.common.controller.response.Response;
 import com.gazi.gazi_renew.notification.controller.port.NotificationService;
 import com.gazi.gazi_renew.notification.controller.response.NotificationHistoryResponse;
 import com.gazi.gazi_renew.notification.controller.response.NotificationResponse;
+import com.gazi.gazi_renew.notification.controller.response.UnreadNotificationCountResponse;
 import com.gazi.gazi_renew.notification.domain.Notification;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.route.controller.port.MyFindRoadService;
@@ -55,6 +56,22 @@ public class NotificationController {
         Page<NotificationHistory> notificationHistories = notificationService.findAllByMemberId(pageable);
         return response.success(NotificationHistoryResponse.fromPage(notificationHistories), "알림 히스트리 전체 조회 성공", HttpStatus.OK);
     }
+    /**
+     * unread 알림 카운트 조회 API
+     * @return unread 알림 갯수
+     */
+    @GetMapping("")
+    @Operation(summary = "읽지 않은 알림 갯수 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "읽지 않은 알림 갯수 조회"),
+            @ApiResponse(responseCode = "404", description = "회원이 존재하지 않습니다.")
+            }
+    )
+    public ResponseEntity<Response.Body> getUnreadNotificationCount(){
+        Long unreadCount = notificationService.countByMemberIdAndReadFalse();
+        return response.success(UnreadNotificationCountResponse.from(unreadCount), "읽지 않은 알림 갯수 조회 성공", HttpStatus.OK);
+    }
+
     @PatchMapping("/{notificationId}/read")
     @Operation(summary = "알림 읽음 처리")
     @ApiResponses(value = {

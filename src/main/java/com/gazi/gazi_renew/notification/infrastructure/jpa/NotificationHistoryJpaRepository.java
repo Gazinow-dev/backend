@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.notification.infrastructure.jpa;
 
 import com.gazi.gazi_renew.notification.infrastructure.NotificationHistoryEntity;
-import org.hibernate.sql.Update;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +13,6 @@ public interface NotificationHistoryJpaRepository extends JpaRepository<Notifica
     @Modifying
     @Query("UPDATE NotificationHistoryEntity n SET n.isRead=true WHERE n.id = :id")
     void updateNotificationIsRead(@Param("id") Long id);
+
+    Long countByMemberIdAndReadFalse(Long memberId);
 }
