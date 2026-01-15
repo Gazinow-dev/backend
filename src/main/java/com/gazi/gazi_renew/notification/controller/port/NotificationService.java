@@ -6,7 +6,6 @@ import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.route.domain.dto.MyFindRoadNotificationCreate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -24,4 +23,6 @@ public interface NotificationService {
     Page<NotificationHistory> findAllByMemberId(Pageable pageable);
 
     void markAsRead(Long notificationId);
+
+    Long countByMemberIdAndReadFalse();
 }
