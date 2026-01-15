@@ -29,7 +29,7 @@ public class NotificationHistory {
         this.startDate = startDate;
     }
 
-    public static NotificationHistory saveHistory(Long memberId, Long issueId, String notificationTitle, String notificationBody, IssueKeyword issueKeyword, ClockHolder clockHolder) {
+    public static NotificationHistory saveHistory(Long memberId, Long issueId, String notificationTitle, String notificationBody, IssueKeyword issueKeyword, LocalDateTime startDate) {
         return NotificationHistory.builder()
                 .memberId(memberId)
                 .issueId(issueId)
@@ -37,7 +37,7 @@ public class NotificationHistory {
                 .notificationBody(notificationBody)
                 .issueKeyword(issueKeyword)
                 .isRead(false)
-                .startDate(clockHolder.now())
+                .startDate(startDate)
                 .build();
     }
 }

@@ -68,7 +68,6 @@ public class FcmServiceImpl implements FcmService {
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final SubwayRepository subwayRepository;
     private final NotificationHistoryRepository notificationHistoryRepository;
-    private final ClockHolder clockHolder;
     @Value("${push.properties.firebase-create-scoped}")
     private String fireBaseCreateScoped;
     @Value("${push.properties.firebase-config-path}")
@@ -253,7 +252,7 @@ public class FcmServiceImpl implements FcmService {
                 String body = makeBody(issue.get().getTitle());
 
                 NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), body
-                        , title, issue.get().getKeyword(), clockHolder);
+                        , title, issue.get().getKeyword(), issue.get().getStartDate());
                 NotificationHistory savedHistory = notificationHistoryRepository.save(notificationHistory);
                 if (notificationCreate.getSendNotification()) {
                     FcmMessage fcmMessage = FcmMessage.createMessage(
