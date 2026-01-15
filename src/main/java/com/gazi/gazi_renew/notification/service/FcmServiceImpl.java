@@ -249,8 +249,8 @@ public class FcmServiceImpl implements FcmService {
             if (!stationsForLine.isEmpty()) {
                 Station startStation = stationsForLine.get(0);
                 Station endStation = stationsForLine.get(stationsForLine.size() - 1);
-                String title = makeTitle(myPathName, issue.get().getKeyword());
-                String body = makeBody(line.getLineName(), startStation.getName(), endStation.getName());
+                String title = makeTitle(line.getLineName(), startStation.getName(), endStation.getName(), myPathName, issue.get().getKeyword());
+                String body = makeBody(issue.get().getTitle());
 
                 NotificationHistory notificationHistory = NotificationHistory.saveHistory(member.get().getId(), issue.get().getId(), body
                         , title, issue.get().getKeyword(), clockHolder);
@@ -271,13 +271,17 @@ public class FcmServiceImpl implements FcmService {
         return fcmMessages;  // 각 Line에 대해 생성된 FCM 메시지 반환
     }
 
-    private String makeBody(String line, String startStationName, String endStationName) {
-        String newLine = line.replace("수도권", "").trim();
-        return newLine + " " + startStationName + " - " + endStationName + " 방면";
+    private String makeBody(String title) {
+        if (title.length() > 20) {
+            return title.substring(0, 20) + "..";
+        }
+        // 20자 이하일 경우 그대로 반환
+        return title;
     }
 
-    private String makeTitle(String pathName, IssueKeyword issueType) {
-        return pathName + " 경로에 [" + issueType + "] 이슈가 생겼어요";
+    private String makeTitle(String line, String startStationName, String endStationName, String pathName, IssueKeyword issueType) {
+        String newLine = line.replace("수도권", "").trim() + " " + startStationName + "-" + endStationName;
+        return pathName + "[" + issueType + "]" + "이슈" + " (" + newLine + ")";
     }
     private MyFindRoad getStation(MyFindRoad myFindRoad) {
         // 업데이트된 SubPath 리스트를 저장할 컬렉션
