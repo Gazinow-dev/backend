@@ -41,4 +41,9 @@ public class NotificationHistoryRepositoryImpl implements NotificationHistoryRep
     public void updateNotificationIsRead(Long id) {
         notificationHistoryJpaRepository.updateNotificationIsRead(id);
     }
+
+    @Override
+    public Long countByMemberIdAndReadFalse(Long memberId) {
+        return notificationHistoryJpaRepository.countByMemberIdAndReadFalse(memberId);
+    }
 }

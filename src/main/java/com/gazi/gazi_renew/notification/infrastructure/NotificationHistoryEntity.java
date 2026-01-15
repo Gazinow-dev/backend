@@ -21,7 +21,7 @@ public class NotificationHistoryEntity {
     private Long issueId;
     private String notificationTitle;
     private String notificationBody;
-    private boolean isRead;
+    private boolean read;
     private IssueKeyword issueKeyword;
     private LocalDateTime startDate;
 
@@ -32,7 +32,7 @@ public class NotificationHistoryEntity {
                 .issueId(issueId)
                 .notificationTitle(notificationTitle)
                 .notificationBody(notificationBody)
-                .isRead(isRead)
+                .isRead(read)
                 .issueKeyword(issueKeyword)
                 .startDate(startDate)
                 .build();
@@ -44,7 +44,7 @@ public class NotificationHistoryEntity {
         notificationHistoryEntity.issueId = notificationHistory.getIssueId();
         notificationHistoryEntity.notificationTitle = notificationHistory.getNotificationTitle();
         notificationHistoryEntity.notificationBody = notificationHistory.getNotificationBody();
-        notificationHistoryEntity.isRead = notificationHistory.isRead();
+        notificationHistoryEntity.read = notificationHistory.isRead();
         notificationHistoryEntity.issueKeyword = notificationHistory.getIssueKeyword();
         notificationHistoryEntity.startDate = notificationHistory.getStartDate();
         return notificationHistoryEntity;
