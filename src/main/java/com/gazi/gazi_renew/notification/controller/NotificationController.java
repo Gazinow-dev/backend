@@ -60,7 +60,7 @@ public class NotificationController {
      * unread 알림 카운트 조회 API
      * @return unread 알림 갯수
      */
-    @GetMapping("")
+    @GetMapping("/count")
     @Operation(summary = "읽지 않은 알림 갯수 조회")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "읽지 않은 알림 갯수 조회"),
