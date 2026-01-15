@@ -1,7 +1,6 @@
 package com.gazi.gazi_renew.notification.domain;
 
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
-import com.gazi.gazi_renew.mock.common.TestClockHolder;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -20,9 +19,9 @@ class NotificationHistoryTest {
         IssueKeyword issueKeyword = IssueKeyword.시위;
 
         LocalDateTime newTime = LocalDateTime.now();
-        TestClockHolder testClockHolder = new TestClockHolder(newTime);
+
         //when
-        NotificationHistory notificationHistory = NotificationHistory.saveHistory(memberId, issueId, title, body, issueKeyword, testClockHolder);
+        NotificationHistory notificationHistory = NotificationHistory.saveHistory(memberId, issueId, title, body, issueKeyword, newTime);
         //then
         assertThat(notificationHistory.getNotificationTitle()).isEqualTo(title);
         assertThat(notificationHistory.getNotificationBody()).isEqualTo(body);
