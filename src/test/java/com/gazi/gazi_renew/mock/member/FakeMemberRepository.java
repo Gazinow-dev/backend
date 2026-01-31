@@ -15,6 +15,13 @@ public class FakeMemberRepository implements MemberRepository {
     }
 
     @Override
+    public List<Long> findAllIdList() {
+        return data.stream()
+                .map(Member::getId)
+                .toList();
+    }
+
+    @Override
     public boolean existsByEmail(String email) {
         return data.stream().anyMatch(member -> member.getEmail().equals(email));
     }

@@ -21,6 +21,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public List<Long> findAllIdList() {
+        return memberJpaRepository.findAllIds();
+    }
+
+    @Override
     public boolean existsByEmail(String email) {
         return memberJpaRepository.existsByEmail(email);
     }
