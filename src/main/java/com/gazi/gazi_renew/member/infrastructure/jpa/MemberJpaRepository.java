@@ -43,4 +43,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                          @Param("email") String email);
 
     List<MemberEntity> findByNextDayNotificationEnabled(Boolean nextDayNotificationEnabled);
+    @Query("SELECT m.id from MemberEntity m")
+    List<Long> findAllIds();
+
 }

@@ -18,7 +18,7 @@ public class NotificationHistoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long memberId;
-    private Long issueId;
+    private Long targetId;
     private String notificationTitle;
     private String notificationBody;
     private boolean read;
@@ -29,7 +29,7 @@ public class NotificationHistoryEntity {
         return NotificationHistory.builder()
                 .id(id)
                 .memberId(memberId)
-                .issueId(issueId)
+                .targetId(targetId)
                 .notificationTitle(notificationTitle)
                 .notificationBody(notificationBody)
                 .isRead(read)
@@ -41,7 +41,7 @@ public class NotificationHistoryEntity {
     public static NotificationHistoryEntity from(NotificationHistory notificationHistory) {
         NotificationHistoryEntity notificationHistoryEntity = new NotificationHistoryEntity();
         notificationHistoryEntity.memberId = notificationHistory.getMemberId();
-        notificationHistoryEntity.issueId = notificationHistory.getIssueId();
+        notificationHistoryEntity.targetId = notificationHistory.getTargetId();
         notificationHistoryEntity.notificationTitle = notificationHistory.getNotificationTitle();
         notificationHistoryEntity.notificationBody = notificationHistory.getNotificationBody();
         notificationHistoryEntity.read = notificationHistory.isRead();

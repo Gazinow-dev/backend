@@ -46,4 +46,12 @@ public class NotificationHistoryRepositoryImpl implements NotificationHistoryRep
     public Long countByMemberIdAndReadFalse(Long memberId) {
         return notificationHistoryJpaRepository.countByMemberIdAndReadFalse(memberId);
     }
+
+    @Override
+    public void saveAll(List<NotificationHistory> histories) {
+        List<NotificationHistoryEntity> historyEntityList = histories.stream()
+                .map(NotificationHistoryEntity::from).toList();
+
+        notificationHistoryJpaRepository.saveAll(historyEntityList);
+    }
 }

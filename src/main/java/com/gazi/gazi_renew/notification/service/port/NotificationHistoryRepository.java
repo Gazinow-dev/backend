@@ -4,6 +4,8 @@ import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface NotificationHistoryRepository {
     NotificationHistory save(NotificationHistory notificationHistory);
 
@@ -12,4 +14,6 @@ public interface NotificationHistoryRepository {
     void updateNotificationIsRead(Long notificationId);
 
     Long countByMemberIdAndReadFalse(Long memberId);
+
+    void saveAll(List<NotificationHistory> histories);
 }

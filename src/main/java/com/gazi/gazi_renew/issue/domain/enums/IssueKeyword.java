@@ -10,7 +10,8 @@ public enum IssueKeyword {
     행사("행사"),
     사고("사고"),
     공사("공사"),
-    시위("시위");
+    시위("시위"),
+    관리자("관리자");
 
     private final String text;
 
