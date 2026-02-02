@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @Table(name = "admin_notice")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AdminNoticeEntity {

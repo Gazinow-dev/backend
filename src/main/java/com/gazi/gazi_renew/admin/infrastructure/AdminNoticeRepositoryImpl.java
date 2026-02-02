@@ -6,6 +6,8 @@ import com.gazi.gazi_renew.admin.infrastructure.jpa.AdminNoticeJpaRepositoryImpl
 import com.gazi.gazi_renew.admin.service.port.AdminNoticeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,9 +18,9 @@ import java.util.stream.Collectors;
 public class AdminNoticeRepositoryImpl implements AdminNoticeRepository {
     private final AdminNoticeJpaRepositoryImpl adminNoticeJpaRepositoryImpl;
     @Override
-    public List<AdminNotice> getNotifications() {
-        return adminNoticeJpaRepositoryImpl.findAll().stream()
-                .map(AdminNoticeEntity::toModel).collect(Collectors.toList());
+    public Page<AdminNotice> getNotifications(Pageable pageable) {
+        return adminNoticeJpaRepositoryImpl.findAll(pageable)
+                .map(AdminNoticeEntity::toModel);
     }
 
     @Override
