@@ -11,6 +11,8 @@ import com.gazi.gazi_renew.member.service.port.MemberRepository;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +27,8 @@ public class AdminNoticeServiceImpl implements AdminNotificationService {
     private final ClockHolder clockHolder;
     @Override
     @Transactional(readOnly = true)
-    public List<AdminNotice> getNotifications() {
-        return adminNoticeRepository.getNotifications();
+    public Page<AdminNotice> getNotifications(Pageable pageable) {
+        return adminNoticeRepository.getNotifications(pageable);
     }
 
     @Override
