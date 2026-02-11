@@ -125,37 +125,37 @@ public class NotificationSender implements KafkaSender {
         // 둘 다 겹치면 true 반환
         return true;
     }
-    private boolean matchesNotificationConditions(List<Map<String, Object>> notificationsByMyFindRoadPathId ,Issue issue) throws JsonProcessingException {
-        // 현재 시간과 요일 가져오기
-        LocalDateTime now = LocalDateTime.now();
-        DayOfWeek currentDay = now.getDayOfWeek();
-        String currentDayInKorean = KoreanDayOfWeek.toKorean(currentDay);
-        log.info("현재 요일: {}, 현재 시간: {}", currentDayInKorean, now.toLocalTime());
-        if (!issue.getStartDate().isAfter(now) && !issue.getExpireDate().isBefore(now)) {
-            for (Map<String, Object> notification : notificationsByMyFindRoadPathId) {
-                // 알림 조건 추출
-                String day = (String) notification.get("day");// 요일 조건 리스트
-                LocalTime fromTime = LocalTime.parse((String) notification.get("from_time")); // 알림 시작 시간
-                LocalTime toTime = LocalTime.parse((String) notification.get("to_time")); // 알림 종료 시간
-                log.info("알림 조건 - 요일: {}, 시작 시간: {}, 종료 시간: {}", day, fromTime, toTime);
-                // 현재 요일 조건 확인
-                if (day.equals(currentDayInKorean)) {
-                    // 알림 시간 조건이 이슈 기간에 포함되는지 확인
-                    boolean isFromTimeValid = !fromTime.isAfter(now.toLocalTime());
-                    boolean isToTimeValid = !toTime.isBefore(now.toLocalTime());
-                    if (!isFromTimeValid) {
-                        log.warn("현재 시간이 알림 시작 시간보다 이전입니다.");
-                    }
-                    if (!isToTimeValid) {
-                        log.warn("현재 시간이 알림 종료 시간보다 이후입니다.");
-                    }
+    private boolean matchesNotificationConditions(List<Map<String, Object>> notificationsByMyFindRoadPathId, Issue issue) {
+        // 기준: 현재 시간이 아닌 '이슈 시작 시간'
+        LocalDateTime issueStartDateTime = issue.getStartDate();
+        LocalTime issueStartTime = issueStartDateTime.toLocalTime();
 
-                    if (isFromTimeValid && isToTimeValid) {
-                        return true;
-                    }
+        // 이슈 시작 요일 구하기 (한국어 변환)
+        String issueDayInKorean = KoreanDayOfWeek.toKorean(issueStartDateTime.getDayOfWeek());
+
+        log.info("검사 대상 - 이슈 시작 요일: {}, 이슈 시작 시간: {}", issueDayInKorean, issueStartTime);
+
+        for (Map<String, Object> notification : notificationsByMyFindRoadPathId) {
+            // 사용자 알림 설정 값 추출
+            String settingDay = (String) notification.get("day");
+            LocalTime settingFromTime = LocalTime.parse((String) notification.get("from_time"));
+            LocalTime settingToTime = LocalTime.parse((String) notification.get("to_time"));
+
+            // 1. 요일이 일치하는지 확인
+            if (settingDay.equals(issueDayInKorean)) {
+                // 2. 이슈 시작 시간이 설정된 시간 범위(From ~ To) 안에 있는지 확인
+                // start >= from && start <= to
+                boolean isAfterFrom = !issueStartTime.isBefore(settingFromTime);
+                boolean isBeforeTo = !issueStartTime.isAfter(settingToTime);
+
+                if (isAfterFrom && isBeforeTo) {
+                    log.info("알림 조건 일치! 설정: {} {}~{}", settingDay, settingFromTime, settingToTime);
+                    return true;
                 }
             }
         }
+
+        log.info("일치하는 알림 조건 없음");
         return false;
     }
 }
