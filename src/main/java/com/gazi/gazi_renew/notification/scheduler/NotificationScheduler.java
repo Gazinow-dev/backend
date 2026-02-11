@@ -43,9 +43,11 @@ public class NotificationScheduler {
         }
         for (String issueIdStr : issueList) {
             Long issueId = Long.parseLong(issueIdStr);
+
             List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issueId);
             List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issueId);
             notificationSender.sendNotification(issueId, issueLineList, issueStationList);
+            redisUtilService.removeScheduledIssue(SCHEDULE_KEY, issueIdStr);
         }
     }
 }
