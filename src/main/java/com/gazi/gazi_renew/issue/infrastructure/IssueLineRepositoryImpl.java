@@ -49,8 +49,8 @@ public class IssueLineRepositoryImpl implements IssueLineRepository {
     }
 
     @Override
-    public List<IssueLine> findAllByIssue(Issue issue) {
-        return issueLineJpaRepository.findByIssueEntityId(issue.getId())
+    public List<IssueLine> findAllByIssue(Long issueId) {
+        return issueLineJpaRepository.findByIssueEntityId(issueId)
                 .stream().map(IssueLineEntity::toModel).collect(Collectors.toList());
     }
 

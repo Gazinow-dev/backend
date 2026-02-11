@@ -258,7 +258,6 @@ public class IssueServiceImpl implements IssueService {
         }
         // Redis에 이슈 추가
         addIssueToRedis(issue);
-        kafkaSender.sendNotification(issue, lineList, stationList);
         return issue;
     }
 
@@ -322,7 +321,6 @@ public class IssueServiceImpl implements IssueService {
             stationList.add(station);
         }
         addIssueToRedis(issue);
-        kafkaSender.sendNotification(issue, List.of(line), stationList);
     }
 
     private void processIssueByLines(InternalIssueCreate internalIssueCreate, Issue issue) throws JsonProcessingException {
@@ -336,7 +334,6 @@ public class IssueServiceImpl implements IssueService {
                 saveIssueStation(issue, station);
             }
             addIssueToRedis(issue);
-            kafkaSender.sendNotification(issue, lineList, stationList);
         }
     }
 
@@ -350,7 +347,6 @@ public class IssueServiceImpl implements IssueService {
         Line line = processIssueLineAndStations(issue, lineName, stationList);
 
         addIssueToRedis(issue);
-        kafkaSender.sendNotification(issue, List.of(line), stationList);
     }
 
     /**
@@ -360,10 +356,9 @@ public class IssueServiceImpl implements IssueService {
     private void addIssueToRedis(Issue issue) throws JsonProcessingException {
         long startEpoch = issue.getStartDate().atZone(ZoneId.systemDefault()).toEpochSecond();
 
-        // expireDate가 null이면 Long.MAX_VALUE 사용 (무기한 유지) 또는 현재 시간 기준 값 설정
         long expireEpoch = (issue.getExpireDate() != null)
                 ? issue.getExpireDate().atZone(ZoneId.systemDefault()).toEpochSecond()
-                : Long.MAX_VALUE;  // 또는 Instant.now().getEpochSecond()
+                : Long.MAX_VALUE;
 
         IssueRedisDto issueRedisDto = new IssueRedisDto(startEpoch, expireEpoch);
         redisUtilService.addIssueToRedis("issues", issue.getId().toString(), issueRedisDto);

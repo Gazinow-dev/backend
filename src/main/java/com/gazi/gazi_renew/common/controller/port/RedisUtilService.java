@@ -7,6 +7,7 @@ import com.gazi.gazi_renew.route.domain.MyFindRoad;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface RedisUtilService {
     String getData(String key);
@@ -28,4 +29,8 @@ public interface RedisUtilService {
     Map<String, List<Map<String, Object>>> getAllUserNotifications() throws JsonProcessingException;
 
     boolean containsForbiddenWord(String nickname);
+
+    Set<String> getDueIssueIds(String key, long currentTimestamp);
+
+    void removeScheduledIssue(String key, String issueId);
 }

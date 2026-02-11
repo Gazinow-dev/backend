@@ -37,9 +37,9 @@ public class FakeIssueStationRepository implements IssueStationRepository {
     }
 
     @Override
-    public List<IssueStation> findAllByIssue(Issue issue) {
+    public List<IssueStation> findAllByIssue(Long issueId) {
         return data.stream()
-                .filter(issueStation -> issueStation.getIssue().getId().equals(issue.getId()))
+                .filter(issueStation -> issueStation.getIssue().getId().equals(issueId))
                 .collect(Collectors.toList());
 
     }

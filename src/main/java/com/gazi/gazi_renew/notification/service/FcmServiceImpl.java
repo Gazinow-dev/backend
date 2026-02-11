@@ -213,7 +213,7 @@ public class FcmServiceImpl implements FcmService {
             throw new EntityNotFoundException("해당 이슈가 존재하지 않습니다.");
         }
         ObjectMapper om = new ObjectMapper();
-        List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issue.get());
+        List<IssueStation> issueStationList = issueStationRepository.findAllByIssue(issue.get().getId());
 
         List<Station> stationList = issueStationList.stream()
                 .map(IssueStation::getStation).collect(Collectors.toList());
@@ -227,7 +227,7 @@ public class FcmServiceImpl implements FcmService {
 
         // 각 Line에 대해 FCM 메시지 생성
         List<FcmMessage> fcmMessages = new ArrayList<>();
-        List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issue.get());
+        List<IssueLine> issueLineList = issueLineRepository.findAllByIssue(issue.get().getId());
 
         List<Line> lineList = issueLineList.stream().map(issueLine -> lineRepository.findById(issueLine.getLine().getId()))
                 .filter(Optional::isPresent)

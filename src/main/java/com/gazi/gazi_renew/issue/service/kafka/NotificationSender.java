@@ -5,8 +5,12 @@ import com.gazi.gazi_renew.common.controller.port.KafkaSender;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.common.service.port.ClockHolder;
 import com.gazi.gazi_renew.issue.domain.Issue;
+import com.gazi.gazi_renew.issue.domain.IssueLine;
+import com.gazi.gazi_renew.issue.domain.IssueStation;
 import com.gazi.gazi_renew.issue.domain.enums.IssueKeyword;
 import com.gazi.gazi_renew.issue.domain.enums.KoreanDayOfWeek;
+import com.gazi.gazi_renew.issue.infrastructure.jpa.IssueJpaRepository;
+import com.gazi.gazi_renew.issue.service.port.IssueRepository;
 import com.gazi.gazi_renew.notification.domain.NotificationHistory;
 import com.gazi.gazi_renew.notification.domain.dto.NotificationCreate;
 import com.gazi.gazi_renew.notification.service.port.NotificationHistoryRepository;
@@ -16,6 +20,7 @@ import com.gazi.gazi_renew.route.service.port.MyFindRoadSubPathRepository;
 import com.gazi.gazi_renew.route.service.port.MyFindRoadSubwayRepository;
 import com.gazi.gazi_renew.station.domain.Line;
 import com.gazi.gazi_renew.station.domain.Station;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +41,13 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class NotificationSender implements KafkaSender {
+    private final IssueRepository issueRepository;
     private final KafkaTemplate<String, NotificationCreate> kafkaTemplate;
     private final MyFindRoadSubPathRepository myFindRoadSubPathRepository;
     private final MyFindRoadSubwayRepository myFindRoadSubwayRepository;
     private final RedisUtilService redisUtilService;
 
-    public void sendNotification(Issue issue, List<Line> lineList, List<Station> stationList) throws JsonProcessingException {
+    public void sendNotification(Long issueId, List<IssueLine> lineList, List<IssueStation> stationList) throws JsonProcessingException {
         // 현재 사용자 정보 조회
         Map<String, List<Map<String, Object>>> allUserNotifications = redisUtilService.getAllUserNotifications();
         for (String myFindRoadPathId : allUserNotifications.keySet()) {
@@ -49,7 +55,18 @@ public class NotificationSender implements KafkaSender {
             List<MyFindRoadSubPath> myFindRoadSubPathList = myFindRoadSubPathRepository.findByMyFindRoadPathId(Long.parseLong(myFindRoadPathId));
             List<Map<String, Object>> notificationsByMyFindRoadPathId = allUserNotifications.get(myFindRoadPathId);
 
-            boolean routeMatched = matchesRoute(myFindRoadSubPathList, lineList, stationList);
+            List<Line> lines = lineList.stream()
+                    .map(IssueLine::getLine)
+                    .collect(Collectors.toList());
+
+            List<Station> stations = stationList.stream()
+                    .map(IssueStation::getStation)
+                    .toList();
+
+            Issue issue = issueRepository.findById(issueId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 이슈가 존재하지 않습니다"));
+
+            boolean routeMatched = matchesRoute(myFindRoadSubPathList, lines, stations);
             boolean conditionMatched = matchesNotificationConditions(notificationsByMyFindRoadPathId, issue);
 
             if (routeMatched) {
@@ -82,9 +99,10 @@ public class NotificationSender implements KafkaSender {
         List<String> lineNameList = lineList.stream()
                 .map(Line::getLineName)
                 .collect(Collectors.toList());
+
         List<String> stationNameList = stationList.stream()
                 .map(Station::getName)
-                .collect(Collectors.toList());
+                .toList();
 
         for (MyFindRoadSubPath subPath : myFindRoadSubPathList) {
             myFindRoadLineList.add(subPath.getName());
