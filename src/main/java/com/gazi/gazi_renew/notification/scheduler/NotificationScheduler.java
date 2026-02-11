@@ -27,12 +27,12 @@ public class NotificationScheduler {
     private final IssueLineRepository issueLineRepository;
     private final IssueStationRepository issueStationRepository;
     private final NotificationSender notificationSender;
-    private static final String SCHEDULE_KEY = "issue:schedule";
+    private static final String SCHEDULE_KEY = "issues";
     @Scheduled(cron = "0 0 21 * * *", zone = "Asia/Seoul")
     public void nextDayIssueNotify() throws IOException {
         fcmService.nextDayIssueSendMessageTo();
     }
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 10000)
     public void processScheduledIssues() throws JsonProcessingException {
 
         long now = System.currentTimeMillis() / 1000;
