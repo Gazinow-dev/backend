@@ -80,7 +80,6 @@ public class IssueManualServiceImpl implements IssueManualService {
         }
         // Redis에 이슈 추가
         addIssueToRedis(issue);
-        kafkaSender.sendNotification(issue, lineList, stationList);
         return true;
     }
 

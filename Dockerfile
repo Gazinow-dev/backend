@@ -7,6 +7,6 @@ COPY build/libs/*.jar app.jar
 
 # 8080 포트 오픈
 EXPOSE 8080
-
+EXPOSE 5005
 # JAR 파일 실행
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "app.jar"]

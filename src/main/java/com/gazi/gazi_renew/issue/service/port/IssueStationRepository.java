@@ -11,7 +11,7 @@ public interface IssueStationRepository {
 
     void save(IssueStation issueStation);
 
-    List<IssueStation> findAllByIssue(Issue issue);
+    List<IssueStation> findAllByIssue(Long issueId);
 
     void deleteIssueStationByIssueId(Long issueId);
 }

@@ -405,7 +405,7 @@ class IssueServiceImplTest {
                 .build();
         //when
         Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
-        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue.getId());
         //then
         assertThat(issueStationList.size()).isEqualTo(3);
         assertThat(issueStationList.get(0).getStation().getName()).isEqualTo("효창공원역");
@@ -434,7 +434,7 @@ class IssueServiceImplTest {
 
         //when
         Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
-        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue.getId());
         //then
         //fake에 저장한 1호선 지하철 갯수가 5개
         assertThat(issueStationList.size()).isEqualTo(5);
@@ -461,7 +461,7 @@ class IssueServiceImplTest {
 
         //when
         Issue issue = issueServiceImpl.autoRegisterInternalIssue(internalIssueCreate);
-        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue);
+        List<IssueStation> issueStationList = fakeIssueStationRepository.findAllByIssue(issue.getId());
         //then
         //fake에 저장한 1호선 지하철 갯수가 5개
         assertThat(issueStationList.size()).isEqualTo(1);

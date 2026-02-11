@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gazi.gazi_renew.common.controller.port.RedisUtilService;
 import com.gazi.gazi_renew.issue.infrastructure.IssueRedisDto;
 import com.gazi.gazi_renew.notification.domain.Notification;
-import com.gazi.gazi_renew.route.domain.MyFindRoad;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -95,14 +94,27 @@ public class RedisUtilServiceImpl implements RedisUtilService {
         return objectMapper.writeValueAsString(notificationJsonList);
     }
     @Override
-    public void addIssueToRedis(String hashKey, String issueKey, IssueRedisDto issueRedisDto) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonValue = objectMapper.writeValueAsString(issueRedisDto);
+    public void addIssueToRedis(String key, String issueId, IssueRedisDto issueRedisDto) throws JsonProcessingException {
+        double score = (double) issueRedisDto.getStart();
 
-        redisTemplate.opsForHash().put(hashKey, issueKey, jsonValue);
+        // 2. Sorted Set에 저장 (ZADD key score member)
+        // Key   : 파라미터로 받은 key (예: "issue:schedule")
+        // Member: issueId (예: "1052")
+        // Score : 발송 예정 시각 (Unix Timestamp)
+        redisTemplate.opsForZSet().add(key, issueId, score);
     }
     public boolean containsForbiddenWord(String nickname) {
         Set<String> forbiddenWords = redisTemplate.opsForSet().members(FORBIDDEN_NICKNAME_KEY);
         return forbiddenWords.stream().anyMatch(nickname::contains);
+    }
+    @Override
+    public Set<String> getDueIssueIds(String key, long currentTimestamp) {
+        // 0부터 현재 시간(currentTimestamp)까지의 모든 Issue ID 조회
+        return redisTemplate.opsForZSet().rangeByScore(key, 0, currentTimestamp);
+    }
+
+    @Override
+    public void removeScheduledIssue(String key, String issueId) {
+        redisTemplate.opsForZSet().remove(key, issueId);
     }
 }
