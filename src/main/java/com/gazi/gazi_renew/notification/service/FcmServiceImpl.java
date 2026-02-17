@@ -264,7 +264,7 @@ public class FcmServiceImpl implements FcmService {
                     );
                     fcmMessages.add(fcmMessage);
                 }
-
+                return fcmMessages;
             }
         }
         return fcmMessages;  // 각 Line에 대해 생성된 FCM 메시지 반환
