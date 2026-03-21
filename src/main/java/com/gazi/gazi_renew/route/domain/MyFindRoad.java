@@ -14,6 +14,8 @@ public class MyFindRoad {
     private final int stationTransitCount;
     private final String firstStartStation;
     private final String lastEndStation;
+    private final Integer walkingTimeFromStartStation; // 출발역까지 도보 시간 (분)
+    private final Integer walkingTimeToEndStation;     // 도착역에서 도보 시간 (분)
     private final Long memberId;
     private final Boolean memberNextDayIssueNotificationEnabled;
     private final List<MyFindRoadSubPath> subPaths;
@@ -26,18 +28,25 @@ public class MyFindRoad {
                 .stationTransitCount(myFindRoadCreate.getStationTransitCount())
                 .firstStartStation(myFindRoadCreate.getFirstStartStation())
                 .lastEndStation(myFindRoadCreate.getLastEndStation())
+                .walkingTimeFromStartStation(
+                        myFindRoadCreate.getWalkingTimeFromStartStation() != null
+                                ? myFindRoadCreate.getWalkingTimeFromStartStation()
+                                : 5)
+                .walkingTimeToEndStation(myFindRoadCreate.getWalkingTimeToEndStation())
                 .memberId(memberId)
                 .notification(true)
                 .build();
     }
     @Builder
-    public MyFindRoad(Long id, String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, Long memberId, Boolean memberNextDayIssueNotificationEnabled, List<MyFindRoadSubPath> subPaths, Boolean notification) {
+    public MyFindRoad(Long id, String roadName, int totalTime, int stationTransitCount, String firstStartStation, String lastEndStation, Integer walkingTimeFromStartStation, Integer walkingTimeToEndStation, Long memberId, Boolean memberNextDayIssueNotificationEnabled, List<MyFindRoadSubPath> subPaths, Boolean notification) {
         this.id = id;
         this.roadName = roadName;
         this.totalTime = totalTime;
         this.stationTransitCount = stationTransitCount;
         this.firstStartStation = firstStartStation;
         this.lastEndStation = lastEndStation;
+        this.walkingTimeFromStartStation = walkingTimeFromStartStation;
+        this.walkingTimeToEndStation = walkingTimeToEndStation;
         this.memberId = memberId;
         this.memberNextDayIssueNotificationEnabled = memberNextDayIssueNotificationEnabled;
         this.subPaths = subPaths;
@@ -51,6 +60,8 @@ public class MyFindRoad {
                 .stationTransitCount(this.getStationTransitCount())
                 .firstStartStation(this.getFirstStartStation())
                 .lastEndStation(this.getLastEndStation())
+                .walkingTimeFromStartStation(this.getWalkingTimeFromStartStation())
+                .walkingTimeToEndStation(this.getWalkingTimeToEndStation())
                 .memberId(this.memberId)
                 .memberNextDayIssueNotificationEnabled(this.getMemberNextDayIssueNotificationEnabled())
                 .subPaths(this.getSubPaths())
@@ -65,6 +76,8 @@ public class MyFindRoad {
                 .stationTransitCount(this.getStationTransitCount())
                 .firstStartStation(this.getFirstStartStation())
                 .lastEndStation(this.getLastEndStation())
+                .walkingTimeFromStartStation(this.getWalkingTimeFromStartStation())
+                .walkingTimeToEndStation(this.getWalkingTimeToEndStation())
                 .memberId(this.memberId)
                 .memberNextDayIssueNotificationEnabled(enabled)
                 .subPaths(this.getSubPaths())
@@ -80,6 +93,8 @@ public class MyFindRoad {
                 .stationTransitCount(this.stationTransitCount)
                 .firstStartStation(this.firstStartStation)
                 .lastEndStation(this.lastEndStation)
+                .walkingTimeFromStartStation(this.walkingTimeFromStartStation)
+                .walkingTimeToEndStation(this.walkingTimeToEndStation)
                 .memberId(this.memberId)
                 .memberNextDayIssueNotificationEnabled(this.memberNextDayIssueNotificationEnabled)
                 .subPaths(updatedSubPaths)

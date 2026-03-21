@@ -18,17 +18,21 @@ public class MyFindRoadResponse {
     private final String roadName;
     private final String lastEndStation;
     private final Boolean notification;
+    private final Integer walkingTimeFromStartStation;
+    private final Integer walkingTimeToEndStation;
     private final List<TransitStation> transitStationList;
     private final List<MyFindRoadResponse.SubPath> subPaths;
 
 
     @Builder
-    public MyFindRoadResponse(Long id, int totalTime, String roadName, String lastEndStation, Boolean notification, List<TransitStation> transitStationList, List<SubPath> subPaths) {
+    public MyFindRoadResponse(Long id, int totalTime, String roadName, String lastEndStation, Boolean notification, Integer walkingTimeFromStartStation, Integer walkingTimeToEndStation, List<TransitStation> transitStationList, List<SubPath> subPaths) {
         this.id = id;
         this.totalTime = totalTime;
         this.roadName = roadName;
         this.lastEndStation = lastEndStation;
         this.notification = notification;
+        this.walkingTimeFromStartStation = walkingTimeFromStartStation;
+        this.walkingTimeToEndStation = walkingTimeToEndStation;
         this.transitStationList = transitStationList;
         this.subPaths = subPaths;
     }
@@ -148,6 +152,8 @@ public class MyFindRoadResponse {
                     .lastEndStation(myFindRoad.getLastEndStation())
                     .notification(myFindRoad.getNotification())
                     .totalTime(myFindRoad.getTotalTime())
+                    .walkingTimeFromStartStation(myFindRoad.getWalkingTimeFromStartStation())
+                    .walkingTimeToEndStation(myFindRoad.getWalkingTimeToEndStation())
                     .subPaths(subPaths)
                     .build();
             myFindRoadResponses.add(myFindRoadResponse);
@@ -206,6 +212,8 @@ public class MyFindRoadResponse {
                 .lastEndStation(myFindRoad.getLastEndStation())
                 .notification(myFindRoad.getNotification())
                 .totalTime(myFindRoad.getTotalTime())
+                .walkingTimeFromStartStation(myFindRoad.getWalkingTimeFromStartStation())
+                .walkingTimeToEndStation(myFindRoad.getWalkingTimeToEndStation())
                 .subPaths(subPaths)
                 .build();
     }
