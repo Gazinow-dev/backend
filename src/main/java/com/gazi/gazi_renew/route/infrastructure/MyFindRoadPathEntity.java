@@ -21,6 +21,10 @@ public class MyFindRoadPathEntity {
     private Long memberId;
     private String name;
     private Boolean notification;
+    @Column(nullable = true)
+    private Integer walkingTimeFromStartStation;
+    @Column(nullable = true)
+    private Integer walkingTimeToEndStation;
 
     public static MyFindRoadPathEntity from(MyFindRoad myFindRoad) {
         MyFindRoadPathEntity myFindRoadPathEntity = new MyFindRoadPathEntity();
@@ -32,6 +36,8 @@ public class MyFindRoadPathEntity {
         myFindRoadPathEntity.memberId = myFindRoad.getMemberId();
         myFindRoadPathEntity.name = myFindRoad.getRoadName();
         myFindRoadPathEntity.notification = myFindRoad.getNotification();
+        myFindRoadPathEntity.walkingTimeFromStartStation = myFindRoad.getWalkingTimeFromStartStation();
+        myFindRoadPathEntity.walkingTimeToEndStation = myFindRoad.getWalkingTimeToEndStation();
 
         return myFindRoadPathEntity;
     }
@@ -46,6 +52,8 @@ public class MyFindRoadPathEntity {
                 .lastEndStation(lastEndStation)
                 .memberId(memberId)
                 .notification(notification)
+                .walkingTimeFromStartStation(walkingTimeFromStartStation)
+                .walkingTimeToEndStation(walkingTimeToEndStation)
                 .build();
     }
 }

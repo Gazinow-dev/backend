@@ -83,4 +83,13 @@ public class FakeRedisUtilServiceImpl implements RedisUtilService {
         return forbiddenWords.stream().anyMatch(nickname::contains);
     }
 
+    @Override
+    public Set<String> getDueIssueIds(String key, long currentTimestamp) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void removeScheduledIssue(String key, String issueId) {
+    }
+
 }
