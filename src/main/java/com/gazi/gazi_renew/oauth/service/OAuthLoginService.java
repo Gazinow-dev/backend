@@ -140,6 +140,7 @@ public class OAuthLoginService {
                 .queryParam("email", responseToken.getEmail())
                 .queryParam("nickName", responseToken.getNickName())
                 .queryParam("socialLoginIsNewMember", responseToken.isSocialLoginIsNewMember())
+                .encode()
                 .build()
                 .toUri();
 
