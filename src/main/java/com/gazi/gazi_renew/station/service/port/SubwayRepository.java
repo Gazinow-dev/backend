@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface SubwayRepository {
     List<Station> findByNameStartingWith(String name);
 
@@ -16,6 +17,10 @@ public interface SubwayRepository {
     List<Station> findByNameContainingAndLine(String name, String line);
 
     List<Station> findByLine(String line);
+
+    List<Station> findAll();
+
+    List<Station> findByNameIn(List<String> names);
 
     void save(Station station);
 

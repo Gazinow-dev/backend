@@ -1,38 +1,55 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=1234
-      - SPRING_DATA_REDIS_HOST=redis
-    depends_on:
-      - db
-      - redis
-  db:
-    image: postgres:15.4
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   redis:
     image: redis:7
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-
+      - ./redis.conf:/usr/local/etc/redis/redis.conf  # redis.conf를 컨테이너에 마운트
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]  # 해당 파일을 사용해 Redis 실행
+    networks:
+      - gazi-dev
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - gazi-dev
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://52.79.170.81:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      #   KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_MESSAGE_MAX_BYTES: 200000000
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 200000000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+    networks:
+      - gazi-dev
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: gazi.c3guoiwoms3x.ap-northeast-2.rds.amazonaws.com
+      ADMINER_DEFAULT_DRIVER: postgresql  # PostgreSQL로 기본 드라이버 설정
+      ADMINER_DEFAULT_DB: postgres        # 기본 데이터베이스 설정
+    networks:
+      - gazi-dev
 volumes:
-  postgres_data:
   redis_data:
+networks:
+  gazi-dev:
+    external: true
