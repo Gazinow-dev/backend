@@ -16,6 +16,8 @@ public interface SubwayJpaRepository extends JpaRepository<StationEntity, Long> 
 
     List<StationEntity> findByLine(String line);
 
+    List<StationEntity> findByNameIn(List<String> names);
+
     List<StationEntity> findByIssueStationCodeBetween(int lowerCode, int upperCode);
     List<StationEntity> findByNameContainingAndLine(String name, String line);
     @Query(value = "SELECT * " +
