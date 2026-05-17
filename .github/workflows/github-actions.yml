@@ -78,8 +78,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      # docker build & push to production
+      # docker build & push to prod
       - name: Docker build & push to prod
+        if: contains(github.ref, 'main')
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/docker-test-prod .
+          docker push ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
+
+      # docker build & push to dev
+      - name: Docker build & push to dev
+        if: contains(github.ref, 'develop')
         run: |
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker build -t ${{ secrets.DOCKER_USERNAME }}/docker-test-dev .
@@ -138,10 +147,10 @@ jobs:
             sudo docker rm gazi-server || true
             
             # 새로운 이미지 가져오기
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
-            
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
+
             # 새로운 컨테이너 실행
-            sudo docker run -d -p 8080:8080 --name gazi-server --network gazi-dev ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
+            sudo docker run -d -p 8080:8080 --name gazi-server --network gazi-dev ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
             
             # 사용하지 않는 이미지 정리
             sudo docker image prune -f
