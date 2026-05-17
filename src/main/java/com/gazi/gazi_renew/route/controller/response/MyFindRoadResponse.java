@@ -100,7 +100,7 @@ public class MyFindRoadResponse {
             for(MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()){
                 String lineName = myFindRoadSubPath.getName();
                 boolean isDirect = false;
-                if (lineName.contains("(급행)")) {
+                if (lineName != null && lineName.contains("(급행)")) {
                     isDirect = true;
                 }
                 SubPath subPathResponse = SubPath.builder().build();
@@ -163,7 +163,8 @@ public class MyFindRoadResponse {
     public static MyFindRoadResponse from(MyFindRoad myFindRoad) {
         List<SubPath> subPaths = new ArrayList<>();
         for (MyFindRoadSubPath myFindRoadSubPath : myFindRoad.getSubPaths()) {
-            boolean isDirect = myFindRoadSubPath.getName().contains("(급행)");
+            String subPathName = myFindRoadSubPath.getName();
+            boolean isDirect = subPathName != null && subPathName.contains("(급행)");
             SubPath subPath = SubPath.builder().build();
             if (myFindRoadSubPath.getTrafficType() == 1) {
 
